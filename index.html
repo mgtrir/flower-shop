@@ -1,0 +1,1438 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rose Garden — Склад цветов & Конструктор Заказов</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        rose: {
+                            50: '#fdf2f4',
+                            100: '#fce7ea',
+                            200: '#f9d2d9',
+                            300: '#f4adc0',
+                            400: '#eb7a97',
+                            500: '#d45d79',
+                            600: '#be3c5e',
+                            700: '#a02e49',
+                            800: '#852a3f',
+                            900: '#712739',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        serif: ['"Playfair Display"', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #faf5f6;
+            color: #2c2c2c;
+        }
+        .stock-badge-overlay {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .active-tab {
+            background-color: #d45d79 !important;
+            color: #ffffff !important;
+            box-shadow: 0 4px 14px rgba(212, 93, 121, 0.35);
+        }
+        .active-pill {
+            background-color: #d45d79 !important;
+            color: #ffffff !important;
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #e2a8b6;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #d45d79;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col font-sans antialiased selection:bg-rose-200 selection:text-rose-900 pb-24">
+
+    <!-- Header / Navbar -->
+    <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-rose-100 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <!-- Brand Logo -->
+                <div class="flex items-center gap-3 cursor-pointer" onclick="switchView('store')">
+                    <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-rose-500 to-rose-400 text-white flex items-center justify-center shadow-md shadow-rose-200">
+                        <i class="fa-solid fa-spa text-xl"></i>
+                    </div>
+                    <div>
+                        <span class="font-serif text-2xl font-bold tracking-tight text-gray-900 block leading-none">Rose Garden</span>
+                        <span class="text-xs text-rose-500 font-medium tracking-wide uppercase">Цветочный склад & Витрина</span>
+                    </div>
+                </div>
+
+                <!-- Navigation Switcher -->
+                <div class="flex items-center bg-rose-50/80 p-1.5 rounded-2xl border border-rose-100">
+                    <button id="tab-btn-store" onclick="switchView('store')" class="active-tab px-4 sm:px-6 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 flex items-center gap-2">
+                        <i class="fa-solid fa-store"></i>
+                        <span>Витрина</span>
+                    </button>
+                    <button id="tab-btn-admin" onclick="switchView('admin')" class="px-4 sm:px-6 py-2.5 rounded-xl font-semibold text-sm text-gray-600 hover:text-rose-600 transition-all duration-200 flex items-center gap-2 relative">
+                        <i class="fa-solid fa-sliders"></i>
+                        <span>Управление складом</span>
+                        <span id="low-stock-alert-dot" class="hidden absolute -top-1 -right-1 bg-amber-500 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white animate-pulse">!</span>
+                    </button>
+                </div>
+
+                <!-- Header Cart Counter & WhatsApp -->
+                <div class="hidden md:flex items-center gap-3">
+                    <button onclick="toggleCartModal()" class="relative inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-semibold text-sm transition border border-rose-200">
+                        <i class="fa-solid fa-cart-shopping text-rose-600"></i>
+                        <span>Заказ</span>
+                        <span id="header-cart-count" class="bg-rose-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">0</span>
+                    </button>
+                    <button onclick="openWhatsAppContact()" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-semibold text-sm transition shadow-sm hover:shadow-md">
+                        <i class="fa-brands fa-whatsapp text-lg"></i>
+                        <span>WhatsApp</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- VIEW: STOREFRONT -->
+    <main id="view-store" class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Hero Banner -->
+        <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-rose-900 via-rose-800 to-rose-700 text-white p-8 sm:p-12 mb-8 shadow-xl">
+            <div class="absolute -right-10 -bottom-10 opacity-15 text-white pointer-events-none">
+                <i class="fa-solid fa-seedling text-[280px]"></i>
+            </div>
+            <div class="relative z-10 max-w-2xl">
+                <span class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/15 backdrop-blur-md text-xs font-semibold text-rose-100 mb-4 border border-white/20">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    Прямой склад • Собирайте и экспортируйте заказ
+                </span>
+                <h1 class="font-serif text-3xl sm:text-5xl font-bold tracking-tight text-white mb-4 leading-tight">
+                    Сформируйте заказ и скачайте накладную
+                </h1>
+                <p class="text-rose-100/90 text-sm sm:text-base mb-6 leading-relaxed">
+                    Добавляйте нужные цветы и размеры (от 40 до 100 см) в заказ. Вы сможете сразу скачать файл накладной (TXT / JSON) или отправить готовую ведомость в WhatsApp.
+                </p>
+                <div class="flex flex-wrap gap-3 text-xs text-rose-100 font-medium">
+                    <div class="flex items-center gap-2 bg-black/25 px-3 py-1.5 rounded-lg border border-white/10">
+                        <i class="fa-solid fa-file-arrow-down text-rose-300"></i> Сохранение заказа в TXT / JSON
+                    </div>
+                    <div class="flex items-center gap-2 bg-black/25 px-3 py-1.5 rounded-lg border border-white/10">
+                        <i class="fa-solid fa-ruler-vertical text-rose-300"></i> Размеры от 40 см до 100 см
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter & Search Controls -->
+        <div class="bg-white p-4 sm:p-6 rounded-3xl border border-rose-100 shadow-sm mb-8 space-y-4">
+            <div class="flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between">
+                <!-- Search Input -->
+                <div class="relative flex-grow max-w-md">
+                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    <input type="text" id="store-search" oninput="renderStorefront()" placeholder="Поиск по названию или категории..." class="w-full pl-11 pr-4 py-3 rounded-2xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-500 text-sm">
+                </div>
+
+                <!-- STEM SIZE FILTER BAR (40, 50, 60, 70, 80, 90, 100 cm) -->
+                <div class="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0">
+                    <span class="text-xs font-bold text-gray-500 uppercase whitespace-nowrap mr-1">
+                        <i class="fa-solid fa-ruler"></i> Размер:
+                    </span>
+                    <div id="size-pills-container" class="flex items-center gap-1.5">
+                        <!-- Injected via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Categories Pills -->
+            <div class="pt-3 border-t border-gray-100 flex items-center justify-between flex-wrap gap-2">
+                <div class="flex items-center gap-1.5 text-xs font-bold text-gray-400 uppercase mr-2">
+                    <i class="fa-solid fa-filter"></i> Категории:
+                </div>
+                <div id="category-pills-container" class="flex flex-wrap items-center gap-2">
+                    <!-- Injected via JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Catalog Grid -->
+        <div id="store-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <!-- Catalog Cards populated dynamically -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="store-empty-state" class="hidden text-center py-16 bg-white rounded-3xl border border-dashed border-gray-200 my-4">
+            <div class="w-16 h-16 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                <i class="fa-solid fa-leaf"></i>
+            </div>
+            <h3 class="text-lg font-bold text-gray-800 mb-1">Ничего не найдено</h3>
+            <p class="text-sm text-gray-500 max-w-xs mx-auto mb-4">Попробуйте изменить поисковый запрос или выбранный размер стебля.</p>
+            <button onclick="resetStoreFilters()" class="text-xs font-bold px-4 py-2 bg-rose-100 text-rose-700 hover:bg-rose-200 rounded-xl transition">
+                Сбросить все фильтры
+            </button>
+        </div>
+    </main>
+
+    <!-- VIEW: ADMIN PANEL -->
+    <main id="view-admin" class="hidden flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Dashboard Summary Stats -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div class="bg-white p-5 rounded-2xl border border-rose-100 shadow-sm flex items-center justify-between">
+                <div>
+                    <span class="text-xs font-bold text-gray-400 uppercase tracking-wider block">Позиций в каталоге</span>
+                    <span id="stat-total-items" class="text-2xl font-extrabold text-gray-900 mt-1 block">0</span>
+                </div>
+                <div class="w-12 h-12 bg-rose-50 text-rose-500 rounded-xl flex items-center justify-center text-xl">
+                    <i class="fa-solid fa-boxes-stacked"></i>
+                </div>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl border border-rose-100 shadow-sm flex items-center justify-between">
+                <div>
+                    <span class="text-xs font-bold text-gray-400 uppercase tracking-wider block">Всего стеблей на складе</span>
+                    <span id="stat-total-stock" class="text-2xl font-extrabold text-gray-900 mt-1 block">0</span>
+                </div>
+                <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center text-xl">
+                    <i class="fa-solid fa-layer-group"></i>
+                </div>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl border border-rose-100 shadow-sm flex items-center justify-between">
+                <div>
+                    <span class="text-xs font-bold text-gray-400 uppercase tracking-wider block">Заканчиваются (&le;20 шт)</span>
+                    <span id="stat-low-stock" class="text-2xl font-extrabold text-amber-600 mt-1 block">0</span>
+                </div>
+                <div class="w-12 h-12 bg-amber-50 text-amber-500 rounded-xl flex items-center justify-center text-xl">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl border border-rose-100 shadow-sm flex items-center justify-between">
+                <div>
+                    <span class="text-xs font-bold text-gray-400 uppercase tracking-wider block">Нет на складе (0 шт)</span>
+                    <span id="stat-out-of-stock" class="text-2xl font-extrabold text-rose-600 mt-1 block">0</span>
+                </div>
+                <div class="w-12 h-12 bg-rose-100 text-rose-600 rounded-xl flex items-center justify-center text-xl">
+                    <i class="fa-solid fa-ban"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Controls -->
+        <div class="bg-white p-4 sm:p-6 rounded-3xl border border-gray-100 shadow-sm mb-8 flex flex-col sm:flex-row gap-4 items-center justify-between">
+            <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                <button onclick="openFlowerModal()" class="w-full sm:w-auto px-5 py-3 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-semibold text-sm shadow-md shadow-rose-200 transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>Добавить цветки на склад</span>
+                </button>
+                <button onclick="restoreDemoData()" class="w-full sm:w-auto px-4 py-3 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-sm transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-rotate"></i>
+                    <span>Восстановить демо-базу</span>
+                </button>
+            </div>
+
+            <!-- WhatsApp Config -->
+            <div class="flex items-center gap-2 w-full sm:w-auto bg-rose-50/70 px-4 py-2.5 rounded-xl border border-rose-100">
+                <i class="fa-brands fa-whatsapp text-emerald-600 text-lg"></i>
+                <label for="admin-whatsapp-input" class="text-xs font-bold text-gray-600 whitespace-nowrap">Номер WhatsApp:</label>
+                <input type="text" id="admin-whatsapp-input" onchange="updateWhatsAppNumber(this.value)" placeholder="37400000000" class="w-36 px-2.5 py-1 text-xs border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500 font-mono">
+            </div>
+        </div>
+
+        <!-- Live Inventory Table -->
+        <div class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden mb-8">
+            <div class="px-6 py-5 border-b border-gray-100 flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+                <div>
+                    <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                        <i class="fa-solid fa-pen-to-square text-rose-500"></i>
+                        <span>Экспресс-управление остатками, ценой и размерами</span>
+                    </h2>
+                    <p class="text-xs text-gray-500 mt-0.5">Все изменения сразу транслируются на витрину и сохраняются в памяти браузера.</p>
+                </div>
+                <div class="relative w-full sm:w-64">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+                    <input type="text" id="admin-search" oninput="renderAdminTable()" placeholder="Фильтр по названию..." class="w-full pl-9 pr-3 py-1.5 rounded-xl border border-gray-200 text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-sm">
+                    <thead>
+                        <tr class="bg-gray-50/80 text-gray-500 font-semibold text-xs uppercase tracking-wider border-b border-gray-100">
+                            <th class="py-3.5 px-6">Товар / Сорт</th>
+                            <th class="py-3.5 px-4">Категория</th>
+                            <th class="py-3.5 px-4 text-center">Размер стебля</th>
+                            <th class="py-3.5 px-4 text-center">Цена (֏ / шт)</th>
+                            <th class="py-3.5 px-4 text-center">Остаток на складе (шт)</th>
+                            <th class="py-3.5 px-4 text-center">Статус</th>
+                            <th class="py-3.5 px-6 text-right">Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-table-body" class="divide-y divide-gray-100">
+                        <!-- Table rows generated dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- FLOATING ORDER SUMMARY BAR (When items added to cart) -->
+    <div id="floating-cart-bar" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-40 w-11/12 max-w-3xl bg-gray-900/90 backdrop-blur-md text-white p-4 rounded-2xl shadow-2xl border border-gray-700 flex items-center justify-between transition-all duration-300 transform translate-y-32">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-rose-500 text-white flex items-center justify-center font-bold text-lg">
+                <i class="fa-solid fa-basket-shopping"></i>
+            </div>
+            <div>
+                <span id="float-cart-count-text" class="text-xs text-gray-300 block">Позиций в заказе: 0 шт</span>
+                <span id="float-cart-total-text" class="text-base font-extrabold text-white font-mono">0 ֏</span>
+            </div>
+        </div>
+        <div class="flex items-center gap-2">
+            <button onclick="toggleCartModal()" class="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs rounded-xl shadow transition flex items-center gap-1.5">
+                <i class="fa-solid fa-file-invoice"></i>
+                <span>Открыть заказ & Файлы</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- CART & ORDER EXPORT MODAL -->
+    <div id="cart-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl max-w-2xl w-full shadow-2xl overflow-hidden border border-rose-100 my-8">
+            <div class="bg-rose-50 px-6 py-4 border-b border-rose-100 flex items-center justify-between">
+                <h3 class="font-bold text-gray-900 text-lg flex items-center gap-2">
+                    <i class="fa-solid fa-receipt text-rose-500"></i>
+                    <span>Составленный заказ / Накладная</span>
+                </h3>
+                <button onclick="toggleCartModal()" class="w-8 h-8 rounded-full bg-white text-gray-400 hover:text-gray-600 flex items-center justify-center shadow-sm">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <div class="p-6 space-y-6">
+                <!-- Customer Details Optional -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-gray-50 p-4 rounded-2xl border border-gray-100">
+                    <div>
+                        <label for="order-customer-name" class="block text-xs font-bold text-gray-600 uppercase mb-1">Имя / Заказчик:</label>
+                        <input type="text" id="order-customer-name" placeholder="Например: Армен" class="w-full px-3 py-1.5 rounded-xl border border-gray-200 text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
+                    </div>
+                    <div>
+                        <label for="order-note" class="block text-xs font-bold text-gray-600 uppercase mb-1">Заметка к заказу:</label>
+                        <input type="text" id="order-note" placeholder="Например: Самовывоз в 14:00" class="w-full px-3 py-1.5 rounded-xl border border-gray-200 text-xs focus:outline-none focus:ring-2 focus:ring-rose-500">
+                    </div>
+                </div>
+
+                <!-- Order Items List -->
+                <div class="space-y-3">
+                    <span class="text-xs font-bold text-gray-500 uppercase tracking-wider block">Выбранные позиций:</span>
+                    <div id="cart-items-container" class="max-h-60 overflow-y-auto space-y-2 pr-1">
+                        <!-- Items populated via JS -->
+                    </div>
+                </div>
+
+                <!-- Total Row -->
+                <div class="pt-4 border-t border-gray-100 flex items-center justify-between">
+                    <div>
+                        <span class="text-xs text-gray-400 block font-bold uppercase">Итоговая стоимость</span>
+                        <span id="modal-cart-total" class="text-2xl font-extrabold text-gray-900 font-mono">0 ֏</span>
+                    </div>
+                    <button onclick="clearCart()" class="text-xs font-bold text-rose-500 hover:text-rose-700 bg-rose-50 px-3 py-1.5 rounded-xl transition">
+                        <i class="fa-solid fa-trash"></i> Очистить заказ
+                    </button>
+                </div>
+
+                <!-- EXPORT FILE ACTIONS -->
+                <div class="bg-gradient-to-r from-rose-50 to-rose-100/60 p-4 rounded-2xl border border-rose-200/80 space-y-3">
+                    <span class="text-xs font-extrabold text-rose-900 uppercase tracking-wider block flex items-center gap-1.5">
+                        <i class="fa-solid fa-download"></i> Сохранить накладную в файл:
+                    </span>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <button onclick="downloadOrderAsTXT()" class="px-3.5 py-2.5 rounded-xl bg-white hover:bg-rose-50 text-gray-800 font-bold text-xs shadow-sm border border-rose-200 transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-file-lines text-rose-500"></i>
+                            <span>Текстовый чек (.txt)</span>
+                        </button>
+                        <button onclick="downloadOrderAsJSON()" class="px-3.5 py-2.5 rounded-xl bg-white hover:bg-rose-50 text-gray-800 font-bold text-xs shadow-sm border border-rose-200 transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-file-code text-indigo-500"></i>
+                            <span>Файл данных (.json)</span>
+                        </button>
+                        <button onclick="printOrderInvoice()" class="px-3.5 py-2.5 rounded-xl bg-white hover:bg-rose-50 text-gray-800 font-bold text-xs shadow-sm border border-rose-200 transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-print text-emerald-500"></i>
+                            <span>Печать / PDF</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Direct WhatsApp Submission -->
+                <div class="pt-2">
+                    <button onclick="sendCartToWhatsApp()" class="w-full py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm shadow-md transition flex items-center justify-center gap-2">
+                        <i class="fa-brands fa-whatsapp text-lg"></i>
+                        <span>Отправить весь заказ флористу в WhatsApp</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Add / Edit Flower Item -->
+    <div id="flower-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-3xl max-w-lg w-full shadow-2xl overflow-hidden border border-rose-100 my-8">
+            <div class="bg-rose-50 px-6 py-4 border-b border-rose-100 flex items-center justify-between">
+                <h3 id="modal-title" class="font-bold text-gray-900 text-lg flex items-center gap-2">
+                    <i class="fa-solid fa-plus-circle text-rose-500"></i>
+                    <span>Добавить цветки на склад</span>
+                </h3>
+                <button onclick="closeFlowerModal()" class="w-8 h-8 rounded-full bg-white text-gray-400 hover:text-gray-600 flex items-center justify-center shadow-sm">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <form id="flower-form" onsubmit="handleFormSubmit(event)" class="p-6 space-y-4">
+                <input type="hidden" id="form-flower-id">
+
+                <div>
+                    <label for="form-title" class="block text-xs font-bold text-gray-700 uppercase mb-1">Название / Сорт <span class="text-rose-500">*</span></label>
+                    <input type="text" id="form-title" required placeholder="Например: Пионовидная роза Misty Bubbles" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-rose-500 text-sm">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="form-category" class="block text-xs font-bold text-gray-700 uppercase mb-1">Категория</label>
+                        <select id="form-category" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-rose-500 text-sm bg-white">
+                            <option value="Розы">Розы</option>
+                            <option value="Тюльпаны">Тюльпаны</option>
+                            <option value="Пионы">Пионы</option>
+                            <option value="Гортензии">Гортензии</option>
+                            <option value="Хризантемы">Хризантемы</option>
+                            <option value="Букеты">Готовые букеты</option>
+                            <option value="Другое">Другие цветы</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="form-size" class="block text-xs font-bold text-gray-700 uppercase mb-1">Высота / Размер <span class="text-rose-500">*</span></label>
+                        <select id="form-size" required class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-rose-500 text-sm bg-white font-semibold">
+                            <option value="40 см">40 см</option>
+                            <option value="50 см">50 см</option>
+                            <option value="60 см" selected>60 см</option>
+                            <option value="70 см">70 см</option>
+                            <option value="80 см">80 см</option>
+                            <option value="90 см">90 см</option>
+                            <option value="100 см">100 см</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Size Quick Selectors -->
+                <div>
+                    <span class="block text-[11px] font-bold text-gray-500 uppercase mb-1.5">Быстрый выбор длины:</span>
+                    <div class="flex flex-wrap gap-1.5">
+                        <button type="button" onclick="selectModalSize('40 см')" class="px-2.5 py-1 bg-gray-100 hover:bg-rose-100 text-gray-700 hover:text-rose-700 rounded-lg text-xs font-bold transition">40 см</button>
+                        <button type="button" onclick="selectModalSize('50 см')" class="px-2.5 py-1 bg-gray-100 hover:bg-rose-100 text-gray-700 hover:text-rose-700 rounded-lg text-xs font-bold transition">50 см</button>
+                        <button type="button" onclick="selectModalSize('60 см')" class="px-2.5 py-1 bg-gray-100 hover:bg-rose-100 text-gray-700 hover:text-rose-700 rounded-lg text-xs font-bold transition">60 см</button>
+                        <button type="button" onclick="selectModalSize('70 см')" class="px-2.5 py-1 bg-gray-100 hover:bg-rose-100 text-gray-700 hover:text-rose-700 rounded-lg text-xs font-bold transition">70 см</button>
+                        <button type="button" onclick="selectModalSize('80 см')" class="px-2.5 py-1 bg-gray-100 hover:bg-rose-100 text-gray-700 hover:text-rose-700 rounded-lg text-xs font-bold transition">80 см</button>
+                        <button type="button" onclick="selectModalSize('90 см')" class="px-2.5 py-1 bg-gray-100 hover:bg-rose-100 text-gray-700 hover:text-rose-700 rounded-lg text-xs font-bold transition">90 см</button>
+                        <button type="button" onclick="selectModalSize('100 см')" class="px-2.5 py-1 bg-gray-100 hover:bg-rose-100 text-gray-700 hover:text-rose-700 rounded-lg text-xs font-bold transition">100 см</button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="form-price" class="block text-xs font-bold text-gray-700 uppercase mb-1">Цена за 1 шт (֏) <span class="text-rose-500">*</span></label>
+                        <input type="number" id="form-price" required min="0" step="50" placeholder="1200" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-rose-500 text-sm font-mono font-bold">
+                    </div>
+
+                    <div>
+                        <label for="form-stock" class="block text-xs font-bold text-gray-700 uppercase mb-1">Количество на складе (шт) <span class="text-rose-500">*</span></label>
+                        <input type="number" id="form-stock" required min="0" placeholder="100" class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-rose-500 text-sm font-mono font-bold">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="form-image" class="block text-xs font-bold text-gray-700 uppercase mb-1">Ссылка на фотографию (URL)</label>
+                    <input type="url" id="form-image" placeholder="https://images.unsplash.com/..." class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-rose-500 text-sm font-mono">
+                    <p class="text-[11px] text-gray-400 mt-1">Оставьте пустым для автоподстановки примерного фото.</p>
+                </div>
+
+                <div>
+                    <label for="form-desc" class="block text-xs font-bold text-gray-700 uppercase mb-1">Описание / Заметки</label>
+                    <textarea id="form-desc" rows="2" placeholder="Свежая поставка, крупный бутон, отличная стойкость..." class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-rose-500 text-sm"></textarea>
+                </div>
+
+                <div class="pt-3 border-t border-gray-100 flex items-center justify-end gap-3">
+                    <button type="button" onclick="closeFlowerModal()" class="px-4 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold text-sm transition">Отмена</button>
+                    <button type="submit" class="px-5 py-2.5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-semibold text-sm shadow-md shadow-rose-200 transition">
+                        Сохранить товар
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none bg-gray-900 text-white px-5 py-3.5 rounded-2xl shadow-xl flex items-center gap-3 border border-gray-700">
+        <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>
+        <span id="toast-message" class="text-sm font-medium">Сохранено</span>
+    </div>
+
+    <script>
+        // --- DEFAULT CATALOG DATASET ---
+        const DEFAULT_CATALOG = [
+            {
+                id: "rose-01",
+                title: "Пионовидная роза Misty Bubbles",
+                category: "Розы",
+                size: "60 см",
+                price: 1200,
+                stock: 120,
+                description: "Пышные густомахровые бутоны с насыщенным ароматом. Свежая поставка со склада.",
+                image: "https://images.unsplash.com/photo-1563241527-3004b7be0ffd?auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                id: "tulip-02",
+                title: "Белые Тюльпаны Premium",
+                category: "Тюльпаны",
+                size: "50 см",
+                price: 800,
+                stock: 15,
+                description: "Крупные сочные белые тюльпаны из Голландии. Хрустящие стебли.",
+                image: "https://images.unsplash.com/photo-1526047932273-341f2a7631f9?auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                id: "rose-03",
+                title: "Красная роза Эквадор (Red Naomi)",
+                category: "Розы",
+                size: "80 см",
+                price: 1500,
+                stock: 210,
+                description: "Высокий бархатный бутон, превосходная стойкость в вазе до 2 недель.",
+                image: "https://images.unsplash.com/photo-1582794543139-8ac9cb0f7b11?auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                id: "hydra-04",
+                title: "Розовая Гортензия Hydrangea",
+                category: "Гортензии",
+                size: "60 см",
+                price: 3800,
+                stock: 8,
+                description: "Огромные пышные соцветия нежно-розового цвета.",
+                image: "https://images.unsplash.com/photo-1508610048659-a06b669e3321?auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                id: "peony-05",
+                title: "Пион Coral Sunset",
+                category: "Пионы",
+                size: "70 см",
+                price: 2400,
+                stock: 45,
+                description: "Коралловый премиальный пион, меняющий цвет при распускании.",
+                image: "https://images.unsplash.com/photo-1561181286-d3fee7d55364?auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                id: "rose-06",
+                title: "Роза Гигант Эксплорер",
+                category: "Розы",
+                size: "100 см",
+                price: 2800,
+                stock: 30,
+                description: "Эксклюзивные розы высотой 1 метр с огромным бокалом.",
+                image: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                id: "chrys-07",
+                title: "Кустовая хризантема Bacardi",
+                category: "Хризантемы",
+                size: "70 см",
+                price: 950,
+                stock: 0,
+                description: "Стойкие белоснежные хризантемы с зеленой серединкой.",
+                image: "https://images.unsplash.com/photo-1572454591674-27398d557c44?auto=format&fit=crop&w=600&q=80"
+            },
+            {
+                id: "tulip-08",
+                title: "Пионовидные Тюльпаны Columbus",
+                category: "Тюльпаны",
+                size: "40 см",
+                price: 850,
+                stock: 80,
+                description: "Махровые розовато-белые тюльпаны сочные со склада.",
+                image: "https://images.unsplash.com/photo-1520763185298-1b434c919102?auto=format&fit=crop&w=600&q=80"
+            }
+        ];
+
+        // --- APP STATE ---
+        let items = [];
+        let cart = []; // Array of { id, title, size, price, count }
+        let currentSizeFilter = 'Все';
+        let currentCategoryFilter = 'Все';
+        let whatsappPhone = '37400000000';
+
+        const AVAILABLE_SIZES = ['Все', '40 см', '50 см', '60 см', '70 см', '80 см', '90 см', '100 см'];
+
+        // Initial Load Event
+        document.addEventListener('DOMContentLoaded', () => {
+            loadState();
+            renderSizePills();
+            renderCategoryPills();
+            renderStorefront();
+            renderAdminTable();
+            updateStats();
+            updateCartUI();
+        });
+
+        // LocalStorage Management
+        function loadState() {
+            const rawData = localStorage.getItem('rg_catalog_items_v3');
+            if (rawData) {
+                try {
+                    items = JSON.parse(rawData);
+                } catch(e) {
+                    items = [...DEFAULT_CATALOG];
+                }
+            } else {
+                items = [...DEFAULT_CATALOG];
+                saveState();
+            }
+
+            const rawCart = localStorage.getItem('rg_cart_v3');
+            if (rawCart) {
+                try {
+                    cart = JSON.parse(rawCart);
+                } catch(e) {
+                    cart = [];
+                }
+            }
+
+            const rawPhone = localStorage.getItem('rg_whatsapp_phone_v3');
+            if (rawPhone) {
+                whatsappPhone = rawPhone;
+            }
+            document.getElementById('admin-whatsapp-input').value = whatsappPhone;
+        }
+
+        function saveState() {
+            localStorage.setItem('rg_catalog_items_v3', JSON.stringify(items));
+            localStorage.setItem('rg_cart_v3', JSON.stringify(cart));
+            updateStats();
+            updateCartUI();
+        }
+
+        function restoreDemoData() {
+            if (confirm('Восстановить демонстрационную базу цветов? Все текущие изменения будут заменены.')) {
+                items = JSON.parse(JSON.stringify(DEFAULT_CATALOG));
+                cart = [];
+                saveState();
+                renderCategoryPills();
+                renderStorefront();
+                renderAdminTable();
+                showToast("Демо-база успешно восстановлена!");
+            }
+        }
+
+        function updateWhatsAppNumber(val) {
+            whatsappPhone = val.trim();
+            localStorage.setItem('rg_whatsapp_phone_v3', whatsappPhone);
+            showToast("Номер WhatsApp обновлен");
+        }
+
+        // View Switcher
+        function switchView(viewName) {
+            const storeView = document.getElementById('view-store');
+            const adminView = document.getElementById('view-admin');
+            const storeBtn = document.getElementById('tab-btn-store');
+            const adminBtn = document.getElementById('tab-btn-admin');
+
+            if (viewName === 'store') {
+                storeView.classList.remove('hidden');
+                adminView.classList.add('hidden');
+                storeBtn.classList.add('active-tab');
+                adminBtn.classList.remove('active-tab');
+                renderStorefront();
+            } else {
+                adminView.classList.remove('hidden');
+                storeView.classList.add('hidden');
+                adminBtn.classList.add('active-tab');
+                storeBtn.classList.remove('active-tab');
+                renderAdminTable();
+            }
+        }
+
+        // CART & ORDER CONSTRUCTOR FUNCTIONS
+        function addToCart(itemId, countToAdd = 1) {
+            const item = items.find(i => i.id === itemId);
+            if (!item || item.stock <= 0) return;
+
+            const cartItemIndex = cart.findIndex(c => c.id === itemId);
+            if (cartItemIndex !== -1) {
+                const currentCount = cart[cartItemIndex].count;
+                if (currentCount + countToAdd <= item.stock) {
+                    cart[cartItemIndex].count += countToAdd;
+                } else {
+                    cart[cartItemIndex].count = item.stock;
+                    showToast(`Максимально доступно на складе: ${item.stock} шт`);
+                }
+            } else {
+                cart.push({
+                    id: item.id,
+                    title: item.title,
+                    size: item.size,
+                    price: item.price,
+                    count: Math.min(countToAdd, item.stock)
+                });
+            }
+
+            saveState();
+            showToast(`"${item.title}" добавлен в заказ`);
+        }
+
+        function updateCartItemCount(itemId, newCount) {
+            const count = parseInt(newCount, 10);
+            const item = items.find(i => i.id === itemId);
+            
+            if (isNaN(count) || count <= 0) {
+                cart = cart.filter(c => c.id !== itemId);
+            } else {
+                const cartItem = cart.find(c => c.id === itemId);
+                if (cartItem && item) {
+                    cartItem.count = Math.min(count, item.stock);
+                }
+            }
+            saveState();
+        }
+
+        function removeFromCart(itemId) {
+            cart = cart.filter(c => c.id !== itemId);
+            saveState();
+        }
+
+        function clearCart() {
+            if (cart.length === 0) return;
+            if (confirm('Очистить собранный заказ?')) {
+                cart = [];
+                saveState();
+                showToast("Заказ очищен");
+            }
+        }
+
+        function toggleCartModal() {
+            const modal = document.getElementById('cart-modal');
+            modal.classList.toggle('hidden');
+            if (!modal.classList.contains('hidden')) {
+                renderCartModalItems();
+            }
+        }
+
+        function updateCartUI() {
+            const totalCount = cart.reduce((sum, c) => sum + c.count, 0);
+            const totalPrice = cart.reduce((sum, c) => sum + (c.count * c.price), 0);
+
+            document.getElementById('header-cart-count').innerText = totalCount;
+            document.getElementById('float-cart-count-text').innerText = `Позиций в заказе: ${totalCount} шт (${cart.length} наимен.)`;
+            document.getElementById('float-cart-total-text').innerText = `${totalPrice.toLocaleString()} ֏`;
+            document.getElementById('modal-cart-total').innerText = `${totalPrice.toLocaleString()} ֏`;
+
+            const floatingBar = document.getElementById('floating-cart-bar');
+            if (totalCount > 0) {
+                floatingBar.classList.remove('translate-y-32');
+                floatingBar.classList.add('translate-y-0');
+            } else {
+                floatingBar.classList.remove('translate-y-0');
+                floatingBar.classList.add('translate-y-32');
+            }
+
+            renderCartModalItems();
+            renderStorefront();
+        }
+
+        function renderCartModalItems() {
+            const container = document.getElementById('cart-items-container');
+            if (!container) return;
+
+            if (cart.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8 text-gray-400 text-xs font-semibold">
+                        В заказе пока нет выбранных цветов.
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = cart.map(c => {
+                const stockItem = items.find(i => i.id === c.id);
+                const maxStock = stockItem ? stockItem.stock : c.count;
+
+                return `
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100 text-xs">
+                        <div class="flex-grow pr-2">
+                            <span class="font-bold text-gray-900 block">${c.title}</span>
+                            <span class="text-[11px] text-rose-600 font-semibold">Размер: ${c.size}</span> • 
+                            <span class="text-[11px] text-gray-500 font-mono">${c.price.toLocaleString()} ֏/шт</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="flex items-center border border-gray-200 bg-white rounded-lg p-0.5">
+                                <button onclick="updateCartItemCount('${c.id}', ${c.count - 1})" class="w-6 h-6 rounded text-gray-600 hover:bg-rose-50 hover:text-rose-600 font-bold flex items-center justify-center">-</button>
+                                <input type="number" min="1" max="${maxStock}" value="${c.count}" onchange="updateCartItemCount('${c.id}', this.value)" class="w-10 text-center font-bold text-gray-800 font-mono focus:outline-none">
+                                <button onclick="updateCartItemCount('${c.id}', ${c.count + 1})" class="w-6 h-6 rounded text-gray-600 hover:bg-rose-50 hover:text-rose-600 font-bold flex items-center justify-center">+</button>
+                            </div>
+                            <span class="font-bold font-mono text-gray-900 w-20 text-right">
+                                ${(c.count * c.price).toLocaleString()} ֏
+                            </span>
+                            <button onclick="removeFromCart('${c.id}')" class="text-gray-400 hover:text-rose-600 p-1">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // --- EXPORT ORDER TO FILE (TXT / JSON / PRINT) ---
+        function generateOrderData() {
+            const customerName = document.getElementById('order-customer-name')?.value.trim() || 'Клиент';
+            const note = document.getElementById('order-note')?.value.trim() || 'Нет дополнительных заметок';
+            const dateStr = new Date().toLocaleString('ru-RU');
+            const totalPrice = cart.reduce((sum, c) => sum + (c.count * c.price), 0);
+
+            return {
+                store: "Rose Garden",
+                date: dateStr,
+                customer: customerName,
+                note: note,
+                items: cart,
+                totalPrice: totalPrice
+            };
+        }
+
+        function downloadOrderAsTXT() {
+            if (cart.length === 0) {
+                alert("Заказ пуст. Добавьте цветы на витрине.");
+                return;
+            }
+
+            const data = generateOrderData();
+            let content = `========================================\n`;
+            content += `        ROSE GARDEN — НАКЛАДНАЯ        \n`;
+            content += `========================================\n`;
+            content += `Дата: ${data.date}\n`;
+            content += `Заказчик: ${data.customer}\n`;
+            content += `Заметка: ${data.note}\n`;
+            content += `----------------------------------------\n`;
+            content += `ПОЗИЦИИ ЗАКАЗА:\n\n`;
+
+            data.items.forEach((item, idx) => {
+                const itemTotal = item.count * item.price;
+                content += `${idx + 1}. ${item.title}\n`;
+                content += `   Размер/Длина: ${item.size}\n`;
+                content += `   Количество: ${item.count} шт. x ${item.price} ֏ = ${itemTotal.toLocaleString()} ֏\n\n`;
+            });
+
+            content += `----------------------------------------\n`;
+            content += `ИТОГО К ОПЛАТЕ: ${data.totalPrice.toLocaleString()} ֏\n`;
+            content += `========================================\n`;
+
+            const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `RoseGarden_Order_${Date.now()}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast("Файл заказа (TXT) сохранен!");
+        }
+
+        function downloadOrderAsJSON() {
+            if (cart.length === 0) {
+                alert("Заказ пуст. Добавьте цветы на витрине.");
+                return;
+            }
+
+            const data = generateOrderData();
+            const jsonStr = JSON.stringify(data, null, 2);
+            const blob = new Blob([jsonStr], { type: "application/json;charset=utf-8" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `RoseGarden_Order_${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            showToast("Файл данных (JSON) сохранен!");
+        }
+
+        function printOrderInvoice() {
+            if (cart.length === 0) {
+                alert("Заказ пуст.");
+                return;
+            }
+
+            const data = generateOrderData();
+            const printWindow = window.open('', '_blank');
+            
+            let html = `
+                <html>
+                <head>
+                    <title>Накладная — Rose Garden</title>
+                    <style>
+                        body { font-family: sans-serif; padding: 20px; color: #222; }
+                        h1 { color: #be3c5e; margin-bottom: 5px; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+                        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 14px; }
+                        th { background: #fdf2f4; }
+                        .total { font-size: 18px; font-weight: bold; text-align: right; margin-top: 20px; }
+                    </style>
+                </head>
+                <body>
+                    <h1>Rose Garden — Цветы и склад</h1>
+                    <p><strong>Дата:</strong> ${data.date}</p>
+                    <p><strong>Заказчик:</strong> ${data.customer}</p>
+                    <p><strong>Заметка:</strong> ${data.note}</p>
+                    
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>№</th>
+                                <th>Наименование</th>
+                                <th>Размер</th>
+                                <th>Кол-во</th>
+                                <th>Цена (шт)</th>
+                                <th>Сумма</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.items.map((i, index) => `
+                                <tr>
+                                    <td>${index + 1}</td>
+                                    <td>${i.title}</td>
+                                    <td>${i.size}</td>
+                                    <td>${i.count} шт</td>
+                                    <td>${i.price} ֏</td>
+                                    <td>${(i.count * i.price).toLocaleString()} ֏</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                    
+                    <div class="total">Итого: ${data.totalPrice.toLocaleString()} ֏</div>
+                    
+                    <script>
+                        window.onload = function() { window.print(); }
+                    <\/script>
+                </body>
+                </html>
+            `;
+
+            printWindow.document.write(html);
+            printWindow.document.close();
+        }
+
+        function sendCartToWhatsApp() {
+            if (cart.length === 0) {
+                alert("Сначала добавьте хотя бы один товар в заказ!");
+                return;
+            }
+
+            const data = generateOrderData();
+            let text = `Здравствуйте! Сформирован заказ в Rose Garden:\n\n👤 *Заказчик:* ${data.customer}\n📝 *Заметка:* ${data.note}\n📅 *Дата:* ${data.date}\n\n*СПИСОК ЦВЕТОВ:*\n`;
+
+            data.items.forEach((item, idx) => {
+                text += `${idx + 1}. *${item.title}* (${item.size}) — ${item.count} шт. x ${item.price} ֏ = ${(item.count * item.price).toLocaleString()} ֏\n`;
+            });
+
+            text += `\n💰 *ИТОГО К ОПЛАТЕ:* ${data.totalPrice.toLocaleString()} ֏`;
+
+            const url = `https://wa.me/${whatsappPhone}?text=${encodeURIComponent(text)}`;
+            window.open(url, '_blank');
+        }
+
+        // Render Size Filter Bar
+        function renderSizePills() {
+            const container = document.getElementById('size-pills-container');
+            container.innerHTML = AVAILABLE_SIZES.map(size => {
+                const isActive = currentSizeFilter === size;
+                return `
+                    <button onclick="setSizeFilter('${size}')" class="${isActive ? 'active-pill' : 'bg-gray-100 hover:bg-rose-100 text-gray-700'} font-bold text-xs px-3 py-1.5 rounded-xl transition whitespace-nowrap">
+                        ${size}
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function setSizeFilter(size) {
+            currentSizeFilter = size;
+            renderSizePills();
+            renderStorefront();
+        }
+
+        // Render Category Filter Bar
+        function renderCategoryPills() {
+            const container = document.getElementById('category-pills-container');
+            const categories = ['Все', ...new Set(items.map(i => i.category || 'Другое'))];
+
+            container.innerHTML = categories.map(cat => {
+                const isActive = currentCategoryFilter === cat;
+                return `
+                    <button onclick="setCategoryFilter('${cat}')" class="${isActive ? 'bg-gray-900 text-white' : 'bg-rose-50 hover:bg-rose-100 text-rose-800'} font-semibold text-xs px-3.5 py-1.5 rounded-xl transition">
+                        ${cat}
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function setCategoryFilter(cat) {
+            currentCategoryFilter = cat;
+            renderCategoryPills();
+            renderStorefront();
+        }
+
+        function resetStoreFilters() {
+            document.getElementById('store-search').value = '';
+            currentSizeFilter = 'Все';
+            currentCategoryFilter = 'Все';
+            renderSizePills();
+            renderCategoryPills();
+            renderStorefront();
+        }
+
+        // STOREFRONT RENDERER
+        function renderStorefront() {
+            const grid = document.getElementById('store-grid');
+            const emptyState = document.getElementById('store-empty-state');
+            const searchVal = document.getElementById('store-search').value.toLowerCase().trim();
+
+            const filtered = items.filter(item => {
+                const matchesSearch = item.title.toLowerCase().includes(searchVal) || (item.category && item.category.toLowerCase().includes(searchVal));
+                const matchesSize = currentSizeFilter === 'Все' || item.size === currentSizeFilter;
+                const matchesCategory = currentCategoryFilter === 'Все' || item.category === currentCategoryFilter;
+                return matchesSearch && matchesSize && matchesCategory;
+            });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            } else {
+                emptyState.classList.add('hidden');
+            }
+
+            grid.innerHTML = filtered.map(item => {
+                const cartItem = cart.find(c => c.id === item.id);
+                const inCartCount = cartItem ? cartItem.count : 0;
+
+                // Stock Badge Styling on Image
+                let stockBadgeHTML = '';
+                if (item.stock === 0) {
+                    stockBadgeHTML = `
+                        <div class="stock-badge-overlay text-rose-300 font-bold text-xs px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg">
+                            <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+                            <span>Нет в наличии</span>
+                        </div>
+                    `;
+                } else if (item.stock <= 20) {
+                    stockBadgeHTML = `
+                        <div class="stock-badge-overlay text-amber-300 font-bold text-xs px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg">
+                            <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
+                            <span>Осталось: ${item.stock} шт</span>
+                        </div>
+                    `;
+                } else {
+                    stockBadgeHTML = `
+                        <div class="stock-badge-overlay text-emerald-300 font-bold text-xs px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg">
+                            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                            <span>В наличии: ${item.stock} шт</span>
+                        </div>
+                    `;
+                }
+
+                const fallbackImg = "https://images.unsplash.com/photo-1563241527-3004b7be0ffd?auto=format&fit=crop&w=600&q=80";
+
+                return `
+                    <div class="bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col group border border-rose-100/70">
+                        <!-- Photo with Overlay Badges -->
+                        <div class="relative w-full h-64 bg-gray-100 overflow-hidden">
+                            <img src="${item.image || fallbackImg}" 
+                                 onerror="this.src='${fallbackImg}'"
+                                 alt="${item.title}" 
+                                 class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+                            
+                            <!-- Category Tag -->
+                            <div class="absolute top-3 left-3 flex flex-col gap-1 items-start">
+                                <span class="bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-lg text-[11px] font-bold text-gray-800 shadow-sm">
+                                    ${item.category || 'Цветы'}
+                                </span>
+                            </div>
+
+                            <!-- Stem Size Overlay Badge -->
+                            <div class="absolute top-3 right-3">
+                                <span class="bg-rose-500 text-white font-extrabold text-xs px-2.5 py-1 rounded-lg shadow-md flex items-center gap-1">
+                                    <i class="fa-solid fa-ruler-vertical text-[10px]"></i> ${item.size || '60 см'}
+                                </span>
+                            </div>
+
+                            <!-- Stock Overlay Badge -->
+                            <div class="absolute bottom-3 right-3">
+                                ${stockBadgeHTML}
+                            </div>
+                        </div>
+
+                        <!-- Card Body -->
+                        <div class="p-5 flex flex-col flex-grow">
+                            <h3 class="font-bold text-gray-900 text-base leading-snug group-hover:text-rose-600 transition mb-1">
+                                ${item.title}
+                            </h3>
+
+                            <p class="text-xs text-gray-500 line-clamp-2 mb-4 leading-relaxed">
+                                ${item.description || 'Свежесрезанные цветы со склада с ежедневным обновлением наличия.'}
+                            </p>
+
+                            <!-- Price & Cart Actions -->
+                            <div class="mt-auto pt-3 border-t border-gray-100 flex items-center justify-between gap-2">
+                                <div>
+                                    <span class="text-[10px] uppercase font-bold text-gray-400 block">Цена за шт</span>
+                                    <span class="text-lg font-extrabold text-gray-900 font-mono">
+                                        ${item.price.toLocaleString()} ֏
+                                    </span>
+                                </div>
+
+                                <div class="flex items-center gap-1.5">
+                                    ${inCartCount > 0 ? `
+                                        <div class="flex items-center border border-rose-200 bg-rose-50 rounded-xl p-1">
+                                            <button onclick="addToCart('${item.id}', -1)" class="w-7 h-7 rounded-lg bg-white text-rose-700 font-bold text-xs flex items-center justify-center shadow-sm">-</button>
+                                            <span class="w-8 text-center font-extrabold text-xs text-rose-900 font-mono">${inCartCount}</span>
+                                            <button onclick="addToCart('${item.id}', 1)" class="w-7 h-7 rounded-lg bg-white text-rose-700 font-bold text-xs flex items-center justify-center shadow-sm">+</button>
+                                        </div>
+                                    ` : `
+                                        <button onclick="addToCart('${item.id}', 1)" 
+                                                ${item.stock === 0 ? 'disabled' : ''}
+                                                class="px-3.5 py-2.5 rounded-xl ${item.stock === 0 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-rose-500 hover:bg-rose-600 text-white shadow-md shadow-rose-200'} font-semibold text-xs transition flex items-center gap-1.5">
+                                            <i class="fa-solid fa-cart-plus"></i>
+                                            <span>${item.stock === 0 ? 'Занято' : '+ В заказ'}</span>
+                                        </button>
+                                    `}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function openWhatsAppContact() {
+            const url = `https://wa.me/${whatsappPhone}?text=${encodeURIComponent("Здравствуйте! Хочу проконсультироваться по наличию цветов на складе.")}`;
+            window.open(url, '_blank');
+        }
+
+        // ADMIN TABLE RENDERER
+        function renderAdminTable() {
+            const tbody = document.getElementById('admin-table-body');
+            const searchVal = document.getElementById('admin-search').value.toLowerCase().trim();
+
+            const filtered = items.filter(item => {
+                return item.title.toLowerCase().includes(searchVal) || (item.category && item.category.toLowerCase().includes(searchVal));
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center py-8 text-gray-400 text-sm">
+                            Товары не найдены
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(item => {
+                let statusBadge = '';
+                if (item.stock === 0) {
+                    statusBadge = `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-rose-100 text-rose-700"><span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Нет</span>`;
+                } else if (item.stock <= 20) {
+                    statusBadge = `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-100 text-amber-700"><span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Мало</span>`;
+                } else {
+                    statusBadge = `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-700"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Много</span>`;
+                }
+
+                const fallbackImg = "https://images.unsplash.com/photo-1563241527-3004b7be0ffd?auto=format&fit=crop&w=600&q=80";
+
+                return `
+                    <tr class="hover:bg-rose-50/40 transition">
+                        <!-- Title & Photo -->
+                        <td class="py-3.5 px-6">
+                            <div class="flex items-center gap-3">
+                                <img src="${item.image || fallbackImg}" 
+                                     onerror="this.src='${fallbackImg}'"
+                                     class="w-10 h-10 rounded-xl object-cover border border-gray-200">
+                                <div>
+                                    <span class="font-bold text-gray-900 block leading-tight">${item.title}</span>
+                                    <span class="text-[10px] text-gray-400 font-mono">ID: ${item.id}</span>
+                                </div>
+                            </div>
+                        </td>
+
+                        <!-- Category -->
+                        <td class="py-3.5 px-4 text-xs font-semibold text-gray-600">
+                            ${item.category || '—'}
+                        </td>
+
+                        <!-- Size Selector -->
+                        <td class="py-3.5 px-4 text-center">
+                            <select onchange="updateItemSize('${item.id}', this.value)" class="bg-gray-50 border border-gray-200 text-xs font-bold text-gray-800 rounded-lg py-1 px-2 focus:outline-none focus:ring-2 focus:ring-rose-500">
+                                <option value="40 см" ${item.size === '40 см' ? 'selected' : ''}>40 см</option>
+                                <option value="50 см" ${item.size === '50 см' ? 'selected' : ''}>50 см</option>
+                                <option value="60 см" ${item.size === '60 см' ? 'selected' : ''}>60 см</option>
+                                <option value="70 см" ${item.size === '70 см' ? 'selected' : ''}>70 см</option>
+                                <option value="80 см" ${item.size === '80 см' ? 'selected' : ''}>80 см</option>
+                                <option value="90 см" ${item.size === '90 см' ? 'selected' : ''}>90 см</option>
+                                <option value="100 см" ${item.size === '100 см' ? 'selected' : ''}>100 см</option>
+                            </select>
+                        </td>
+
+                        <!-- Price Direct Editor -->
+                        <td class="py-3.5 px-4 text-center">
+                            <div class="inline-flex items-center justify-center gap-1 bg-gray-50 border border-gray-200 rounded-xl p-1 focus-within:ring-2 focus-within:ring-rose-500">
+                                <input type="number" 
+                                       value="${item.price}" 
+                                       step="50" min="0"
+                                       onchange="updateItemPrice('${item.id}', this.value)"
+                                       class="w-20 bg-transparent text-center font-mono font-bold text-gray-800 text-xs focus:outline-none">
+                                <span class="text-xs text-gray-400 font-bold pr-1">֏</span>
+                            </div>
+                        </td>
+
+                        <!-- Stock Instant Buttons -->
+                        <td class="py-3.5 px-4 text-center">
+                            <div class="inline-flex items-center justify-center bg-gray-50 border border-gray-200 rounded-xl p-1 gap-1">
+                                <button onclick="adjustStock('${item.id}', -10)" class="w-7 h-7 rounded-lg bg-white border border-gray-200 text-gray-600 hover:bg-rose-100 hover:text-rose-600 font-bold text-xs flex items-center justify-center transition">
+                                    -10
+                                </button>
+                                <button onclick="adjustStock('${item.id}', -1)" class="w-7 h-7 rounded-lg bg-white border border-gray-200 text-gray-600 hover:bg-rose-100 hover:text-rose-600 font-bold text-xs flex items-center justify-center transition">
+                                    -1
+                                </button>
+                                
+                                <input type="number" 
+                                       value="${item.stock}" 
+                                       min="0"
+                                       onchange="updateItemStock('${item.id}', this.value)"
+                                       class="w-16 bg-white border border-gray-200 rounded-lg py-1 text-center font-mono font-extrabold text-xs text-gray-900 focus:outline-none focus:ring-1 focus:ring-rose-500">
+
+                                <button onclick="adjustStock('${item.id}', 1)" class="w-7 h-7 rounded-lg bg-white border border-gray-200 text-gray-600 hover:bg-emerald-100 hover:text-emerald-600 font-bold text-xs flex items-center justify-center transition">
+                                    +1
+                                </button>
+                                <button onclick="adjustStock('${item.id}', 10)" class="w-7 h-7 rounded-lg bg-white border border-gray-200 text-gray-600 hover:bg-emerald-100 hover:text-emerald-600 font-bold text-xs flex items-center justify-center transition">
+                                    +10
+                                </button>
+                            </div>
+                        </td>
+
+                        <!-- Status -->
+                        <td class="py-3.5 px-4 text-center">
+                            ${statusBadge}
+                        </td>
+
+                        <!-- Actions -->
+                        <td class="py-3.5 px-6 text-right">
+                            <div class="flex items-center justify-end gap-2">
+                                <button onclick="openFlowerModal('${item.id}')" title="Редактировать" class="w-8 h-8 rounded-lg bg-gray-100 hover:bg-rose-100 text-gray-600 hover:text-rose-600 flex items-center justify-center transition">
+                                    <i class="fa-solid fa-pen-to-square text-xs"></i>
+                                </button>
+                                <button onclick="deleteFlower('${item.id}')" title="Удалить" class="w-8 h-8 rounded-lg bg-gray-100 hover:bg-rose-100 text-gray-600 hover:text-rose-600 flex items-center justify-center transition">
+                                    <i class="fa-solid fa-trash-can text-xs"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Direct Item Quick Modifiers
+        function adjustStock(id, delta) {
+            const item = items.find(i => i.id === id);
+            if (!item) return;
+
+            item.stock = Math.max(0, item.stock + delta);
+            saveState();
+            renderAdminTable();
+            showToast(`Остаток "${item.title}": ${item.stock} шт`);
+        }
+
+        function updateItemStock(id, val) {
+            const item = items.find(i => i.id === id);
+            if (!item) return;
+
+            item.stock = Math.max(0, parseInt(val, 10) || 0);
+            saveState();
+            renderAdminTable();
+            showToast(`Остаток сохранен: ${item.stock} шт`);
+        }
+
+        function updateItemPrice(id, val) {
+            const item = items.find(i => i.id === id);
+            if (!item) return;
+
+            item.price = Math.max(0, parseFloat(val) || 0);
+            saveState();
+            showToast(`Новая цена "${item.title}": ${item.price} ֏`);
+        }
+
+        function updateItemSize(id, newSize) {
+            const item = items.find(i => i.id === id);
+            if (!item) return;
+
+            item.size = newSize;
+            saveState();
+            showToast(`Размер стебля обновлен: ${item.size}`);
+        }
+
+        // Modal Form Handlers
+        function openFlowerModal(id = null) {
+            const modal = document.getElementById('flower-modal');
+            const titleEl = document.getElementById('modal-title');
+            const form = document.getElementById('flower-form');
+
+            form.reset();
+
+            if (id) {
+                const item = items.find(i => i.id === id);
+                if (item) {
+                    titleEl.innerHTML = `<i class="fa-solid fa-pen-to-square text-rose-500"></i> Редактировать цветки`;
+                    document.getElementById('form-flower-id').value = item.id;
+                    document.getElementById('form-title').value = item.title;
+                    document.getElementById('form-category').value = item.category || 'Розы';
+                    document.getElementById('form-size').value = item.size || '60 см';
+                    document.getElementById('form-price').value = item.price;
+                    document.getElementById('form-stock').value = item.stock;
+                    document.getElementById('form-image').value = item.image || '';
+                    document.getElementById('form-desc').value = item.description || '';
+                }
+            } else {
+                titleEl.innerHTML = `<i class="fa-solid fa-plus-circle text-rose-500"></i> Добавить цветки на склад`;
+                document.getElementById('form-flower-id').value = '';
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeFlowerModal() {
+            document.getElementById('flower-modal').classList.add('hidden');
+        }
+
+        function selectModalSize(sizeStr) {
+            document.getElementById('form-size').value = sizeStr;
+        }
+
+        function handleFormSubmit(e) {
+            e.preventDefault();
+
+            const id = document.getElementById('form-flower-id').value;
+            const title = document.getElementById('form-title').value.trim();
+            const category = document.getElementById('form-category').value;
+            const size = document.getElementById('form-size').value;
+            const price = parseFloat(document.getElementById('form-price').value) || 0;
+            const stock = parseInt(document.getElementById('form-stock').value, 10) || 0;
+            const image = document.getElementById('form-image').value.trim();
+            const description = document.getElementById('form-desc').value.trim();
+
+            if (id) {
+                // Update
+                const index = items.findIndex(i => i.id === id);
+                if (index !== -1) {
+                    items[index] = { ...items[index], title, category, size, price, stock, image, description };
+                    showToast("Товар успешно обновлен");
+                }
+            } else {
+                // Insert
+                const newItem = {
+                    id: "fl-" + Date.now(),
+                    title,
+                    category,
+                    size,
+                    price,
+                    stock,
+                    image: image || "https://images.unsplash.com/photo-1563241527-3004b7be0ffd?auto=format&fit=crop&w=600&q=80",
+                    description
+                };
+                items.unshift(newItem);
+                showToast("Товар добавлен на склад");
+            }
+
+            saveState();
+            closeFlowerModal();
+            renderCategoryPills();
+            renderAdminTable();
+        }
+
+        function deleteFlower(id) {
+            const item = items.find(i => i.id === id);
+            if (!item) return;
+
+            if (confirm(`Удалить "${item.title}" со склада?`)) {
+                items = items.filter(i => i.id !== id);
+                cart = cart.filter(c => c.id !== id);
+                saveState();
+                renderCategoryPills();
+                renderAdminTable();
+                showToast("Товар удален");
+            }
+        }
+
+        // Stats Counter Updates
+        function updateStats() {
+            const totalItems = items.length;
+            const totalStock = items.reduce((acc, i) => acc + i.stock, 0);
+            const lowStockCount = items.filter(i => i.stock > 0 && i.stock <= 20).length;
+            const outOfStockCount = items.filter(i => i.stock === 0).length;
+
+            document.getElementById('stat-total-items').innerText = totalItems;
+            document.getElementById('stat-total-stock').innerText = totalStock.toLocaleString();
+            document.getElementById('stat-low-stock').innerText = lowStockCount;
+            document.getElementById('stat-out-of-stock').innerText = outOfStockCount;
+
+            const alertDot = document.getElementById('low-stock-alert-dot');
+            if (lowStockCount + outOfStockCount > 0) {
+                alertDot.classList.remove('hidden');
+            } else {
+                alertDot.classList.add('hidden');
+            }
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toast-message');
+            toastMsg.innerText = msg;
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
