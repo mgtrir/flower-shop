@@ -3,10 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rose Garden — Склад и Витрина Цветов</title>
+    <title>Rose Garden — CRM & Склад</title>
     <!-- Firebase SDK (v9 Compat) -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <!-- SheetJS for Excel export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         :root {
             --primary: #d45d79;
@@ -28,20 +31,21 @@
         .logo { font-size: 1.4rem; font-weight: 700; color: var(--primary); text-decoration: none; display: flex; align-items: center; gap: 6px; }
         
         .cloud-status { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; background: #e8f5e9; color: #2e7d32; padding: 4px 10px; border-radius: 20px; font-weight: 600; }
-        .cloud-status.offline { background: #ffebee; color: #c62828; }
-        .cloud-status .dot { width: 8px; height: 8px; border-radius: 50%; background-color: currentColor; }
-
-        .nav-actions { display: flex; gap: 10px; align-items: center; }
+        .nav-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
         
-        .hero { text-align: center; padding: 2rem 1rem 1rem; max-width: 800px; margin: 0 auto; }
-        .hero h1 { font-size: 2rem; color: #222; margin-bottom: 0.3rem; }
-        .hero p { color: var(--text-muted); font-size: 1rem; }
+        .hero { text-align: center; padding: 1.5rem 1rem 0.5rem; max-width: 800px; margin: 0 auto; }
+        .hero h1 { font-size: 1.8rem; color: #222; margin-bottom: 0.3rem; }
+        .hero p { color: var(--text-muted); font-size: 0.95rem; }
 
-        .toolbar { max-width: 1200px; margin: 1rem auto; padding: 0 1rem; display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: center; }
-        .search-box { flex: 1; min-width: 220px; position: relative; }
+        .toolbar { max-width: 1200px; margin: 1rem auto; padding: 0 1rem; display: flex; flex-direction: column; gap: 10px; }
+        .search-box { width: 100%; position: relative; }
         .search-box input { width: 100%; padding: 0.6rem 1rem; border: 1px solid #ccc; border-radius: 8px; font-size: 0.95rem; outline: none; }
-        .size-filter { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; }
-        .size-chip { background: #eef2f5; border: 1px solid #dcdfe3; padding: 5px 12px; border-radius: 16px; font-size: 0.85rem; cursor: pointer; white-space: nowrap; font-weight: 500; }
+        
+        .filter-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .filter-label { font-size: 0.82rem; font-weight: 700; color: #555; white-space: nowrap; min-width: 90px; }
+        
+        .size-filter { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; flex: 1; }
+        .size-chip { background: #eef2f5; border: 1px solid #dcdfe3; padding: 5px 12px; border-radius: 16px; font-size: 0.85rem; cursor: pointer; white-space: nowrap; font-weight: 500; transition: all 0.2s ease; }
         .size-chip.active { background: var(--primary); color: white; border-color: var(--primary); }
 
         .catalog { max-width: 1200px; margin: 1rem auto; padding: 0 1rem; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.5rem; }
@@ -56,19 +60,24 @@
         .stock-badge.out .dot { background-color: #f44336; }
 
         .size-tag { position: absolute; top: 10px; left: 10px; background: rgba(255,255,255,0.95); color: #333; font-weight: 700; padding: 3px 8px; border-radius: 6px; font-size: 0.8rem; box-shadow: 0 2px 5px rgba(0,0,0,0.15); }
+        .type-tag { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.75); color: #fff; font-weight: 600; padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; backdrop-filter: blur(4px); }
 
         .card-body { padding: 1rem; display: flex; flex-direction: column; flex-grow: 1; }
         .card-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 0.3rem; line-height: 1.3; }
         .card-desc { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.8rem; flex-grow: 1; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
         
-        .card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; pt: 0.5rem; }
+        .card-footer { display: flex; flex-direction: column; gap: 8px; margin-top: auto; pt: 0.5rem; }
+        .price-row { display: flex; justify-content: space-between; align-items: center; }
         .price { font-size: 1.2rem; font-weight: 700; color: #111; }
         
+        .cart-input-box { display: flex; align-items: center; gap: 4px; width: 100%; }
+        .cart-qty-input { flex: 1; padding: 6px; font-size: 0.95rem; font-weight: bold; text-align: center; border: 1px solid #ccc; border-radius: 6px; outline: none; }
+
         .btn { background-color: var(--primary); color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.9rem; transition: background-color 0.2s ease; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
         .btn:hover { background-color: var(--primary-hover); }
         .btn-outline { background-color: transparent; border: 1px solid var(--primary); color: var(--primary); }
         .btn-outline:hover { background-color: #fdf0f3; }
-        .btn-sm { padding: 0.3rem 0.6rem; font-size: 0.8rem; }
+        .btn-sm { padding: 0.38rem 0.6rem; font-size: 0.85rem; }
         .btn-dark { background-color: #333; color: white; }
         .btn-dark:hover { background-color: #111; }
         .btn-success { background-color: #2e7d32; color: white; }
@@ -76,13 +85,11 @@
         .btn-danger { background-color: #c62828; color: white; }
         .btn-danger:hover { background-color: #8e0000; }
 
-        .cart-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #ffffff; border-top: 2px solid var(--primary); padding: 0.8rem 1.5rem; box-shadow: 0 -4px 20px rgba(0,0,0,0.1); z-index: 200; display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; border-radius: 12px 12px 0 0; }
-        .cart-info { font-weight: 600; font-size: 1rem; }
-        .cart-actions { display: flex; gap: 8px; }
+        .cart-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #ffffff; border-top: 2px solid var(--primary); padding: 0.8rem 1.5rem; box-shadow: 0 -4px 20px rgba(0,0,0,0.1); z-index: 200; display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; border-radius: 12px 12px 0 0; flex-wrap: wrap; gap: 10px; }
 
         .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 1rem; }
-        .modal.active { display: flex; }
-        .modal-content { background: white; border-radius: 12px; width: 100%; max-width: 1050px; max-height: 90vh; overflow-y: auto; padding: 1.5rem; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .modal.active { display: flex !important; }
+        .modal-content { background: white; border-radius: 12px; width: 100%; max-width: 1100px; max-height: 90vh; overflow-y: auto; padding: 1.5rem; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
         .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 1rem; margin-bottom: 1rem; }
         .close-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #888; }
 
@@ -91,80 +98,328 @@
         th, td { border: 1px solid #e5e5e5; padding: 8px 10px; text-align: left; vertical-align: middle; }
         th { background-color: #f8f9fa; font-weight: 600; }
 
-        .stock-action-box { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-        .stock-num-input { width: 70px; padding: 4px 6px; border: 1px solid #ccc; border-radius: 4px; font-weight: bold; text-align: center; }
-
-        .qty-controls { display: flex; align-items: center; gap: 3px; margin-top: 4px; }
-        .qty-btn { width: 24px; height: 24px; border: 1px solid #ccc; background: #fff; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.75rem; }
-
         .form-group { margin-bottom: 1rem; }
         .form-group label { display: block; font-weight: 600; margin-bottom: 0.3rem; font-size: 0.85rem; }
         .form-control { width: 100%; padding: 0.5rem; border: 1px solid #ccc; border-radius: 6px; font-size: 0.9rem; }
-        .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+        .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; }
 
-        .preset-sizes { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px; }
-        .preset-btn { background: #e0e0e0; border: none; padding: 2px 8px; font-size: 0.75rem; border-radius: 4px; cursor: pointer; }
+        .role-badge { padding: 3px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: bold; }
+        .role-admin { background: #fef3c7; color: #92400e; }
+        .role-manager { background: #e0f2fe; color: #0369a1; }
+        .role-blocked { background: #fee2e2; color: #991b1b; }
+
+        /* Экран авторизации */
+        .auth-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #fcf8f8; z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 1rem; }
+        .auth-box { background: white; padding: 2rem; border-radius: 12px; border: 1px solid #ddd; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
 
         footer { text-align: center; padding: 2rem 1rem; color: var(--text-muted); font-size: 0.85rem; margin-top: 2rem; border-top: 1px solid var(--border); }
     </style>
 </head>
 <body>
 
+    <!-- ЭКРАН ВХОДА И РЕГИСТРАЦИИ -->
+    <div class="auth-overlay" id="authOverlay">
+        <div class="auth-box">
+            <h2 style="color:var(--primary); margin-bottom:0.5rem;">🌸 Rose Garden CRM</h2>
+            <p style="font-size:0.85rem; color:#666; margin-bottom:1.5rem;" id="authTitle">Войдите в систему сотрудника</p>
+
+            <form onsubmit="handleAuthSubmit(event)">
+                <div class="form-group" style="text-align:left;">
+                    <label>Эл. почта (Email)</label>
+                    <input type="email" id="authEmail" class="form-control" required placeholder="manager@rosegarden.am">
+                </div>
+                <div class="form-group" style="text-align:left;">
+                    <label>Пароль</label>
+                    <input type="password" id="authPassword" class="form-control" required placeholder="******">
+                </div>
+
+                <div class="form-group" id="authNameGroup" style="text-align:left; display:none;">
+                    <label>Ваше Имя / Фамилия</label>
+                    <input type="text" id="authName" class="form-control" placeholder="Армен Петросян">
+                </div>
+
+                <button type="submit" class="btn btn-success" style="width:100%; margin-top:0.5rem;" id="authSubmitBtn">Войти в CRM</button>
+            </form>
+
+            <div style="margin-top:1.2rem; font-size:0.85rem;">
+                <span id="authToggleText">Нет аккаунта?</span> 
+                <a href="#" onclick="toggleAuthMode()" style="color:var(--primary); font-weight:bold;" id="authToggleBtn">Зарегистрироваться</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- ГЛАВНЫЙ ИНТЕРФЕЙС -->
     <header>
         <div class="header-container">
-            <a href="#" class="logo">🌸 Rose Garden <span style="font-size:0.75rem; color:#888; font-weight:normal;">Склад и База</span></a>
-            <div class="cloud-status" id="cloudStatus">
-                <span class="dot"></span> <span id="cloudStatusText">Облако Firebase Подключено</span>
+            <a href="#" class="logo">🌸 Rose Garden <span style="font-size:0.75rem; color:#888; font-weight:normal;">CRM & Склад</span></a>
+            <div class="cloud-status">
+                <span style="font-size:0.8rem;" id="currentUserInfo">👤 Загрузка...</span>
             </div>
             <div class="nav-actions">
-                <button class="btn btn-outline btn-sm" onclick="openAdminModal()">📦 Управление Складом</button>
+                <button class="btn btn-outline btn-sm" onclick="openClientsModal()">👥 Клиенты</button>
+                <button class="btn btn-outline btn-sm" onclick="openOrdersModal()">📋 Заказы</button>
+                <button class="btn btn-outline btn-sm" onclick="openProcurementsModal()">📑 Закуп</button>
+                <button class="btn btn-outline btn-sm" onclick="openWasteModal()">🗑️ Списания</button>
+                <button class="btn btn-outline btn-sm admin-only" onclick="openFinanceModal()">💰 Касса & P&L</button>
+                <button class="btn btn-outline btn-sm admin-only" onclick="openRolesModal()">👑 Управление Доступами</button>
+                <button class="btn btn-sm" onclick="openAdminModal()">📦 Склад</button>
+                <button class="btn btn-dark btn-sm" onclick="handleLogout()">Выйти</button>
             </div>
         </div>
     </header>
 
     <section class="hero">
         <h1>Склад и Витрина Цветов</h1>
-        <p>Настоящие остатки склада в режиме реального времени. Выбирайте размеры (40–100 см) и формируйте заказ.</p>
+        <p>Настоящие остатки склада и CRM-система для работы с оптовыми покупателями.</p>
     </section>
 
     <div class="toolbar">
         <div class="search-box">
-            <input type="text" id="searchInput" placeholder="Поиск сорта, цветка..." oninput="renderCatalog()">
+            <input type="text" id="searchInput" placeholder="Поиск по названию или описанию..." oninput="renderCatalog()">
         </div>
-        <div class="size-filter" id="sizeFilters">
-            <span class="size-chip active" onclick="filterSize('ALL', this)">Все размеры</span>
-            <span class="size-chip" onclick="filterSize('40', this)">40 см</span>
-            <span class="size-chip" onclick="filterSize('50', this)">50 см</span>
-            <span class="size-chip" onclick="filterSize('60', this)">60 см</span>
-            <span class="size-chip" onclick="filterSize('70', this)">70 см</span>
-            <span class="size-chip" onclick="filterSize('80', this)">80 см</span>
-            <span class="size-chip" onclick="filterSize('90', this)">90 см</span>
-            <span class="size-chip" onclick="filterSize('100', this)">100 см</span>
+
+        <div class="filter-row">
+            <span class="filter-label">🏷️ Вид розы:</span>
+            <div class="size-filter" id="typeFilters">
+                <span class="size-chip active" onclick="filterType('ALL', this)">Все виды</span>
+                <span class="size-chip" onclick="filterType('Одноголовая', this)">🌹 Одноголовые</span>
+                <span class="size-chip" onclick="filterType('Кустовая', this)">🌿 Кустовые</span>
+                <span class="size-chip" onclick="filterType('Эксклюзивная', this)">🌟 Эксклюзивные</span>
+            </div>
+        </div>
+
+        <div class="filter-row">
+            <span class="filter-label">🌸 Сорт:</span>
+            <div class="size-filter" id="nameFilters"></div>
+        </div>
+
+        <div class="filter-row">
+            <span class="filter-label">📏 Размер:</span>
+            <div class="size-filter" id="sizeFilters">
+                <span class="size-chip active" onclick="filterSize('ALL', this)">Все размеры</span>
+                <span class="size-chip" onclick="filterSize('40', this)">40 см</span>
+                <span class="size-chip" onclick="filterSize('50', this)">50 см</span>
+                <span class="size-chip" onclick="filterSize('60', this)">60 см</span>
+                <span class="size-chip" onclick="filterSize('70', this)">70 см</span>
+                <span class="size-chip" onclick="filterSize('80', this)">80 см</span>
+            </div>
         </div>
     </div>
 
-    <main class="catalog" id="catalogGrid">
-        <!-- Карточки загружаются из базы -->
-    </main>
+    <main class="catalog" id="catalogGrid"></main>
 
-    <!-- Корзина -->
-    <div class="cart-bar" id="cartBar" style="display: none;">
-        <div class="cart-info">
-            Заказ: <span id="cartCount">0</span> позиций | <span id="cartTotal">0</span> ֏
-        </div>
-        <div class="cart-actions">
-            <button class="btn btn-dark btn-sm" onclick="downloadCartTXT()">📄 Скачать .txt</button>
-            <button class="btn btn-dark btn-sm" onclick="downloadCartJSON()">💾 .json</button>
-            <button class="btn btn-sm" onclick="sendCartWhatsApp()">💬 WhatsApp</button>
+    <!-- Модальное окно Управления Доступами (Управление Ролями) -->
+    <div class="modal" id="rolesModal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2>👑 Управление Доступами и Ролями Сотрудников</h2>
+                <button class="close-btn" onclick="closeRolesModal()">&times;</button>
+            </div>
+
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Пользователь / Имя</th>
+                            <th>Email</th>
+                            <th>Текущая Роль</th>
+                            <th>Изменить Доступ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rolesTableBody">
+                        <!-- Заполняется динамически -->
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
-    <!-- Модальное окно Админки / Склада -->
+    <!-- Дополнительные Модальные Окна -->
     <div class="modal" id="adminModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>📦 Управление Складом и Базой Данных</h2>
+                <h2>📦 Управление Складом</h2>
                 <button class="close-btn" onclick="closeAdminModal()">&times;</button>
             </div>
+            <div id="sectionItems">
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr><th>Фото</th><th>Вид</th><th>Название</th><th>Размер</th><th>Цена</th><th>Остаток</th><th>Быстрый приход</th></tr>
+                        </thead>
+                        <tbody id="adminTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Конфигурация Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyC5pdi-fTgYpXN3nL7Ei4tLbDcTvO1WV5E",
+            authDomain: "rosegarden-db.firebaseapp.com",
+            databaseURL: "https://rosegarden-db-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "rosegarden-db",
+            storageBucket: "rosegarden-db.firebasestorage.app",
+            messagingSenderId: "455411771135",
+            appId: "1:455411771135:web:62cdd2d0197835a0f3ceca",
+            measurementId: "G-ZP6YZX6CZQ"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.database();
+
+        let currentUser = null;
+        let userRole = 'Blocked'; // 'Admin', 'Manager', 'Blocked'
+        let isRegisterMode = false;
+
+        let flowers = [];
+        let usersList = [];
+
+        // --- АВТОРИЗАЦИЯ И ПРАВА ДОСТУПА ---
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                currentUser = user;
+                // Загружаем роль из Firebase DB
+                db.ref('users/' + user.uid).on('value', (snapshot) => {
+                    const userData = snapshot.val();
+                    if (userData) {
+                        userRole = userData.role || 'Blocked';
+                        document.getElementById('currentUserInfo').innerHTML = `👤 ${userData.name || user.email} (${getRoleBadge(userRole)})`;
+                        applyRolePermissions();
+                    } else {
+                        // Регистрация первого администратора
+                        userRole = user.email.includes('admin') ? 'Admin' : 'Blocked';
+                        db.ref('users/' + user.uid).set({ email: user.email, name: user.email.split('@')[0], role: userRole });
+                    }
+                    document.getElementById('authOverlay').style.display = 'none';
+                });
+            } else {
+                currentUser = null;
+                document.getElementById('authOverlay').style.display = 'flex';
+            }
+        });
+
+        function applyRolePermissions() {
+            const adminElements = document.querySelectorAll('.admin-only');
+            if (userRole === 'Admin') {
+                adminElements.forEach(el => el.style.display = 'inline-flex');
+            } else {
+                adminElements.forEach(el => el.style.display = 'none');
+            }
+        }
+
+        function getRoleBadge(role) {
+            if (role === 'Admin') return '<span class="role-badge role-admin">Админ</span>';
+            if (role === 'Manager') return '<span class="role-badge role-manager">Менеджер</span>';
+            return '<span class="role-badge role-blocked">Заблокирован</span>';
+        }
+
+        function toggleAuthMode() {
+            isRegisterMode = !isRegisterMode;
+            document.getElementById('authTitle').innerText = isRegisterMode ? 'Регистрация нового сотрудника' : 'Войдите в систему сотрудника';
+            document.getElementById('authSubmitBtn').innerText = isRegisterMode ? 'Зарегистрироваться' : 'Войти в CRM';
+            document.getElementById('authToggleText').innerText = isRegisterMode ? 'Уже есть аккаунт?' : 'Нет аккаунта?';
+            document.getElementById('authToggleBtn').innerText = isRegisterMode ? 'Войти' : 'Зарегистрироваться';
+            document.getElementById('authNameGroup').style.display = isRegisterMode ? 'block' : 'none';
+        }
+
+        function handleAuthSubmit(e) {
+            e.preventDefault();
+            const email = document.getElementById('authEmail').value;
+            const password = document.getElementById('authPassword').value;
+            const name = document.getElementById('authName').value;
+
+            if (isRegisterMode) {
+                auth.createUserWithEmailAndPassword(email, password).then((cred) => {
+                    db.ref('users/' + cred.user.uid).set({
+                        email: email,
+                        name: name || email.split('@')[0],
+                        role: 'Blocked' // Ждет одобрения администратора
+                    });
+                    alert('Регистрация успешна! Попросите Администратора предоставить вам доступ.');
+                }).catch(err => alert(err.message));
+            } else {
+                auth.signInWithEmailAndPassword(email, password).catch(err => alert('Ошибка входа: ' + err.message));
+            }
+        }
+
+        function handleLogout() {
+            auth.signOut();
+        }
+
+        // --- УПРАВЛЕНИЕ РОЛЯМИ ДЛЯ АДМИНИСТРАТОРА ---
+        function openRolesModal() {
+            if (userRole !== 'Admin') return alert('Доступно только Администраторам!');
+            document.getElementById('rolesModal').classList.add('active');
             
-            <div style="margin-bottom: 1rem; display:flex; gap:
+            db.ref('users').on('value', (snapshot) => {
+                const data = snapshot.val();
+                usersList = data ? Object.entries(data).map(([uid, u]) => ({ uid, ...u })) : [];
+                renderRolesTable();
+            });
+        }
+
+        function closeRolesModal() {
+            document.getElementById('rolesModal').classList.remove('active');
+        }
+
+        function renderRolesTable() {
+            const tbody = document.getElementById('rolesTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            usersList.forEach(u => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${u.name || 'Сотрудник'}</strong></td>
+                    <td>${u.email}</td>
+                    <td>${getRoleBadge(u.role)}</td>
+                    <td>
+                        <select onchange="changeUserRole('${u.uid}', this.value)" class="form-control" style="padding:2px 5px; font-size:0.8rem;">
+                            <option value="Blocked" ${u.role === 'Blocked' ? 'selected' : ''}>Заблокирован / Ожидает</option>
+                            <option value="Manager" ${u.role === 'Manager' ? 'selected' : ''}>Менеджер / Продавец</option>
+                            <option value="Admin" ${u.role === 'Admin' ? 'selected' : ''}>👑 Администратор</option>
+                        </select>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function changeUserRole(uid, newRole) {
+            db.ref('users/' + uid).update({ role: newRole });
+            alert('Права доступа пользователя обновлены!');
+        }
+
+        // --- БАЗОВЫЙ СКЛАД ---
+        db.ref('inventory').on('value', (snapshot) => {
+            const data = snapshot.val();
+            flowers = data ? (Array.isArray(data) ? data.filter(Boolean) : Object.values(data)) : [];
+            renderCatalog();
+        });
+
+        function renderCatalog() {
+            const grid = document.getElementById('catalogGrid');
+            grid.innerHTML = '';
+            flowers.forEach(f => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <div class="image-wrapper"><img src="${f.image}"><div class="size-tag">${f.size}</div></div>
+                    <div class="card-body">
+                        <h3>${f.name}</h3>
+                        <p>${f.price} ֏ | Остаток: ${f.stock} шт</p>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function openAdminModal() { document.getElementById('adminModal').classList.add('active'); }
+        function closeAdminModal() { document.getElementById('adminModal').classList.remove('active'); }
+    </script>
+</body>
+</html>
