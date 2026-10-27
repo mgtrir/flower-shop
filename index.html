@@ -1,10 +1,6 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <!-- Мобильная консоль Eruda -->
-<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-<script>eruda.init();</script>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rose Garden — CRM & Склад</title>
@@ -1323,7 +1319,7 @@
             const val = parseInt(input.value, 10);
             if (isNaN(val) || val <= 0) return alert('Введите число пачек!');
             flowers[idx].packs = action === 'add' ? (flowers[idx].packs || 0) + val : (flowers[idx].packs || 0) - val;
-            db.ref('inventory`.set(flowers);
+            db.ref('inventory').set(flowers);
         };
 
         window.handleFlowerFormSubmit = function(e) {
@@ -1361,7 +1357,7 @@
         };
 
         window.editFlower = function(id) {
-            The flower = flowers.find(f => f.id === id);
+            const flower = flowers.find(f => f.id === id);
             if (!flower) return;
             showWarehouseSection('add');
             document.getElementById('flowerFormTitle').innerText = 'Изменить Сорт Роз';
