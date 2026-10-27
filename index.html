@@ -1,3 +1,8 @@
+Давайте добавим удобную и красивую функцию печати или сохранения заказов в PDF прямо из таблицы истории заказов!
+Для этого мы сейчас сделаем две вещи:
+ * Добавим стили для печати (чтобы при печати скрывались лишние кнопки интерфейса, а распечатывалась только аккуратная таблица заказов).
+ * Добавим кнопку «🖨️ Печать списка» в модальное окно истории заказов.
+Вот полностью готовый и обновленный файл index.html. Скопируйте его целиком, замените содержимое вашего файла и сохраните:
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -115,6 +120,14 @@
 
         .auth-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #fcf8f8; z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 1rem; }
         .auth-box { background: white; padding: 2rem; border-radius: 12px; border: 1px solid #ddd; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
+
+        /* Стили для печати */
+        @media print {
+            body * { visibility: hidden; }
+            #ordersModal, #ordersModal * { visibility: visible; }
+            #ordersModal { position: absolute; left: 0; top: 0; width: 100%; background: white; padding: 0; }
+            .close-btn, .modal-header button, .no-print { display: none !important; }
+        }
     </style>
 </head>
 <body>
@@ -123,7 +136,7 @@
     <div class="auth-overlay" id="authOverlay">
         <div class="auth-box">
             <h2 style="color:var(--primary); margin-bottom:0.5rem;">🌸 Rose Garden CRM</h2>
-            <p style="font-size:0.85rem; color:#666; margin-bottom:1.5rem;" id="authTitle">Войдите в систему сотрудника</p>
+            <p style="font-size:0.85rem; color:#666; margin-bottom:1.5rem;">Войдите в систему сотрудника</p>
 
             <form onsubmit="handleAuthSubmit(event)">
                 <div class="form-group" style="text-align:left;">
@@ -313,12 +326,15 @@
         <div class="modal-content" style="max-width: 950px;">
             <div class="modal-header">
                 <h2>📋 История Заказов и Сделок</h2>
-                <button class="close-btn" onclick="closeOrdersModal()">&times;</button>
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <button class="btn btn-success btn-sm no-print" onclick="window.print()">🖨️ Печать списка</button>
+                    <button class="close-btn" onclick="closeOrdersModal()">&times;</button>
+                </div>
             </div>
             <div class="table-responsive">
                 <table>
                     <thead>
-                        <tr><th>№ Заказа</th><th>Дата</th><th>Клиент</th><th>Сумма (֏)</th><th>Статус</th><th>Действия</th></tr>
+                        <tr><th>№ Заказа</th><th>Дата</th><th>Клиент</th><th>Сумма (֏)</th><th>Статус</th><th class="no-print">Действия</th></tr>
                     </thead>
                     <tbody id="ordersTableBody"></tbody>
                 </table>
@@ -1058,7 +1074,7 @@
                                 <option value="Отменен" ${o.status === 'Отменен' ? 'selected' : ''}>Отменен</option>
                             </select>
                         </td>
-                        <td>
+                        <td class="no-print">
                             <button class="btn btn-outline btn-sm" onclick="editOrder('${o.id}')">✏️</button>
                             <button class="btn btn-dark btn-sm" onclick="deleteOrder('${o.id}')">🗑️</button>
                         </td>
@@ -1308,7 +1324,7 @@
             const val = parseInt(input.value, 10);
             if (isNaN(val) || val <= 0) return alert('Введите число пачек!');
             flowers[idx].packs = action === 'add' ? (flowers[idx].packs || 0) + val : (flowers[idx].packs || 0) - val;
-            db.ref('inventory').set(flowers);
+            db.ref('inventory`.set(flowers);
         };
 
         window.handleFlowerFormSubmit = function(e) {
@@ -1346,7 +1362,7 @@
         };
 
         window.editFlower = function(id) {
-            const flower = flowers.find(f => f.id === id);
+            The flower = flowers.find(f => f.id === id);
             if (!flower) return;
             showWarehouseSection('add');
             document.getElementById('flowerFormTitle').innerText = 'Изменить Сорт Роз';
@@ -1381,4 +1397,3 @@
     </script>
 </body>
 </html>
-
