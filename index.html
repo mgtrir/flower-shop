@@ -124,8 +124,41 @@
         @media print {
             body * { visibility: hidden; }
             #printInvoiceModal, #printInvoiceModal *, #printPackingModal, #printPackingModal * { visibility: visible; }
-            #printInvoiceModal, #printPackingModal { position: absolute; left: 0; top: 0; width: 100%; background: white; padding: 0; box-shadow: none; }
+            #printInvoiceModal, #printPackingModal { 
+                position: absolute !important; 
+                left: 0 !important; 
+                top: 0 !important; 
+                width: 100% !important; 
+                height: auto !important;
+                background: white !important; 
+                padding: 0 !important; 
+                margin: 0 !important;
+                box-shadow: none !important; 
+                max-height: none !important;
+                overflow: visible !important;
+            }
+            .modal-content {
+                max-height: none !important;
+                height: auto !important;
+                overflow: visible !important;
+                box-shadow: none !important;
+                padding: 5mm !important;
+                width: 100% !important;
+                border: none !important;
+            }
+            table { font-size: 0.65rem !important; page-break-inside: auto; }
+            tr { page-break-inside: avoid; page-break-after: auto; }
+            thead { display: table-header-group; }
+            th, td { padding: 2px 4px !important; }
             .no-print { display: none !important; }
+            @page { 
+                size: A4 portrait; 
+                margin: 10mm; 
+            }
+            body, html { 
+                height: auto !important; 
+                overflow: visible !important; 
+            }
         }
     </style>
 </head>
@@ -300,7 +333,7 @@
         </div>
     </div>
 
-    <!-- 🖨️ МОДАЛЬНОЕ ОКНО ПЕЧАТИ НАКЛАДНОЙ / ИНВОЙСА -->
+    <!-- 🖨️ МОДАЛЬНОЕ ОКНО ПЕЧАТИ ИНВОЙСА -->
     <div class="modal" id="printInvoiceModal">
         <div class="modal-content" style="max-width: 750px; padding: 2rem;">
             <div class="modal-header no-print">
@@ -1304,11 +1337,11 @@
                 const itemSum = (item.packs || 0) * (item.price || 0);
                 tbody.innerHTML += `
                     <tr>
-                        <td style="border:1px solid #cbd5e1; padding:6px; text-align:center;">${idx + 1}</td>
-                        <td style="border:1px solid #cbd5e1; padding:6px;"><strong>${item.name}</strong></td>
-                        <td style="border:1px solid #cbd5e1; padding:6px; text-align:center;">${item.packs} пач.</td>
-                        <td style="border:1px solid #cbd5e1; padding:6px; text-align:right;">${Number(item.price || 0).toLocaleString()} ֏</td>
-                        <td style="border:1px solid #cbd5e1; padding:6px; text-align:right; font-weight:bold;">${itemSum.toLocaleString()} ֏</td>
+                        <td style="border:1px solid #cbd5e1; padding:4px; text-align:center;">${idx + 1}</td>
+                        <td style="border:1px solid #cbd5e1; padding:4px;"><strong>${item.name}</strong></td>
+                        <td style="border:1px solid #cbd5e1; padding:4px; text-align:center;">${item.packs} пач.</td>
+                        <td style="border:1px solid #cbd5e1; padding:4px; text-align:right;">${Number(item.price || 0).toLocaleString()} ֏</td>
+                        <td style="border:1px solid #cbd5e1; padding:4px; text-align:right; font-weight:bold;">${itemSum.toLocaleString()} ֏</td>
                     </tr>
                 `;
             });
@@ -1337,10 +1370,10 @@
                 totalPacks += Number(item.packs || 0);
                 tbody.innerHTML += `
                     <tr>
-                        <td style="border:1px solid #cbd5e1; padding:6px; text-align:center;">Коробка №${idx + 1}</td>
-                        <td style="border:1px solid #cbd5e1; padding:6px;"><strong>${item.name}</strong></td>
-                        <td style="border:1px solid #cbd5e1; padding:6px; text-align:center;">${item.packs} пач.</td>
-                        <td style="border:1px solid #cbd5e1; padding:6px; text-align:center;">Упаковано / Проверено</td>
+                        <td style="border:1px solid #cbd5e1; padding:4px; text-align:center;">Коробка №${idx + 1}</td>
+                        <td style="border:1px solid #cbd5e1; padding:4px;"><strong>${item.name}</strong></td>
+                        <td style="border:1px solid #cbd5e1; padding:4px; text-align:center;">${item.packs} пач.</td>
+                        <td style="border:1px solid #cbd5e1; padding:4px; text-align:center;">Упаковано / Проверено</td>
                     </tr>
                 `;
             });
