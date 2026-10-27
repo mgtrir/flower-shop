@@ -116,12 +116,12 @@
         .auth-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #fcf8f8; z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 1rem; }
         .auth-box { background: white; padding: 2rem; border-radius: 12px; border: 1px solid #ddd; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
 
-        /* Стили для печати */
+        /* Стили для печати накладной */
         @media print {
             body * { visibility: hidden; }
-            #ordersModal, #ordersModal * { visibility: visible; }
-            #ordersModal { position: absolute; left: 0; top: 0; width: 100%; background: white; padding: 0; }
-            .close-btn, .modal-header button, .no-print { display: none !important; }
+            #printInvoiceModal, #printInvoiceModal * { visibility: visible; }
+            #printInvoiceModal { position: absolute; left: 0; top: 0; width: 100%; background: white; padding: 0; box-shadow: none; }
+            .no-print { display: none !important; }
         }
     </style>
 </head>
@@ -277,6 +277,68 @@
         </div>
     </div>
 
+    <!-- 🖨️ МОДАЛЬНОЕ ОКНО ПЕЧАТИ НАКЛАДНОЙ ЗАКАЗА -->
+    <div class="modal" id="printInvoiceModal">
+        <div class="modal-content" style="max-width: 700px; padding: 2rem;">
+            <div class="modal-header no-print">
+                <h2>🖨️ Накладная заказа</h2>
+                <button class="close-btn" onclick="closePrintModal()">&times;</button>
+            </div>
+            
+            <div id="invoiceContent" style="color:#000;">
+                <div style="text-align:center; margin-bottom:1.5rem;">
+                    <h2 style="color:var(--primary); font-size:1.5rem;">🌸 ROSE GARDEN ARMENIA</h2>
+                    <p style="font-size:0.85rem; color:#555;">Оптовая продажа роз | Тепличное хозяйство</p>
+                    <hr style="margin:10px 0; border:0; border-top:2px solid var(--primary);">
+                </div>
+
+                <div style="display:flex; justify-content:space-between; margin-bottom:1.2rem; font-size:0.95rem;">
+                    <div>
+                        <p><strong>Заказ №:</strong> <span id="invOrderId">---</span></p>
+                        <p><strong>Дата:</strong> <span id="invOrderDate">---</span></p>
+                    </div>
+                    <div style="text-align:right;">
+                        <p><strong>Клиент:</strong> <span id="invClientName">---</span></p>
+                        <p><strong>Статус:</strong> <span id="invOrderStatus">---</span></p>
+                    </div>
+                </div>
+
+                <table style="width:100%; border-collapse:collapse; margin-bottom:1.5rem;">
+                    <thead>
+                        <tr style="background:#f1f5f9;">
+                            <th style="border:1px solid #cbd5e1; padding:8px;">№</th>
+                            <th style="border:1px solid #cbd5e1; padding:8px;">Наименование сорта</th>
+                            <th style="border:1px solid #cbd5e1; padding:8px; text-align:center;">Количество (пач)</th>
+                            <th style="border:1px solid #cbd5e1; padding:8px; text-align:right;">Цена (֏)</th>
+                            <th style="border:1px solid #cbd5e1; padding:8px; text-align:right;">Сумма (֏)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="invItemsTableBody"></tbody>
+                </table>
+
+                <div style="display:flex; justify-content:flex-end; margin-bottom:2rem;">
+                    <div style="font-size:1.2rem; font-weight:bold;">
+                        Итого к оплате: <span id="invTotalSum" style="color:var(--primary);">0</span> ֏
+                    </div>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; margin-top:3rem; font-size:0.9rem;">
+                    <div>
+                        <p>Отпустил(а): ___________________</p>
+                    </div>
+                    <div>
+                        <p>Получил(а): ___________________</p>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display:flex; gap:10px; margin-top:2rem;" class="no-print">
+                <button class="btn btn-success" style="flex:1;" onclick="window.print()">🖨️ Печать накладной</button>
+                <button class="btn btn-dark" onclick="closePrintModal()">Закрыть</button>
+            </div>
+        </div>
+    </div>
+
     <!-- 👥 МОДАЛЬНОЕ ОКНО КЛИЕНТОВ -->
     <div class="modal" id="clientsModal">
         <div class="modal-content" style="max-width: 900px;">
@@ -321,15 +383,12 @@
         <div class="modal-content" style="max-width: 950px;">
             <div class="modal-header">
                 <h2>📋 История Заказов и Сделок</h2>
-                <div style="display:flex; gap:8px; align-items:center;">
-                    <button class="btn btn-success btn-sm no-print" onclick="window.print()">🖨️ Печать списка</button>
-                    <button class="close-btn" onclick="closeOrdersModal()">&times;</button>
-                </div>
+                <button class="close-btn" onclick="closeOrdersModal()">&times;</button>
             </div>
             <div class="table-responsive">
                 <table>
                     <thead>
-                        <tr><th>№ Заказа</th><th>Дата</th><th>Клиент</th><th>Сумма (֏)</th><th>Статус</th><th class="no-print">Действия</th></tr>
+                        <tr><th>№ Заказа</th><th>Дата</th><th>Клиент</th><th>Сумма (֏)</th><th>Статус</th><th>Действия</th></tr>
                     </thead>
                     <tbody id="ordersTableBody"></tbody>
                 </table>
@@ -1051,6 +1110,38 @@
             document.getElementById('checkoutTotalSum').innerText = Number(order.totalPrice || 0).toLocaleString();
         };
 
+        window.printOrderInvoice = function(id) {
+            const order = orders.find(o => o.id === id);
+            if (!order) return;
+
+            document.getElementById('invOrderId').innerText = order.id;
+            document.getElementById('invOrderDate').innerText = order.date || 'Сегодня';
+            document.getElementById('invClientName').innerText = order.clientName || 'Покупатель';
+            document.getElementById('invOrderStatus').innerText = order.status || 'Новый';
+            document.getElementById('invTotalSum').innerText = Number(order.totalPrice || 0).toLocaleString();
+
+            const tbody = document.getElementById('invItemsTableBody');
+            tbody.innerHTML = '';
+            (order.items || []).forEach((item, idx) => {
+                const itemSum = (item.packs || 0) * (item.price || 0);
+                tbody.innerHTML += `
+                    <tr>
+                        <td style="border:1px solid #cbd5e1; padding:6px; text-align:center;">${idx + 1}</td>
+                        <td style="border:1px solid #cbd5e1; padding:6px;"><strong>${item.name}</strong></td>
+                        <td style="border:1px solid #cbd5e1; padding:6px; text-align:center;">${item.packs} пач</td>
+                        <td style="border:1px solid #cbd5e1; padding:6px; text-align:right;">${Number(item.price || 0).toLocaleString()} ֏</td>
+                        <td style="border:1px solid #cbd5e1; padding:6px; text-align:right; font-weight:bold;">${itemSum.toLocaleString()} ֏</td>
+                    </tr>
+                `;
+            });
+
+            document.getElementById('printInvoiceModal').classList.add('active');
+        };
+
+        window.closePrintModal = function() {
+            document.getElementById('printInvoiceModal').classList.remove('active');
+        };
+
         function renderOrdersTable() {
             const tbody = document.getElementById('ordersTableBody');
             tbody.innerHTML = '';
@@ -1069,9 +1160,10 @@
                                 <option value="Отменен" ${o.status === 'Отменен' ? 'selected' : ''}>Отменен</option>
                             </select>
                         </td>
-                        <td class="no-print">
-                            <button class="btn btn-outline btn-sm" onclick="editOrder('${o.id}')">✏️</button>
-                            <button class="btn btn-dark btn-sm" onclick="deleteOrder('${o.id}')">🗑️</button>
+                        <td>
+                            <button class="btn btn-success btn-sm" onclick="printOrderInvoice('${o.id}')" title="Печать накладной">🖨️</button>
+                            <button class="btn btn-outline btn-sm" onclick="editOrder('${o.id}')" title="Редактировать">✏️</button>
+                            <button class="btn btn-dark btn-sm" onclick="deleteOrder('${o.id}')" title="Удалить">🗑️</button>
                         </td>
                     </tr>
                 `;
