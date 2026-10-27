@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rose Garden — CRM & Sklad</title>
+    <title>Rose Garden — CRM & Склад</title>
     
-    <!-- Mobilnaya konsol Eruda -->
+    <!-- Мобильная консоль Eruda -->
     <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
     <script>eruda.init();</script>
 
@@ -131,198 +131,198 @@
 </head>
 <body>
 
-    <!-- EKRAN VKHODA I REGISTRATSII -->
+    <!-- ЭКРАН ВХОДА И РЕГИСТРАЦИИ -->
     <div class="auth-overlay" id="authOverlay">
         <div class="auth-box">
             <h2 style="color:var(--primary); margin-bottom:0.5rem;">🌸 Rose Garden CRM</h2>
-            <p style="font-size:0.85rem; color:#666; margin-bottom:1.5rem;">Voydite v sistemu sotrudnika</p>
+            <p style="font-size:0.85rem; color:#666; margin-bottom:1.5rem;">Войдите в систему сотрудника</p>
 
             <form onsubmit="handleAuthSubmit(event)">
                 <div class="form-group" style="text-align:left;">
-                    <label>Ehl. pochta (Email)</label>
+                    <label>Эл. почта (Email)</label>
                     <input type="email" id="authEmail" class="form-control" required placeholder="mgtir11@gmail.com">
                 </div>
                 <div class="form-group" style="text-align:left;">
-                    <label>Parol'</label>
+                    <label>Пароль</label>
                     <input type="password" id="authPassword" class="form-control" required placeholder="******">
                 </div>
 
                 <div class="form-group" id="authNameGroup" style="text-align:left; display:none;">
-                    <label>Vashe Imya / Familiya</label>
+                    <label>Ваше Имя / Фамилия</label>
                     <input type="text" id="authName" class="form-control" placeholder="Matevos Khachaturyan">
                 </div>
 
-                <button type="submit" class="btn btn-success" style="width:100%; margin-top:0.5rem;" id="authSubmitBtn">Voyti v CRM</button>
+                <button type="submit" class="btn btn-success" style="width:100%; margin-top:0.5rem;" id="authSubmitBtn">Войти в CRM</button>
             </form>
 
             <div style="margin-top:1.2rem; font-size:0.85rem;">
-                <span id="authToggleText">Net akkaunta?</span> 
-                <a href="#" onclick="toggleAuthMode()" style="color:var(--primary); font-weight:bold;" id="authToggleBtn">Zaregistrirovatsya</a>
+                <span id="authToggleText">Нет аккаунта?</span> 
+                <a href="#" onclick="toggleAuthMode()" style="color:var(--primary); font-weight:bold;" id="authToggleBtn">Зарегистрироваться</a>
             </div>
         </div>
     </div>
 
-    <!-- GLAVNYY INTERFEYS -->
+    <!-- ГЛАВНЫЙ ИНТЕРФЕЙС -->
     <header>
         <div class="header-container">
-            <a href="#" class="logo">🌸 Rose Garden <span style="font-size:0.75rem; color:#888; font-weight:normal;">CRM & Sklad</span></a>
+            <a href="#" class="logo">🌸 Rose Garden <span style="font-size:0.75rem; color:#888; font-weight:normal;">CRM & Склад</span></a>
             <div class="cloud-status">
-                <span style="font-size:0.8rem;" id="currentUserInfo">👤 Zagruzka...</span>
+                <span style="font-size:0.8rem;" id="currentUserInfo">👤 Загрузка...</span>
             </div>
             <div class="nav-actions">
-                <button class="btn btn-outline btn-sm" onclick="openClientsModal()">👥 Klienty</button>
-                <button class="btn btn-outline btn-sm" onclick="openOrdersModal()">📋 Zakazy</button>
-                <button class="btn btn-outline btn-sm" onclick="openProcurementsModal()">📑 Zakup</button>
-                <button class="btn btn-outline btn-sm admin-only" onclick="openFinanceModal()">💰 Kassa & P&L</button>
-                <button class="btn btn-outline btn-sm admin-only" onclick="openAnalyticsModal()">📊 Analitika</button>
-                <button class="btn btn-outline btn-sm admin-only" onclick="openRolesModal()">👑 Dostupy</button>
-                <button class="btn btn-sm" onclick="openAdminModal()">📦 Sklad</button>
-                <button class="btn btn-dark btn-sm" onclick="handleLogout()">Vyti</button>
+                <button class="btn btn-outline btn-sm" onclick="openClientsModal()">👥 Клиенты</button>
+                <button class="btn btn-outline btn-sm" onclick="openOrdersModal()">📋 Заказы</button>
+                <button class="btn btn-outline btn-sm" onclick="openProcurementsModal()">📑 Закуп</button>
+                <button class="btn btn-outline btn-sm admin-only" onclick="openFinanceModal()">💰 Касса & P&L</button>
+                <button class="btn btn-outline btn-sm admin-only" onclick="openAnalyticsModal()">📊 Аналитика</button>
+                <button class="btn btn-outline btn-sm admin-only" onclick="openRolesModal()">👑 Доступы</button>
+                <button class="btn btn-sm" onclick="openAdminModal()">📦 Склад</button>
+                <button class="btn btn-dark btn-sm" onclick="handleLogout()">Выйти</button>
             </div>
         </div>
     </header>
 
     <section class="hero">
-        <h1>Sklad i Vitrina Tsvetov</h1>
-        <p>Nastojashchie ostatki sklada i CRM-sistema dlya raboty s optovymi pokupatelyami.</p>
+        <h1>Склад и Витрина Цветов</h1>
+        <p>Настоящие остатки склада и CRM-система для работы с оптовыми покупателями.</p>
     </section>
 
     <div class="toolbar">
         <div class="search-box">
-            <input type="text" id="searchInput" placeholder="Poisk po nazvaniyu sorta..." oninput="renderCatalog()">
+            <input type="text" id="searchInput" placeholder="Поиск по названию сорта..." oninput="renderCatalog()">
         </div>
 
         <div class="filter-row">
-            <span class="filter-label">🏷️ Vid rozy:</span>
+            <span class="filter-label">🏷️ Вид розы:</span>
             <div class="size-filter" id="typeFilters">
-                <span class="size-chip active" onclick="filterType('ALL', this)">Vse vidy</span>
-                <span class="size-chip" onclick="filterType('Одноголовая', this)">🌹 Odnogolovye</span>
-                <span class="size-chip" onclick="filterType('Кустовая', this)">🌿 Kustovye</span>
-                <span class="size-chip" onclick="filterType('Эксклюзивная', this)">🌟 Ehksklyuzivnye</span>
+                <span class="size-chip active" onclick="filterType('ALL', this)">Все виды</span>
+                <span class="size-chip" onclick="filterType('Одноголовая', this)">🌹 Одноголовые</span>
+                <span class="size-chip" onclick="filterType('Кустовая', this)">🌿 Кустовые</span>
+                <span class="size-chip" onclick="filterType('Эксклюзивная', this)">🌟 Эксклюзивные</span>
             </div>
         </div>
 
         <div class="filter-row">
-            <span class="filter-label">🌸 Sorta roz:</span>
+            <span class="filter-label">🌸 Сорта роз:</span>
             <div class="size-filter" id="nameFilterChips"></div>
         </div>
 
         <div class="filter-row">
-            <span class="filter-label">📏 Razmer:</span>
+            <span class="filter-label">📏 Размер:</span>
             <div class="size-filter" id="sizeFilters">
-                <span class="size-chip active" onclick="filterSize('ALL', this)">Vse razmery</span>
-                <span class="size-chip" onclick="filterSize('40', this)">40 sm</span>
-                <span class="size-chip" onclick="filterSize('50', this)">50 sm</span>
-                <span class="size-chip" onclick="filterSize('60', this)">60 sm</span>
-                <span class="size-chip" onclick="filterSize('70', this)">70 sm</span>
-                <span class="size-chip" onclick="filterSize('80', this)">80 sm</span>
+                <span class="size-chip active" onclick="filterSize('ALL', this)">Все размеры</span>
+                <span class="size-chip" onclick="filterSize('40', this)">40 см</span>
+                <span class="size-chip" onclick="filterSize('50', this)">50 см</span>
+                <span class="size-chip" onclick="filterSize('60', this)">60 см</span>
+                <span class="size-chip" onclick="filterSize('70', this)">70 см</span>
+                <span class="size-chip" onclick="filterSize('80', this)">80 см</span>
             </div>
         </div>
 
         <div class="filter-row">
-            <span class="filter-label">📐 Razmer kartochek:</span>
+            <span class="filter-label">📐 Размер карточек:</span>
             <div class="size-filter" id="cardSizeFilters">
-                <span class="size-chip" onclick="setCardSize('compact', this)">Kompaktnye</span>
-                <span class="size-chip active" onclick="setCardSize('medium', this)">Srednie</span>
-                <span class="size-chip" onclick="setCardSize('large', this)">Krupnye</span>
+                <span class="size-chip" onclick="setCardSize('compact', this)">Компактные</span>
+                <span class="size-chip active" onclick="setCardSize('medium', this)">Средние</span>
+                <span class="size-chip" onclick="setCardSize('large', this)">Крупные</span>
             </div>
         </div>
     </div>
 
     <main class="catalog" id="catalogGrid"></main>
 
-    <!-- Korzina Prodazh -->
+    <!-- Корзина Продаж -->
     <div class="cart-bar" id="cartBar" style="display: none;">
         <div class="cart-info">
-            V zakaze: <strong id="cartCount">0</strong> pachek | Summa: <strong id="cartTotal" style="color:var(--primary); font-size:1.1rem;">0</strong> ֏
+            В заказе: <strong id="cartCount">0</strong> пачек | Сумма: <strong id="cartTotal" style="color:var(--primary); font-size:1.1rem;">0</strong> ֏
         </div>
         <div class="cart-actions" style="display:flex; gap:8px;">
-            <button class="btn btn-success btn-sm" onclick="openSaveOrderModal()">💾 Oformit' Sdelku</button>
+            <button class="btn btn-success btn-sm" onclick="openSaveOrderModal()">💾 Оформить Сделку</button>
             <button class="btn btn-dark btn-sm" onclick="exportStockExcel()">📊 Excel (.xlsx)</button>
-            <button class="btn btn-outline btn-sm" onclick="clearCart()">Ochistit'</button>
+            <button class="btn btn-outline btn-sm" onclick="clearCart()">Очистить</button>
         </div>
     </div>
 
-    <!-- 💾 MODAL'NOE OKNO OFORMLENIYA / REDAKTIROVANIYA SDELKI -->
+    <!-- 💾 МОДАЛЬНОЕ ОКНО ОФОРМЛЕНИЯ / РЕДАКТИРОВАНИЯ СДЕЛКИ -->
     <div class="modal" id="saveOrderModal">
         <div class="modal-content" style="max-width: 750px;">
             <div class="modal-header">
-                <h2 id="orderModalTitle">💾 Oformlenie Prodazhi Klientu</h2>
+                <h2 id="orderModalTitle">💾 Оформление Продажи Клиенту</h2>
                 <button class="close-btn" onclick="closeSaveOrderModal()">&times;</button>
             </div>
             <form onsubmit="handleCheckoutSubmit(event)">
                 <input type="hidden" id="editingOrderId" value="">
                 <div class="form-row">
                     <div class="form-group" style="flex:2;">
-                        <label>Vyberite Klienta</label>
+                        <label>Выберите Клиента</label>
                         <select id="orderClientSelect" class="form-control" required>
-                            <option value="">Zagruzka klientov...</option>
+                            <option value="">Загрузка клиентов...</option>
                         </select>
                     </div>
                     <div class="form-group" style="flex:1;">
-                        <label>Status Zakaza</label>
+                        <label>Статус Заказа</label>
                         <select id="orderStatusSelect" class="form-control">
-                            <option value="Новый">Novyy</option>
-                            <option value="В работе">V rabote</option>
-                            <option value="Выполнен">Vypolnen (Oplachen)</option>
-                            <option value="Отменен">Otmenen</option>
+                            <option value="Новый">Новый</option>
+                            <option value="В работе">В работе</option>
+                            <option value="Выполнен">Выполнен (Оплачен)</option>
+                            <option value="Отменен">Отменен</option>
                         </select>
                     </div>
                 </div>
 
                 <div style="background:#f8fafc; padding:1rem; border-radius:8px; margin-bottom:1rem; border:1px solid #cbd5e1;">
-                    <h3>Sostav zakaza:</h3>
+                    <h3>Состав заказа:</h3>
                     <div class="table-responsive">
                         <table>
                             <thead>
-                                <tr><th>Sort / Tsvetok</th><th>Tsena (֏)</th><th>Pachek</th><th>Summa</th><th>Deystviya</th></tr>
+                                <tr><th>Сорт / Цветок</th><th>Цена (֏)</th><th>Пачек</th><th>Сумма</th><th>Действия</th></tr>
                             </thead>
                             <tbody id="checkoutItemsTableBody"></tbody>
                         </table>
                     </div>
 
-                    <!-- Dobavlenie novogo tovara pryamo v redaktirovanii zakaza -->
+                    <!-- Добавление нового товара прямо в редактировании заказа -->
                     <div style="margin-top: 10px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                         <select id="editAddFlowerSelect" class="form-control" style="flex:2; min-width:180px;"></select>
-                        <input type="number" id="editAddPacksInput" class="form-control" value="10" style="width:90px;" placeholder="Pach">
-                        <button type="button" class="btn btn-outline btn-sm" onclick="addFlowerToEditingOrder()">+ Dobavit' tovar</button>
+                        <input type="number" id="editAddPacksInput" class="form-control" value="10" style="width:90px;" placeholder="Пач">
+                        <button type="button" class="btn btn-outline btn-sm" onclick="addFlowerToEditingOrder()">+ Добавить товар</button>
                     </div>
 
                     <hr style="margin:0.8rem 0; border:0; border-top:1px solid #ddd;">
-                    <div style="font-size:1.1rem; font-weight:bold; text-align:right;">Itogo: <span id="checkoutTotalSum" style="color:var(--primary);">0</span> ֏</div>
+                    <div style="font-size:1.1rem; font-weight:bold; text-align:right;">Итого: <span id="checkoutTotalSum" style="color:var(--primary);">0</span> ֏</div>
                 </div>
 
                 <div style="display:flex; gap:8px;">
-                    <button type="submit" class="btn btn-success" style="flex:1;">Sokhranit' Sdelku</button>
-                    <button type="button" class="btn btn-dark" onclick="closeSaveOrderModal()">Otmena</button>
+                    <button type="submit" class="btn btn-success" style="flex:1;">Сохранить Сделку</button>
+                    <button type="button" class="btn btn-dark" onclick="closeSaveOrderModal()">Отмена</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- 🖨️ MODAL'NOE OKNO PECHATI NAKLADNOI ZAKAZA -->
+    <!-- 🖨️ МОДАЛЬНОЕ ОКНО ПЕЧАТИ НАКЛАДНОЙ ЗАКАЗА -->
     <div class="modal" id="printInvoiceModal">
         <div class="modal-content" style="max-width: 700px; padding: 2rem;">
             <div class="modal-header no-print">
-                <h2>🖨️ Nakladnaya zakaza</h2>
+                <h2>🖨️ Накладная заказа</h2>
                 <button class="close-btn" onclick="closePrintModal()">&times;</button>
             </div>
             
             <div id="invoiceContent" style="color:#000;">
                 <div style="text-align:center; margin-bottom:1.5rem;">
                     <h2 style="color:var(--primary); font-size:1.5rem;">🌸 ROSE GARDEN ARMENIA</h2>
-                    <p style="font-size:0.85rem; color:#555;">Optovaya prodazha roz | Teplichnoe khozyaystvo</p>
+                    <p style="font-size:0.85rem; color:#555;">Оптовая продажа роз | Тепличное хозяйство</p>
                     <hr style="margin:10px 0; border:0; border-top:2px solid var(--primary);">
                 </div>
 
                 <div style="display:flex; justify-content:space-between; margin-bottom:1.2rem; font-size:0.95rem;">
                     <div>
-                        <p><strong>Zakaz №:</strong> <span id="invOrderId">---</span></p>
-                        <p><strong>Data:</strong> <span id="invOrderDate">---</span></p>
+                        <p><strong>Заказ №:</strong> <span id="invOrderId">---</span></p>
+                        <p><strong>Дата:</strong> <span id="invOrderDate">---</span></p>
                     </div>
                     <div style="text-align:right;">
-                        <p><strong>Klient:</strong> <span id="invClientName">---</span></p>
-                        <p><strong>Status:</strong> <span id="invOrderStatus">---</span></p>
+                        <p><strong>Клиент:</strong> <span id="invClientName">---</span></p>
+                        <p><strong>Статус:</strong> <span id="invOrderStatus">---</span></p>
                     </div>
                 </div>
 
@@ -330,10 +330,10 @@
                     <thead>
                         <tr style="background:#f1f5f9;">
                             <th style="border:1px solid #cbd5e1; padding:8px;">№</th>
-                            <th style="border:1px solid #cbd5e1; padding:8px;">Naimenovanie sorta</th>
-                            <th style="border:1px solid #cbd5e1; padding:8px; text-align:center;">Kolichestvo (pach)</th>
-                            <th style="border:1px solid #cbd5e1; padding:8px; text-align:right;">Tsena (֏)</th>
-                            <th style="border:1px solid #cbd5e1; padding:8px; text-align:right;">Summa (֏)</th>
+                            <th style="border:1px solid #cbd5e1; padding:8px;">Наименование сорта</th>
+                            <th style="border:1px solid #cbd5e1; padding:8px; text-align:center;">Количество (пач)</th>
+                            <th style="border:1px solid #cbd5e1; padding:8px; text-align:right;">Цена (֏)</th>
+                            <th style="border:1px solid #cbd5e1; padding:8px; text-align:right;">Сумма (֏)</th>
                         </tr>
                     </thead>
                     <tbody id="invItemsTableBody"></tbody>
@@ -341,51 +341,51 @@
 
                 <div style="display:flex; justify-content:flex-end; margin-bottom:2rem;">
                     <div style="font-size:1.2rem; font-weight:bold;">
-                        Itogo k oplate: <span id="invTotalSum" style="color:var(--primary);">0</span> ֏
+                        Итого к оплате: <span id="invTotalSum" style="color:var(--primary);">0</span> ֏
                     </div>
                 </div>
 
                 <div style="display:flex; justify-content:space-between; margin-top:3rem; font-size:0.9rem;">
                     <div>
-                        <p>Otpustil(a): ___________________</p>
+                        <p>Отпустил(а): ___________________</p>
                     </div>
                     <div>
-                        <p>Poluchil(a): ___________________</p>
+                        <p>Получил(а): ___________________</p>
                     </div>
                 </div>
             </div>
 
             <div style="display:flex; gap:10px; margin-top:2rem;" class="no-print">
-                <button class="btn btn-success" style="flex:1;" onclick="window.print()">🖨️ Pechat' nakladnoi</button>
-                <button class="btn btn-dark" onclick="closePrintModal()">Zakryt'</button>
+                <button class="btn btn-success" style="flex:1;" onclick="window.print()">🖨️ Печать накладной</button>
+                <button class="btn btn-dark" onclick="closePrintModal()">Закрыть</button>
             </div>
         </div>
     </div>
 
-    <!-- 👥 MODAL'NOE OKNO KLIENTOV -->
+    <!-- 👥 МОДАЛЬНОЕ ОКНО КЛИЕНТОВ -->
     <div class="modal" id="clientsModal">
         <div class="modal-content" style="max-width: 900px;">
             <div class="modal-header">
-                <h2>👥 Baza Klientov i Kontragentov</h2>
+                <h2>👥 База Клиентов и Контрагентов</h2>
                 <button class="close-btn" onclick="closeClientsModal()">&times;</button>
             </div>
             <div style="display:flex; justify-content:space-between; margin-bottom:1rem; flex-wrap:wrap; gap:10px;">
-                <input type="text" id="clientSearchInput" class="form-control" style="max-width:300px;" placeholder="Poisk klientov..." oninput="renderClientsTable()">
-                <button class="btn btn-sm btn-success" onclick="openAddClientForm()">+ Novyy Klient</button>
+                <input type="text" id="clientSearchInput" class="form-control" style="max-width:300px;" placeholder="Поиск клиентов..." oninput="renderClientsTable()">
+                <button class="btn btn-sm btn-success" onclick="openAddClientForm()">+ Новый Клиент</button>
             </div>
 
             <div id="addClientSection" style="display:none; background:#f9f9f9; padding:1.2rem; border-radius:8px; margin-bottom:1.2rem; border:1px solid #ddd;">
-                <h3 style="margin-bottom:0.8rem; color:var(--primary);" id="clientFormTitle">Dobavit' Klienta</h3>
+                <h3 style="margin-bottom:0.8rem; color:var(--primary);" id="clientFormTitle">Добавить Клиента</h3>
                 <form onsubmit="handleSaveClient(event)">
                     <input type="hidden" id="clientId">
                     <div class="form-row">
-                        <div class="form-group"><label>Nazvanie / Imya</label><input type="text" id="clientName" class="form-control" required placeholder="OOO Tsvetochnyĭ Ray"></div>
-                        <div class="form-group"><label>Telefon</label><input type="text" id="clientPhone" class="form-control" required placeholder="+374 99 000000"></div>
-                        <div class="form-group"><label>Gorod</label><input type="text" id="clientCity" class="form-control" placeholder="Erevan"></div>
+                        <div class="form-group"><label>Название / Имя</label><input type="text" id="clientName" class="form-control" required placeholder="ООО Цветочный Рай"></div>
+                        <div class="form-group"><label>Телефон</label><input type="text" id="clientPhone" class="form-control" required placeholder="+374 99 000000"></div>
+                        <div class="form-group"><label>Город</label><input type="text" id="clientCity" class="form-control" placeholder="Ереван"></div>
                     </div>
                     <div style="display:flex; gap:8px;">
-                        <button type="submit" class="btn btn-sm btn-success">Sokhranit'</button>
-                        <button type="button" class="btn btn-dark btn-sm" onclick="closeAddClientForm()">Otmena</button>
+                        <button type="submit" class="btn btn-sm btn-success">Сохранить</button>
+                        <button type="button" class="btn btn-dark btn-sm" onclick="closeAddClientForm()">Отмена</button>
                     </div>
                 </form>
             </div>
@@ -393,7 +393,7 @@
             <div class="table-responsive">
                 <table>
                     <thead>
-                        <tr><th>Klient / Kompaniya</th><th>Telefon</th><th>Gorod</th><th>Deystviya</th></tr>
+                        <tr><th>Клиент / Компания</th><th>Телефон</th><th>Город</th><th>Действия</th></tr>
                     </thead>
                     <tbody id="clientsTableBody"></tbody>
                 </table>
@@ -401,17 +401,17 @@
         </div>
     </div>
 
-    <!-- 📋 MODAL'NOE OKNO ZAKAZOV -->
+    <!-- 📋 МОДАЛЬНОЕ ОКНО ЗАКАЗОВ -->
     <div class="modal" id="ordersModal">
         <div class="modal-content" style="max-width: 950px;">
             <div class="modal-header">
-                <h2>📋 Istoriya Zakazov i Sdelok</h2>
+                <h2>📋 История Заказов и Сделок</h2>
                 <button class="close-btn" onclick="closeOrdersModal()">&times;</button>
             </div>
             <div class="table-responsive">
                 <table>
                     <thead>
-                        <tr><th>№ Zakaza</th><th>Data</th><th>Klient</th><th>Summa (֏)</th><th>Status</th><th>Deystviya</th></tr>
+                        <tr><th>№ Заказа</th><th>Дата</th><th>Клиент</th><th>Сумма (֏)</th><th>Статус</th><th>Действия</th></tr>
                     </thead>
                     <tbody id="ordersTableBody"></tbody>
                 </table>
@@ -419,33 +419,33 @@
         </div>
     </div>
 
-    <!-- 📑 MODAL'NOE OKNO ZAKUPA -->
+    <!-- 📑 МОДАЛЬНОЕ ОКНО ЗАКУПА -->
     <div class="modal" id="procurementsModal">
         <div class="modal-content" style="max-width: 950px;">
             <div class="modal-header">
-                <h2>📑 Dokumenty Zakupa i Prikhoda na Sklad</h2>
+                <h2>📑 Документы Закупа и Прихода на Склад</h2>
                 <button class="close-btn" onclick="closeProcurementsModal()">&times;</button>
             </div>
             <div style="margin-bottom:1rem;">
-                <button class="btn btn-sm btn-success" onclick="openNewProcurementForm()">+ Sozdat' Akt Zakupa</button>
+                <button class="btn btn-sm btn-success" onclick="openNewProcurementForm()">+ Создать Акт Закупа</button>
             </div>
 
             <div id="newProcurementSection" style="display:none; background:#f8fafc; padding:1.2rem; border-radius:8px; margin-bottom:1.2rem; border:1px solid #cbd5e1;">
-                <h3 style="margin-bottom:0.8rem; color:var(--accent);" id="procFormTitle">Novyy Dokument Prikhoda</h3>
+                <h3 style="margin-bottom:0.8rem; color:var(--accent);" id="procFormTitle">Новый Документ Прихода</h3>
                 <form onsubmit="handleSaveProcurement(event)">
                     <input type="hidden" id="editingProcId" value="">
                     <div class="form-row">
-                        <div class="form-group"><label>Postavshchik / Parnik</label><input type="text" id="procSupplier" class="form-control" required placeholder="Parnik №1 Erevan"></div>
-                        <div class="form-group"><label>№ Dokumenta</label><input type="text" id="procDocNum" class="form-control" required placeholder="ZKP-101"></div>
-                        <div class="form-group"><label>Data prikhoda</label><input type="date" id="procDate" class="form-control" required></div>
+                        <div class="form-group"><label>Поставщик / Парник</label><input type="text" id="procSupplier" class="form-control" required placeholder="Парник №1 Ереван"></div>
+                        <div class="form-group"><label>№ Документа</label><input type="text" id="procDocNum" class="form-control" required placeholder="ЗКП-101"></div>
+                        <div class="form-group"><label>Дата прихода</label><input type="date" id="procDate" class="form-control" required></div>
                     </div>
 
                     <div style="margin: 1rem 0;">
-                        <label style="font-weight:bold; font-size:0.85rem;">Tovary v akte zakupa:</label>
+                        <label style="font-weight:bold; font-size:0.85rem;">Товары в акте закупа:</label>
                         <div class="table-responsive">
                             <table>
                                 <thead>
-                                    <tr><th>Tsvetok / Sort so sklada</th><th>Zakupochnaya tsena (֏)</th><th>Kolichestvo (pachek)</th><th>Summa (֏)</th><th>Udalit'</th></tr>
+                                    <tr><th>Цветок / Сорт со склада</th><th>Закупочная цена (֏)</th><th>Количество (пачек)</th><th>Сумма (֏)</th><th>Удалить</th></tr>
                                 </thead>
                                 <tbody id="procurementItemsTable"></tbody>
                             </table>
@@ -456,20 +456,20 @@
                                 <select id="procSelectFlower" class="form-control"></select>
                             </div>
                             <div style="width:110px;">
-                                <input type="number" id="procPriceInput" class="form-control" placeholder="Zakup ֏">
+                                <input type="number" id="procPriceInput" class="form-control" placeholder="Закуп ֏">
                             </div>
                             <div style="width:100px;">
-                                <input type="number" id="procQtyInput" class="form-control" value="10" placeholder="Pachek">
+                                <input type="number" id="procQtyInput" class="form-control" value="10" placeholder="Пачек">
                             </div>
-                            <button type="button" class="btn btn-sm btn-outline" onclick="addProcurementRow()">+ Dobavit' sort</button>
+                            <button type="button" class="btn btn-sm btn-outline" onclick="addProcurementRow()">+ Добавить сорт</button>
                         </div>
                     </div>
 
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1rem;">
-                        <div style="font-size:1.1rem; font-weight:bold;">Itogo zakupka: <span id="procTotalDisplay" style="color:var(--accent);">0</span> ֏</div>
+                        <div style="font-size:1.1rem; font-weight:bold;">Итого закупка: <span id="procTotalDisplay" style="color:var(--accent);">0</span> ֏</div>
                         <div style="display:flex; gap:8px;">
-                            <button type="submit" class="btn btn-success btn-sm">💾 Provesti i sokhranit'</button>
-                            <button type="button" class="btn btn-dark btn-sm" onclick="closeNewProcurementForm()">Otmena</button>
+                            <button type="submit" class="btn btn-success btn-sm">💾 Провести и сохранить</button>
+                            <button type="button" class="btn btn-dark btn-sm" onclick="closeNewProcurementForm()">Отмена</button>
                         </div>
                     </div>
                 </form>
@@ -478,7 +478,7 @@
             <div class="table-responsive">
                 <table>
                     <thead>
-                        <tr><th>№ Dokumenta</th><th>Data</th><th>Postavshchik</th><th>Summa (֏)</th><th>Deystviya</th></tr>
+                        <tr><th>№ Документа</th><th>Дата</th><th>Поставщик</th><th>Сумма (֏)</th><th>Действия</th></tr>
                     </thead>
                     <tbody id="procurementsTableBody"></tbody>
                 </table>
@@ -486,52 +486,52 @@
         </div>
     </div>
 
-    <!-- 💰 MODAL'NOE OKNO KASSY -->
+    <!-- 💰 МОДАЛЬНОЕ ОКНО КАССЫ -->
     <div class="modal" id="financeModal">
         <div class="modal-content" style="max-width: 900px;">
             <div class="modal-header">
-                <h2>💰 Kassa, Raskhody i Pribyl' (P&L)</h2>
+                <h2>💰 Касса, Расходы и Прибыль (P&L)</h2>
                 <button class="close-btn" onclick="closeFinanceModal()">&times;</button>
             </div>
             <div class="fin-cards">
-                <div class="fin-card income"><h4>Vyruchka</h4><div class="num" id="finTotalIncome">0 ֏</div></div>
-                <div class="fin-card expense"><h4>Raskhody</h4><div class="num" id="finTotalExpense">0 ֏</div></div>
-                <div class="fin-card profit"><h4>Chistaya Pribyl'</h4><div class="num" id="finNetProfit">0 ֏</div></div>
+                <div class="fin-card income"><h4>Выручка</h4><div class="num" id="finTotalIncome">0 ֏</div></div>
+                <div class="fin-card expense"><h4>Расходы</h4><div class="num" id="finTotalExpense">0 ֏</div></div>
+                <div class="fin-card profit"><h4>Чистая Прибыль</h4><div class="num" id="finNetProfit">0 ֏</div></div>
             </div>
         </div>
     </div>
 
-    <!-- 📊 MODAL'NOE OKNO ANALITIKI -->
+    <!-- 📊 МОДАЛЬНОЕ ОКНО АНАЛИТИКИ -->
     <div class="modal" id="analyticsModal">
         <div class="modal-content" style="max-width: 900px;">
             <div class="modal-header">
-                <h2>📊 Analitika Prodazh i Grafiki</h2>
+                <h2>📊 Аналитика Продаж и Графики</h2>
                 <button class="close-btn" onclick="closeAnalyticsModal()">&times;</button>
             </div>
             <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap:1.5rem; margin-top:1rem;">
                 <div style="background:#f8fafc; padding:1rem; border-radius:8px; border:1px solid #e2e8f0;">
-                    <h3 style="font-size:0.95rem; margin-bottom:0.8rem; text-align:center;">Prodazhi po kategoriyam</h3>
+                    <h3 style="font-size:0.95rem; margin-bottom:0.8rem; text-align:center;">Продажи по категориям</h3>
                     <canvas id="categoryChart"></canvas>
                 </div>
                 <div style="background:#f8fafc; padding:1rem; border-radius:8px; border:1px solid #e2e8f0;">
-                    <h3 style="font-size:0.95rem; margin-bottom:0.8rem; text-align:center;">Vyruchka po dnyam (֏)</h3>
+                    <h3 style="font-size:0.95rem; margin-bottom:0.8rem; text-align:center;">Выручка по дням (֏)</h3>
                     <canvas id="revenueChart"></canvas>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 👑 MODAL'NOE OKNO DOSTUPOV -->
+    <!-- 👑 МОДАЛЬНОЕ ОКНО ДОСТУПОВ -->
     <div class="modal" id="rolesModal">
         <div class="modal-content" style="max-width: 800px;">
             <div class="modal-header">
-                <h2>👑 Upravlenie Dostupami i Rolyami</h2>
+                <h2>👑 Управление Доступами и Ролями</h2>
                 <button class="close-btn" onclick="closeRolesModal()">&times;</button>
             </div>
             <div class="table-responsive">
                 <table>
                     <thead>
-                        <tr><th>Imya</th><th>Email</th><th>Tekushchaya Rol'</th><th>Izmenit' Dostup</th></tr>
+                        <tr><th>Имя</th><th>Email</th><th>Текущая Роль</th><th>Изменить Доступ</th></tr>
                     </thead>
                     <tbody id="rolesTableBody"></tbody>
                 </table>
@@ -539,25 +539,25 @@
         </div>
     </div>
 
-    <!-- 📦 MODAL'NOE OKNO SKLADA -->
+    <!-- 📦 МОДАЛЬНОЕ ОКНО СКЛАДА -->
     <div class="modal" id="adminModal">
         <div class="modal-content" style="max-width: 1100px;">
             <div class="modal-header">
-                <h2>📦 Upravlenie Skladom i Tsvetami</h2>
+                <h2>📦 Управление Складом и Цветами</h2>
                 <button class="close-btn" onclick="closeAdminModal()">&times;</button>
             </div>
 
             <div style="margin-bottom: 1rem; display:flex; gap:8px; flex-wrap:wrap; justify-content:space-between; align-items:center;">
                 <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-                    <button class="btn btn-sm" onclick="showWarehouseSection('list')">Spisok Sklada</button>
-                    <button class="btn btn-outline btn-sm" onclick="showWarehouseSection('add')">+ Dobavit' novyy sort</button>
+                    <button class="btn btn-sm" onclick="showWarehouseSection('list')">Список Склада</button>
+                    <button class="btn btn-outline btn-sm" onclick="showWarehouseSection('add')">+ Добавить новый сорт</button>
                     
                     <label class="btn btn-success btn-sm" style="margin:0; cursor:pointer;">
-                        📥 Zagruzit' ostatki iz Excel (.xlsx)
+                        📥 Загрузить остатки из Excel (.xlsx)
                         <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" style="display:none;" onchange="importDailyStock(event)">
                     </label>
                 </div>
-                <button class="btn btn-dark btn-sm" onclick="exportStockExcel()">📊 Vygruzit' v Excel (.xlsx)</button>
+                <button class="btn btn-dark btn-sm" onclick="exportStockExcel()">📊 Выгрузить в Excel (.xlsx)</button>
             </div>
 
             <div id="warehouseListSection">
@@ -565,15 +565,15 @@
                     <table>
                         <thead>
                             <tr>
-                                <th>Foto</th>
-                                <th>Vid</th>
-                                <th>Nazvanie sorta</th>
-                                <th>Razmer</th>
-                                <th>Tsena za pachku (֏)</th>
-                                <th style="text-align:center;">Ostatok (Pachki)</th>
-                                <th style="text-align:center;">Ostatok (Shtuk)</th>
-                                <th>Bystryy Prikhod / Spisanie (Pachki)</th>
-                                <th>Deystviya</th>
+                                <th>Фото</th>
+                                <th>Вид</th>
+                                <th>Название сорта</th>
+                                <th>Размер</th>
+                                <th>Цена за пачку (֏)</th>
+                                <th style="text-align:center;">Остаток (Пачки)</th>
+                                <th style="text-align:center;">Остаток (Штук)</th>
+                                <th>Быстрый Приход / Списание (Пачки)</th>
+                                <th>Действия</th>
                             </tr>
                         </thead>
                         <tbody id="adminTableBody"></tbody>
@@ -582,48 +582,48 @@
             </div>
 
             <div id="warehouseAddSection" style="display:none; background:#f9f9f9; padding:1.2rem; border-radius:8px; border:1px solid #ddd;">
-                <h3 style="margin-bottom:1rem; color:var(--primary);" id="flowerFormTitle">Dobavit' Novyy Sort Roz</h3>
+                <h3 style="margin-bottom:1rem; color:var(--primary);" id="flowerFormTitle">Добавить Новый Сорт Роз</h3>
                 <form id="addFlowerForm" onsubmit="handleFlowerFormSubmit(event)">
                     <input type="hidden" id="editItemId" value="">
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Vid rozy</label>
+                            <label>Вид розы</label>
                             <select id="flowerCategory" class="form-control" required>
-                                <option value="Одноголовая">🌹 Odnogolovaya</option>
-                                <option value="Кустовая">🌿 Kustovaya (Spray)</option>
-                                <option value="Эксклюзивная">🌟 Ehksklyuzivnaya</option>
+                                <option value="Одноголовая">🌹 Одноголовая</option>
+                                <option value="Кустовая">🌿 Кустовая (Spray)</option>
+                                <option value="Эксклюзивная">🌟 Эксклюзивная</option>
                             </select>
                         </div>
                         <div class="form-group" style="flex:2;">
-                            <label>Nazvanie sorta</label>
-                            <input type="text" id="flowerName" class="form-control" required placeholder="Roza Red Naomi">
+                            <label>Название сорта</label>
+                            <input type="text" id="flowerName" class="form-control" required placeholder="Роза Red Naomi">
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Razmer</label>
-                            <input type="text" id="flowerSize" class="form-control" required placeholder="60 sm">
+                            <label>Размер</label>
+                            <input type="text" id="flowerSize" class="form-control" required placeholder="60 см">
                         </div>
                         <div class="form-group">
-                            <label>Tsena za pachku (֏)</label>
+                            <label>Цена за пачку (֏)</label>
                             <input type="number" id="flowerPrice" class="form-control" required placeholder="1000">
                         </div>
                         <div class="form-group">
-                            <label>Ostatok (pachek)</label>
+                            <label>Остаток (пачек)</label>
                             <input type="number" id="flowerPacks" class="form-control" required placeholder="10">
                         </div>
                         <div class="form-group">
-                            <label>Ostatok (sht)</label>
+                            <label>Остаток (шт)</label>
                             <input type="number" id="flowerStock" class="form-control" required placeholder="100">
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>Ssylka na kartinku (URL)</label>
+                        <label>Ссылка на картинку (URL)</label>
                         <input type="url" id="flowerImage" class="form-control" required placeholder="https://...">
                     </div>
                     <div style="display:flex; gap:8px;">
-                        <button type="submit" class="btn btn-success">Sokhranit' na Sklad</button>
-                        <button type="button" class="btn btn-dark" onclick="showWarehouseSection('list')">Otmena</button>
+                        <button type="submit" class="btn btn-success">Сохранить на Склад</button>
+                        <button type="button" class="btn btn-dark" onclick="showWarehouseSection('list')">Отмена</button>
                     </div>
                 </form>
             </div>
@@ -658,7 +658,6 @@
         let currentProcurementItems = [];
         let cart = {};
         
-        // Vremennyy spisok tovarov pri redaktirovanii ili sozdanii zakaza
         let activeOrderItems = [];
 
         try {
@@ -765,17 +764,17 @@
         }
 
         function getRoleBadge(role) {
-            if (role === 'Admin') return '<span class="role-badge role-admin">Admin</span>';
-            if (role === 'Manager') return '<span class="role-badge role-manager">Menedzher</span>';
-            return '<span class="role-badge role-blocked">Zablokirovan</span>';
+            if (role === 'Admin') return '<span class="role-badge role-admin">Админ</span>';
+            if (role === 'Manager') return '<span class="role-badge role-manager">Менеджер</span>';
+            return '<span class="role-badge role-blocked">Заблокирован</span>';
         }
 
         window.toggleAuthMode = function() {
             isRegisterMode = !isRegisterMode;
-            document.getElementById('authTitle').innerText = isRegisterMode ? 'Registratsiya novogo sotrudnika' : 'Voydite v sistemu sotrudnika';
-            document.getElementById('authSubmitBtn').innerText = isRegisterMode ? 'Zaregistrirovatsya' : 'Voyti v CRM';
-            document.getElementById('authToggleText').innerText = isRegisterMode ? 'Uzhe est akkaunt?' : 'Net akkaunta?';
-            document.getElementById('authToggleBtn').innerText = isRegisterMode ? 'Voyti' : 'Zaregistrirovatsya';
+            document.getElementById('authTitle').innerText = isRegisterMode ? 'Регистрация нового сотрудника' : 'Войдите в систему сотрудника';
+            document.getElementById('authSubmitBtn').innerText = isRegisterMode ? 'Зарегистрироваться' : 'Войти в CRM';
+            document.getElementById('authToggleText').innerText = isRegisterMode ? 'Уже есть аккаунт?' : 'Нет аккаунта?';
+            document.getElementById('authToggleBtn').innerText = isRegisterMode ? 'Войти' : 'Зарегистрироваться';
             document.getElementById('authNameGroup').style.display = isRegisterMode ? 'block' : 'none';
         };
 
@@ -793,23 +792,23 @@
                         name: name || email.split('@')[0],
                         role: isAdmin ? 'Admin' : 'Blocked'
                     });
-                    alert('Registratsiya uspeshnaya!');
+                    alert('Регистрация успешная!');
                 }).catch(err => alert(err.message));
             } else {
-                auth.signInWithEmailAndPassword(email, password).catch(err => alert('Oshibka vkhoda: ' + err.message));
+                auth.signInWithEmailAndPassword(email, password).catch(err => alert('Ошибка входа: ' + err.message));
             }
         };
 
         window.handleLogout = function() { auth.signOut(); };
 
         window.exportStockExcel = function() {
-            if (!flowers || flowers.length === 0) return alert('Na sklade net tovarov!');
+            if (!flowers || flowers.length === 0) return alert('На складе нет товаров!');
             const wb = XLSX.utils.book_new();
             const wsData = [
-                ["🌸 ROSE GARDEN ARMENIA — OSTATKI SKLADA"],
-                [`Data vygruzki: ${new Date().toLocaleDateString('ru-RU')}`],
+                ["🌸 ROSE GARDEN ARMENIA — ОСТАТКИ СКЛАДА"],
+                [`Дата выгрузки: ${new Date().toLocaleDateString('ru-RU')}`],
                 [],
-                ["№", "Vid rozy", "Naimenovanie sorta", "Razmer", "Tsena za pachku (֏)", "Ostatok (pachek)", "Ostatok (sht)", "Obshchaya stoimost' (֏)"]
+                ["№", "Вид розы", "Наименование сорта", "Размер", "Цена за пачку (֏)", "Остаток (пачек)", "Остаток (шт)", "Общая стоимость (֏)"]
             ];
             let totalQty = 0, totalPacks = 0, totalVal = 0;
             flowers.forEach((f, idx) => {
@@ -819,9 +818,9 @@
                 totalVal += itemTotal;
                 wsData.push([idx + 1, f.category || 'Одноголовая', f.name || '', f.size || '', Number(f.price || 0), Number(f.packs || 0), Number(f.stock || 0), itemTotal]);
             });
-            wsData.push([], ["ITOGO NA SKLADE", "", "", "", "", totalPacks, totalQty, totalVal]);
+            wsData.push([], ["ИТОГО НА СКЛАДЕ", "", "", "", "", totalPacks, totalQty, totalVal]);
             const ws = XLSX.utils.aoa_to_sheet(wsData);
-            XLSX.utils.book_append_sheet(wb, ws, "Ostatki Sklada");
+            XLSX.utils.book_append_sheet(wb, ws, "Остатки Склада");
             XLSX.writeFile(wb, `RoseGarden_Stock_${Date.now()}.xlsx`);
         };
 
@@ -837,17 +836,17 @@
                     const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
                     const rows = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: "" });
 
-                    if (rows.length === 0) return alert('Fayl pust!');
+                    if (rows.length === 0) return alert('Файл пуст!');
 
                     const sizeColumns = [
-                        { stockColIdx: 1, packColIdx: 2, size: '30 sm' },
-                        { stockColIdx: 3, packColIdx: 4, size: '40 sm' },
-                        { stockColIdx: 5, packColIdx: 6, size: '50 sm' },
-                        { stockColIdx: 7, packColIdx: 8, size: '60 sm' },
-                        { stockColIdx: 9, packColIdx: 10, size: '70 sm' },
-                        { stockColIdx: 11, packColIdx: 12, size: '80 sm' },
-                        { stockColIdx: 13, packColIdx: 14, size: '90 sm' },
-                        { stockColIdx: 15, packColIdx: 16, size: '100 sm' }
+                        { stockColIdx: 1, packColIdx: 2, size: '30 см' },
+                        { stockColIdx: 3, packColIdx: 4, size: '40 см' },
+                        { stockColIdx: 5, packColIdx: 6, size: '50 см' },
+                        { stockColIdx: 7, packColIdx: 8, size: '60 см' },
+                        { stockColIdx: 9, packColIdx: 10, size: '70 см' },
+                        { stockColIdx: 11, packColIdx: 12, size: '80 см' },
+                        { stockColIdx: 13, packColIdx: 14, size: '90 см' },
+                        { stockColIdx: 15, packColIdx: 16, size: '100 см' }
                     ];
 
                     let updatedCount = 0;
@@ -871,7 +870,7 @@
 
                             let existingFlower = flowers.find(f => 
                                 f.name.toLowerCase() === flowerName.toLowerCase() && 
-                                (f.size && f.size.includes(item.size.replace(' sm', '')))
+                                (f.size && f.size.includes(item.size.replace(' см', '')))
                             );
 
                             if (existingFlower) {
@@ -906,10 +905,10 @@
                     });
 
                     db.ref('inventory').set(flowers);
-                    alert(`✅ Ostatki obnovleny! Obnovleno: ${updatedCount}, Dobavleno: ${createdCount}`);
+                    alert(`✅ Остатки обновлены! Обновлено: ${updatedCount}, Добавлено: ${createdCount}`);
                     e.target.value = '';
                 } catch (err) {
-                    alert('Oshibka chteniya fayla Excel: ' + err.message);
+                    alert('Ошибка чтения файла Excel: ' + err.message);
                 }
             };
             reader.readAsArrayBuffer(file);
@@ -941,7 +940,7 @@
                 selectedNameFilter = 'ALL';
             }
 
-            container.innerHTML = `<span class="size-chip ${selectedNameFilter === 'ALL' ? 'active' : ''}" onclick="filterName('ALL', this)">Vse sorta</span>`;
+            container.innerHTML = `<span class="size-chip ${selectedNameFilter === 'ALL' ? 'active' : ''}" onclick="filterName('ALL', this)">Все сорта</span>`;
             uniqueNames.forEach(name => {
                 container.innerHTML += `<span class="size-chip ${selectedNameFilter === name ? 'active' : ''}" onclick="filterName('${name}', this)">${name}</span>`;
             });
@@ -994,13 +993,13 @@
                     </div>
                     <div class="card-body">
                         <h3 class="card-title">${f.name}</h3>
-                        <p style="margin-bottom:0.5rem; font-size:0.9rem;">${f.price} ֏ / pachka | Ostatok: <strong>${packsAvailable} pach (${f.stock || 0} sht)</strong></p>
+                        <p style="margin-bottom:0.5rem; font-size:0.9rem;">${f.price} ֏ / пачка | Остаток: <strong>${packsAvailable} пач (${f.stock || 0} шт)</strong></p>
                         <div class="card-footer-action">
                             <div class="cart-input-box">
                                 <button class="btn btn-outline btn-sm" onclick="adjustCardQty('${f.id}', -1)">-</button>
                                 <input type="number" id="cardQty_${f.id}" class="cart-qty-input" value="1">
                                 <button class="btn btn-outline btn-sm" onclick="adjustCardQty('${f.id}', 1)">+</button>
-                                <button class="btn btn-success btn-sm" style="flex:1;" onclick="addToCartDirect('${f.id}')">🛒 V korzinu</button>
+                                <button class="btn btn-success btn-sm" style="flex:1;" onclick="addToCartDirect('${f.id}')">🛒 В корзину</button>
                             </div>
                         </div>
                     </div>
@@ -1059,25 +1058,24 @@
         function populateEditOrderFlowerSelect() {
             const sel = document.getElementById('editAddFlowerSelect');
             if (!sel) return;
-            sel.innerHTML = '<option value="">-- Dobavit' drugoy sort --</option>';
+            sel.innerHTML = '<option value="">-- Добавить другой сорт --</option>';
             flowers.forEach(f => {
                 sel.innerHTML += `<option value="${f.id}">${f.name} (${f.size}) - ${f.price} ֏</option>`;
             });
         }
 
         window.openSaveOrderModal = function() {
-            if (Object.keys(cart).length === 0) return alert('Korzina pusta!');
+            if (Object.keys(cart).length === 0) return alert('Корзина пуста!');
 
             document.getElementById('saveOrderModal').classList.add('active');
-            document.getElementById('orderModalTitle').innerText = '💾 Oformlenie Prodazhi Klientu';
+            document.getElementById('orderModalTitle').innerText = '💾 Оформление Продажи Клиенту';
             document.getElementById('editingOrderId').value = '';
 
-            // Formiruem activeOrderItems iz korziny
             activeOrderItems = Object.values(cart).map(i => {
                 const flower = flowers.find(f => f.id === i.flowerId);
                 return {
                     flowerId: i.flowerId,
-                    name: flower ? flower.name + ' (' + flower.size + ')' : 'Tsvetok',
+                    name: flower ? flower.name + ' (' + flower.size + ')' : 'Цветок',
                     packs: i.packs,
                     price: flower ? flower.price : 0
                 };
@@ -1091,12 +1089,12 @@
 
         function loadClientsIntoSelect(selectedClientId) {
             const sel = document.getElementById('orderClientSelect');
-            sel.innerHTML = '<option value="">-- Vyberite klienta --</option>';
+            sel.innerHTML = '<option value="">-- Выберите клиента --</option>';
             db.ref('clients').once('value').then((snapshot) => {
                 const loadedClients = snapshot.val() ? Object.values(snapshot.val()) : [];
                 clients = loadedClients;
                 if (clients.length === 0) {
-                    sel.innerHTML = '<option value="">⚠️ Net klientov (dobav'te v razdele "Klienty")</option>';
+                    sel.innerHTML = '<option value="">⚠️ Нет клиентов (добавьте в разделе "Клиенты")</option>';
                 } else {
                     clients.forEach(c => {
                         sel.innerHTML += `<option value="${c.id}" ${c.id === selectedClientId ? 'selected' : ''}>${c.name} (${c.phone})</option>`;
@@ -1151,11 +1149,10 @@
             const qtyInput = document.getElementById('editAddPacksInput');
             const packs = parseInt(qtyInput.value, 10) || 1;
 
-            if (!flowerId) return alert('Vyberite sort dlya dobavleniya!');
+            if (!flowerId) return alert('Выберите сорт для добавления!');
             const flower = flowers.find(f => f.id === flowerId);
             if (!flower) return;
 
-            // Proverim, est li uzhe takoy tovar v spiske
             const existing = activeOrderItems.find(i => i.flowerId === flowerId);
             if (existing) {
                 existing.packs += packs;
@@ -1176,8 +1173,8 @@
         window.handleCheckoutSubmit = function(e) {
             e.preventDefault();
             const clientId = document.getElementById('orderClientSelect').value;
-            if (!clientId) return alert('Vyberite klienta!');
-            if (activeOrderItems.length === 0) return alert('V zakaze dolzhen byt' khotya by odin tovar!');
+            if (!clientId) return alert('Выберите клиента!');
+            if (activeOrderItems.length === 0) return alert('В заказе должен быть хотя бы один товар!');
             
             const client = clients.find(c => c.id === clientId);
             const editingId = document.getElementById('editingOrderId').value;
@@ -1198,13 +1195,12 @@
                 items: activeOrderItems
             });
 
-            // Esli eto novyy zakaz, ochishchaem korzinu
             if (!editingId) {
                 clearCart();
             }
 
             closeSaveOrderModal();
-            alert('Sdelka uspeshno sokhranena!');
+            alert('Сделка успешно сохранена!');
         };
 
         window.editOrder = function(id) {
@@ -1212,13 +1208,12 @@
             if (!order) return;
 
             document.getElementById('saveOrderModal').classList.add('active');
-            document.getElementById('orderModalTitle').innerText = '✏️ Redaktirovanie Zakaza ' + order.id;
+            document.getElementById('orderModalTitle').innerText = '✏️ Редактирование Заказа ' + order.id;
             document.getElementById('editingOrderId').value = order.id;
 
             document.getElementById('orderStatusSelect').value = order.status || 'Новый';
             loadClientsIntoSelect(order.clientId);
 
-            // Kopiruem pozitsii zakaza dlya redaktirovaniya
             activeOrderItems = JSON.parse(JSON.stringify(order.items || []));
             renderCheckoutItemsTable();
         };
@@ -1228,9 +1223,9 @@
             if (!order) return;
 
             document.getElementById('invOrderId').innerText = order.id;
-            document.getElementById('invOrderDate').innerText = order.date || 'Segodnya';
-            document.getElementById('invClientName').innerText = order.clientName || 'Pokupatel\'';
-            document.getElementById('invOrderStatus').innerText = order.status || 'Novyy';
+            document.getElementById('invOrderDate').innerText = order.date || 'Сегодня';
+            document.getElementById('invClientName').innerText = order.clientName || 'Покупатель';
+            document.getElementById('invOrderStatus').innerText = order.status || 'Новый';
             document.getElementById('invTotalSum').innerText = Number(order.totalPrice || 0).toLocaleString();
 
             const tbody = document.getElementById('invItemsTableBody');
@@ -1241,7 +1236,7 @@
                     <tr>
                         <td style="border:1px solid #cbd5e1; padding:6px; text-align:center;">${idx + 1}</td>
                         <td style="border:1px solid #cbd5e1; padding:6px;"><strong>${item.name}</strong></td>
-                        <td style="border:1px solid #cbd5e1; padding:6px; text-align:center;">${item.packs} pach</td>
+                        <td style="border:1px solid #cbd5e1; padding:6px; text-align:center;">${item.packs} пач</td>
                         <td style="border:1px solid #cbd5e1; padding:6px; text-align:right;">${Number(item.price || 0).toLocaleString()} ֏</td>
                         <td style="border:1px solid #cbd5e1; padding:6px; text-align:right; font-weight:bold;">${itemSum.toLocaleString()} ֏</td>
                     </tr>
@@ -1262,39 +1257,39 @@
                 tbody.innerHTML += `
                     <tr>
                         <td><strong>${o.id || 'ORD-101'}</strong></td>
-                        <td>${o.date || 'Segodnya'}</td>
-                        <td>${o.clientName || 'Pokupatel\''}</td>
+                        <td>${o.date || 'Сегодня'}</td>
+                        <td>${o.clientName || 'Покупатель'}</td>
                         <td><strong>${Number(o.totalPrice || 0).toLocaleString()} ֏</strong></td>
                         <td>
                             <select onchange="updateOrderStatus('${o.id}', this.value)" class="form-control" style="padding:2px 5px;">
-                                <option value="Новый" ${o.status === 'Новый' ? 'selected' : ''}>Novyy</option>
-                                <option value="В работе" ${o.status === 'В работе' ? 'selected' : ''}>V rabote</option>
-                                <option value="Выполнен" ${o.status === 'Выполнен' ? 'selected' : ''}>Vypolnen</option>
-                                <option value="Отменен" ${o.status === 'Отменен' ? 'selected' : ''}>Otmenen</option>
+                                <option value="Новый" ${o.status === 'Новый' ? 'selected' : ''}>Новый</option>
+                                <option value="В работе" ${o.status === 'В работе' ? 'selected' : ''}>В работе</option>
+                                <option value="Выполнен" ${o.status === 'Выполнен' ? 'selected' : ''}>Выполнен</option>
+                                <option value="Отменен" ${o.status === 'Отменен' ? 'selected' : ''}>Отменен</option>
                             </select>
                         </td>
                         <td>
-                            <button class="btn btn-success btn-sm" onclick="printOrderInvoice('${o.id}')" title="Pechat' nakladnoi">🖨️</button>
-                            <button class="btn btn-outline btn-sm" onclick="editOrder('${o.id}')" title="Redaktirovat'">✏️</button>
-                            <button class="btn btn-dark btn-sm" onclick="deleteOrder('${o.id}')" title="Udalit'">🗑️</button>
+                            <button class="btn btn-success btn-sm" onclick="printOrderInvoice('${o.id}')" title="Печать накладной">🖨️</button>
+                            <button class="btn btn-outline btn-sm" onclick="editOrder('${o.id}')" title="Редактировать">✏️</button>
+                            <button class="btn btn-dark btn-sm" onclick="deleteOrder('${o.id}')" title="Удалить">🗑️</button>
                         </td>
                     </tr>
                 `;
             });
         }
         window.updateOrderStatus = function(id, status) { db.ref('orders/' + id).update({ status }); };
-        window.deleteOrder = function(id) { if (confirm('Udalit' zakaz?')) db.ref('orders/' + id).remove(); };
+        window.deleteOrder = function(id) { if (confirm('Удалить заказ?')) db.ref('orders/' + id).remove(); };
 
         function populateProcurementFlowerSelect() {
             const sel = document.getElementById('procSelectFlower');
             if (!sel) return;
-            sel.innerHTML = '<option value="">-- Vyberite sort --</option>';
+            sel.innerHTML = '<option value="">-- Выберите сорт --</option>';
             flowers.forEach(f => sel.innerHTML += `<option value="${f.id}">${f.name} (${f.size})</option>`);
         }
 
         window.openNewProcurementForm = function() {
             document.getElementById('newProcurementSection').style.display = 'block';
-            document.getElementById('procFormTitle').innerText = 'Novyy Dokument Prikhoda';
+            document.getElementById('procFormTitle').innerText = 'Новый Документ Прихода';
             document.getElementById('editingProcId').value = '';
             document.getElementById('procSupplier').value = '';
             document.getElementById('procDocNum').value = 'ЗКП-' + Date.now().toString().slice(-4);
@@ -1308,7 +1303,7 @@
             const proc = procurements.find(p => p.id === id);
             if (!proc) return;
             document.getElementById('newProcurementSection').style.display = 'block';
-            document.getElementById('procFormTitle').innerText = '✏️ Redaktirovanie Akta Zakupa ' + proc.id;
+            document.getElementById('procFormTitle').innerText = '✏️ Редактирование Акта Закупа ' + proc.id;
             document.getElementById('editingProcId').value = proc.id;
             document.getElementById('procSupplier').value = proc.supplier;
             document.getElementById('procDocNum').value = proc.id;
@@ -1321,7 +1316,7 @@
             const flowerId = document.getElementById('procSelectFlower').value;
             const price = Number(document.getElementById('procPriceInput').value);
             const packs = Number(document.getElementById('procQtyInput').value);
-            if (!flowerId || price <= 0 || packs <= 0) return alert('Zapolnite dannye zakupa!');
+            if (!flowerId || price <= 0 || packs <= 0) return alert('Заполните данные закупа!');
             const flower = flowers.find(f => f.id === flowerId);
             if (!flower) return;
             currentProcurementItems.push({ flowerId: flower.id, name: flower.name, size: flower.size, price, packs, sum: price * packs });
@@ -1339,14 +1334,14 @@
             let total = 0;
             currentProcurementItems.forEach((item, idx) => {
                 total += item.sum;
-                tbody.innerHTML += `<tr><td><strong>${item.name}</strong> (${item.size})</td><td>${item.price} ֏</td><td><strong>${item.packs} pach</strong></td><td style="color:var(--accent); font-weight:bold;">${item.sum.toLocaleString()} ֏</td><td><button type="button" class="btn btn-dark btn-sm" onclick="removeProcurementRow(${idx})">🗑️</button></td></tr>`;
+                tbody.innerHTML += `<tr><td><strong>${item.name}</strong> (${item.size})</td><td>${item.price} ֏</td><td><strong>${item.packs} пач</strong></td><td style="color:var(--accent); font-weight:bold;">${item.sum.toLocaleString()} ֏</td><td><button type="button" class="btn btn-dark btn-sm" onclick="removeProcurementRow(${idx})">🗑️</button></td></tr>`;
             });
             document.getElementById('procTotalDisplay').innerText = total.toLocaleString();
         }
 
         window.handleSaveProcurement = function(e) {
             e.preventDefault();
-            if (currentProcurementItems.length === 0) return alert('Dobav'te tsvety v akt!');
+            if (currentProcurementItems.length === 0) return alert('Добавьте цветы в акт!');
             const editingId = document.getElementById('editingProcId').value;
             const id = editingId || document.getElementById('procDocNum').value || 'PROC-' + Date.now().toString().slice(-6);
 
@@ -1377,7 +1372,7 @@
             db.ref('inventory').set(flowers);
 
             closeNewProcurementForm();
-            alert('Akt zakupa i ostatki pachek uspeshno obnovleny!');
+            alert('Акт закупа и остатки пачек успешно обновлены!');
         };
 
         function renderProcurementsTable() {
@@ -1400,7 +1395,7 @@
         }
 
         window.deleteProcurement = function(id) {
-            if (confirm('Udalit' zakup? Ostatki pachek budut umensheny.')) {
+            if (confirm('Удалить закуп? Остатки пачек будут уменьшены.')) {
                 const proc = procurements.find(p => p.id === id);
                 if (proc && proc.items) {
                     proc.items.forEach(item => {
@@ -1415,7 +1410,7 @@
 
         window.openAddClientForm = function() {
             document.getElementById('addClientSection').style.display = 'block';
-            document.getElementById('clientFormTitle').innerText = 'Dobavit' Klienta';
+            document.getElementById('clientFormTitle').innerText = 'Добавить Клиента';
             document.getElementById('clientId').value = '';
             document.getElementById('clientName').value = '';
             document.getElementById('clientPhone').value = '';
@@ -1433,14 +1428,14 @@
                 city: document.getElementById('clientCity').value
             });
             closeAddClientForm();
-            alert('Klient sokhranyn!');
+            alert('Клиент сохранён!');
         };
 
         window.editClient = function(id) {
             const client = clients.find(c => c.id === id);
             if (!client) return;
             openAddClientForm();
-            document.getElementById('clientFormTitle').innerText = 'Redaktirovat' Klienta';
+            document.getElementById('clientFormTitle').innerText = 'Редактировать Клиента';
             document.getElementById('clientId').value = client.id;
             document.getElementById('clientName').value = client.name;
             document.getElementById('clientPhone').value = client.phone;
@@ -1452,7 +1447,7 @@
             tbody.innerHTML = '';
             clients.forEach(c => tbody.innerHTML += `<tr><td><strong>${c.name}</strong></td><td>${c.phone}</td><td>${c.city || '—'}</td><td><button class="btn btn-outline btn-sm" onclick="editClient('${c.id}')">✏️</button> <button class="btn btn-dark btn-sm" onclick="deleteClient('${c.id}')">🗑️</button></td></tr>`);
         }
-        window.deleteClient = function(id) { if (confirm('Udalit'?)) db.ref('clients/' + id).remove(); };
+        window.deleteClient = function(id) { if (confirm('Удалить?')) db.ref('clients/' + id).remove(); };
 
         function calculateFinance() {
             let totalIncome = 0;
@@ -1467,8 +1462,8 @@
         function renderCharts() {
             const ctx1 = document.getElementById('categoryChart').getContext('2d');
             const ctx2 = document.getElementById('revenueChart').getContext('2d');
-            new Chart(ctx1, { type: 'pie', data: { labels: ['🌹 Odnogolovye', '🌿 Kustovye', '🌟 Ehksklyuzivnye'], datasets: [{ data: [65, 20, 15], backgroundColor: ['#d45d79', '#2e7d32', '#f59e0b'] }] } });
-            new Chart(ctx2, { type: 'bar', data: { labels: ['Pn', 'Vt', 'Sr', 'Cht', 'Pt', 'Sb', 'Vs'], datasets: [{ label: 'Vyruchka (֏)', data: [150000, 210000, 180000, 250000, 320000, 480000, 410000], backgroundColor: '#d45d79' }] } });
+            new Chart(ctx1, { type: 'pie', data: { labels: ['🌹 Одноголовые', '🌿 Кустовые', '🌟 Эксклюзивные'], datasets: [{ data: [65, 20, 15], backgroundColor: ['#d45d79', '#2e7d32', '#f59e0b'] }] } });
+            new Chart(ctx2, { type: 'bar', data: { labels: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'], datasets: [{ label: 'Выручка (֏)', data: [150000, 210000, 180000, 250000, 320000, 480000, 410000], backgroundColor: '#d45d79' }] } });
         }
 
         function renderAdminTable() {
@@ -1522,7 +1517,7 @@
         window.applyBatchStock = function(idx, action) {
             const input = document.getElementById(`batchQty_${idx}`);
             const val = parseInt(input.value, 10);
-            if (isNaN(val) || val <= 0) return alert('Vvedite chislo pachek!');
+            if (isNaN(val) || val <= 0) return alert('Введите число пачек!');
             flowers[idx].packs = action === 'add' ? (flowers[idx].packs || 0) + val : (flowers[idx].packs || 0) - val;
             db.ref('inventory').set(flowers);
         };
@@ -1558,14 +1553,14 @@
 
             db.ref('inventory').set(flowers);
             showWarehouseSection('list');
-            alert('Sort sokhranyon!');
+            alert('Сорт сохранен!');
         };
 
         window.editFlower = function(id) {
             const flower = flowers.find(f => f.id === id);
             if (!flower) return;
             showWarehouseSection('add');
-            document.getElementById('flowerFormTitle').innerText = 'Izmenit' Sort Roz';
+            document.getElementById('flowerFormTitle').innerText = 'Изменить Сорт Роз';
             document.getElementById('editItemId').value = flower.id;
             document.getElementById('flowerCategory').value = flower.category || 'Одноголовая';
             document.getElementById('flowerName').value = flower.name;
@@ -1577,7 +1572,7 @@
         };
 
         window.deleteFlower = function(id) {
-            if (confirm('Udalit' sort so sklada?')) {
+            if (confirm('Удалить сорт со склада?')) {
                 flowers = flowers.filter(f => f.id !== id);
                 db.ref('inventory').set(flowers);
             }
@@ -1589,11 +1584,11 @@
             db.ref('users').once('value', (s) => {
                 const users = s.val() ? Object.entries(s.val()) : [];
                 users.forEach(([uid, u]) => {
-                    tbody.innerHTML += `<tr><td><strong>${u.name || 'Sotrudnik'}</strong></td><td>${u.email}</td><td>${getRoleBadge(u.role)}</td><td><select onchange="changeUserRole('${uid}', this.value)" class="form-control" style="padding:2px 5px;"><option value="Blocked" ${u.role === 'Blocked' ? 'selected' : ''}>Zablokirovan</option><option value="Manager" ${u.role === 'Manager' ? 'selected' : ''}>Menedzher</option><option value="Admin" ${u.role === 'Admin' ? 'selected' : ''}>Administrator</option></select></td></tr>`;
+                    tbody.innerHTML += `<tr><td><strong>${u.name || 'Сотрудник'}</strong></td><td>${u.email}</td><td>${getRoleBadge(u.role)}</td><td><select onchange="changeUserRole('${uid}', this.value)" class="form-control" style="padding:2px 5px;"><option value="Blocked" ${u.role === 'Blocked' ? 'selected' : ''}>Заблокирован</option><option value="Manager" ${u.role === 'Manager' ? 'selected' : ''}>Менеджер</option><option value="Admin" ${u.role === 'Admin' ? 'selected' : ''}>Администратор</option></select></td></tr>`;
                 });
             });
         }
-        window.changeUserRole = function(uid, role) { db.ref('users/' + uid).update({ role }); alert('Prava obnovleny!'); };
+        window.changeUserRole = function(uid, role) { db.ref('users/' + uid).update({ role }); alert('Права обновлены!'); };
     </script>
 </body>
 </html>
