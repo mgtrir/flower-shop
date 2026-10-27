@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rose Garden — CRM & Склад</title>
+    <title>Роуз Гарден — CRM и Склад</title>
     
     <!-- Мобильная консоль Eruda -->
     <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
@@ -13,9 +13,9 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-    <!-- SheetJS for Excel export & import -->
+    <!-- SheetJS для импорта и экспорта Excel -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <!-- Chart.js for Analytics -->
+    <!-- Chart.js для аналитики -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -123,8 +123,8 @@
 
         @media print {
             body * { visibility: hidden; }
-            #printInvoiceModal, #printInvoiceModal * { visibility: visible; }
-            #printInvoiceModal { position: absolute; left: 0; top: 0; width: 100%; background: white; padding: 0; box-shadow: none; }
+            #printInvoiceModal, #printInvoiceModal *, #printPackingModal, #printPackingModal * { visibility: visible; }
+            #printInvoiceModal, #printPackingModal { position: absolute; left: 0; top: 0; width: 100%; background: white; padding: 0; box-shadow: none; }
             .no-print { display: none !important; }
         }
     </style>
@@ -134,7 +134,7 @@
     <!-- ЭКРАН ВХОДА И РЕГИСТРАЦИИ -->
     <div class="auth-overlay" id="authOverlay">
         <div class="auth-box">
-            <h2 style="color:var(--primary); margin-bottom:0.5rem;">🌸 Rose Garden CRM</h2>
+            <h2 style="color:var(--primary); margin-bottom:0.5rem;" id="authTitle">🌸 Роуз Гарден CRM</h2>
             <p style="font-size:0.85rem; color:#666; margin-bottom:1.5rem;">Войдите в систему сотрудника</p>
 
             <form onsubmit="handleAuthSubmit(event)">
@@ -149,7 +149,7 @@
 
                 <div class="form-group" id="authNameGroup" style="text-align:left; display:none;">
                     <label>Ваше Имя / Фамилия</label>
-                    <input type="text" id="authName" class="form-control" placeholder="Matevos Khachaturyan">
+                    <input type="text" id="authName" class="form-control" placeholder="Матевос Хачатурян">
                 </div>
 
                 <button type="submit" class="btn btn-success" style="width:100%; margin-top:0.5rem;" id="authSubmitBtn">Войти в CRM</button>
@@ -165,7 +165,7 @@
     <!-- ГЛАВНЫЙ ИНТЕРФЕЙС -->
     <header>
         <div class="header-container">
-            <a href="#" class="logo">🌸 Rose Garden <span style="font-size:0.75rem; color:#888; font-weight:normal;">CRM & Склад</span></a>
+            <a href="#" class="logo">🌸 Роуз Гарден <span style="font-size:0.75rem; color:#888; font-weight:normal;">CRM и Склад</span></a>
             <div class="cloud-status">
                 <span style="font-size:0.8rem;" id="currentUserInfo">👤 Загрузка...</span>
             </div>
@@ -173,7 +173,7 @@
                 <button class="btn btn-outline btn-sm" onclick="openClientsModal()">👥 Клиенты</button>
                 <button class="btn btn-outline btn-sm" onclick="openOrdersModal()">📋 Заказы</button>
                 <button class="btn btn-outline btn-sm" onclick="openProcurementsModal()">📑 Закуп</button>
-                <button class="btn btn-outline btn-sm admin-only" onclick="openFinanceModal()">💰 Касса & P&L</button>
+                <button class="btn btn-outline btn-sm admin-only" onclick="openFinanceModal()">💰 Касса и P&L</button>
                 <button class="btn btn-outline btn-sm admin-only" onclick="openAnalyticsModal()">📊 Аналитика</button>
                 <button class="btn btn-outline btn-sm admin-only" onclick="openRolesModal()">👑 Доступы</button>
                 <button class="btn btn-sm" onclick="openAdminModal()">📦 Склад</button>
@@ -184,7 +184,7 @@
 
     <section class="hero">
         <h1>Склад и Витрина Цветов</h1>
-        <p>Настоящие остатки склада и CRM-система для работы с оптовыми покупателями.</p>
+        <p>Настоящие остатки склада и CRM-система для работы с оптовыми покупателями и экспорта.</p>
     </section>
 
     <div class="toolbar">
@@ -300,29 +300,37 @@
         </div>
     </div>
 
-    <!-- 🖨️ МОДАЛЬНОЕ ОКНО ПЕЧАТИ НАКЛАДНОЙ ЗАКАЗА -->
+    <!-- 🖨️ МОДАЛЬНОЕ ОКНО ПЕЧАТИ НАКЛАДНОЙ / ИНВОЙСА -->
     <div class="modal" id="printInvoiceModal">
-        <div class="modal-content" style="max-width: 700px; padding: 2rem;">
+        <div class="modal-content" style="max-width: 750px; padding: 2rem;">
             <div class="modal-header no-print">
-                <h2>🖨️ Накладная заказа</h2>
+                <h2>📄 Экспортный Коммерческий Инвойс (Commercial Invoice)</h2>
                 <button class="close-btn" onclick="closePrintModal()">&times;</button>
             </div>
             
             <div id="invoiceContent" style="color:#000;">
-                <div style="text-align:center; margin-bottom:1.5rem;">
-                    <h2 style="color:var(--primary); font-size:1.5rem;">🌸 ROSE GARDEN ARMENIA</h2>
-                    <p style="font-size:0.85rem; color:#555;">Оптовая продажа роз | Тепличное хозяйство</p>
-                    <hr style="margin:10px 0; border:0; border-top:2px solid var(--primary);">
-                </div>
-
-                <div style="display:flex; justify-content:space-between; margin-bottom:1.2rem; font-size:0.95rem;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1.5rem;">
                     <div>
-                        <p><strong>Заказ №:</strong> <span id="invOrderId">---</span></p>
-                        <p><strong>Дата:</strong> <span id="invOrderDate">---</span></p>
+                        <h2 style="color:var(--primary); font-size:1.4rem;">ROSE GARDEN GREENHOUSE</h2>
+                        <p style="font-size:0.8rem; color:#555;">Армения, Котайкский марз, г. Раздан<br>Тепличное хозяйство оптовой торговли роз<br>Email: info@rosegarden.am</p>
                     </div>
                     <div style="text-align:right;">
-                        <p><strong>Клиент:</strong> <span id="invClientName">---</span></p>
-                        <p><strong>Статус:</strong> <span id="invOrderStatus">---</span></p>
+                        <h3 style="font-size:1.2rem; color:#333;">COMMERCIAL INVOICE</h3>
+                        <p style="font-size:0.9rem;"><strong>№:</strong> <span id="invOrderId">---</span></p>
+                        <p style="font-size:0.9rem;"><strong>Дата:</strong> <span id="invOrderDate">---</span></p>
+                    </div>
+                </div>
+
+                <div style="background:#f8fafc; padding:10px; border-radius:6px; margin-bottom:1.2rem; font-size:0.9rem; display:flex; justify-content:space-between;">
+                    <div>
+                        <p><strong>Покупатель (Consignee):</strong></p>
+                        <p id="invClientName" style="font-size:1rem; font-weight:bold;">---</p>
+                        <p id="invClientPhone">Телефон: ---</p>
+                    </div>
+                    <div>
+                        <p><strong>Условия поставки (Incoterms):</strong> FCA / EXW</p>
+                        <p><strong>Валюта расчетов:</strong> AMD (֏)</p>
+                        <p><strong>Статус заказа:</strong> <span id="invOrderStatus">---</span></p>
                     </div>
                 </div>
 
@@ -330,9 +338,9 @@
                     <thead>
                         <tr style="background:#f1f5f9;">
                             <th style="border:1px solid #cbd5e1; padding:8px;">№</th>
-                            <th style="border:1px solid #cbd5e1; padding:8px;">Наименование сорта</th>
-                            <th style="border:1px solid #cbd5e1; padding:8px; text-align:center;">Количество (пач)</th>
-                            <th style="border:1px solid #cbd5e1; padding:8px; text-align:right;">Цена (֏)</th>
+                            <th style="border:1px solid #cbd5e1; padding:8px;">Наименование сорта (Description)</th>
+                            <th style="border:1px solid #cbd5e1; padding:8px; text-align:center;">Кол-во пачек</th>
+                            <th style="border:1px solid #cbd5e1; padding:8px; text-align:right;">Цена за пачку (֏)</th>
                             <th style="border:1px solid #cbd5e1; padding:8px; text-align:right;">Сумма (֏)</th>
                         </tr>
                     </thead>
@@ -341,23 +349,82 @@
 
                 <div style="display:flex; justify-content:flex-end; margin-bottom:2rem;">
                     <div style="font-size:1.2rem; font-weight:bold;">
-                        Итого к оплате: <span id="invTotalSum" style="color:var(--primary);">0</span> ֏
+                        Итого к оплате (Total): <span id="invTotalSum" style="color:var(--primary);">0</span> ֏
                     </div>
                 </div>
 
-                <div style="display:flex; justify-content:space-between; margin-top:3rem; font-size:0.9rem;">
+                <div style="display:flex; justify-content:space-between; margin-top:3rem; font-size:0.9rem; border-top:1px dashed #ccc; padding-top:1rem;">
                     <div>
-                        <p>Отпустил(а): ___________________</p>
+                        <p>От продавца (Seller): ___________________</p>
                     </div>
                     <div>
-                        <p>Получил(а): ___________________</p>
+                        <p>Получатель (Buyer): ___________________</p>
                     </div>
                 </div>
             </div>
 
             <div style="display:flex; gap:10px; margin-top:2rem;" class="no-print">
-                <button class="btn btn-success" style="flex:1;" onclick="window.print()">🖨️ Печать накладной</button>
+                <button class="btn btn-success" style="flex:1;" onclick="window.print()">🖨️ Печать / Сохранить в PDF</button>
                 <button class="btn btn-dark" onclick="closePrintModal()">Закрыть</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 📦 МОДАЛЬНОЕ ОКНО ПЕЧАТИ УПАКОВОЧНОГО ЛИСТА (PACKING LIST) -->
+    <div class="modal" id="printPackingModal">
+        <div class="modal-content" style="max-width: 750px; padding: 2rem;">
+            <div class="modal-header no-print">
+                <h2>📦 Экспортный Упаковочный Лист (Packing List)</h2>
+                <button class="close-btn" onclick="closePackingModal()">&times;</button>
+            </div>
+            
+            <div id="packingContent" style="color:#000;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1.5rem;">
+                    <div>
+                        <h2 style="color:var(--accent); font-size:1.4rem;">ROSE GARDEN GREENHOUSE</h2>
+                        <p style="font-size:0.8rem; color:#555;">Армения, Котайкский марз, г. Раздан<br>Отдел экспортной логистики</p>
+                    </div>
+                    <div style="text-align:right;">
+                        <h3 style="font-size:1.2rem; color:#333;">PACKING LIST</h3>
+                        <p style="font-size:0.9rem;"><strong>Заказ №:</strong> <span id="packOrderId">---</span></p>
+                        <p style="font-size:0.9rem;"><strong>Дата:</strong> <span id="packOrderDate">---</span></p>
+                    </div>
+                </div>
+
+                <div style="background:#f8fafc; padding:10px; border-radius:6px; margin-bottom:1.2rem; font-size:0.9rem;">
+                    <p><strong>Покупатель (Consignee):</strong> <span id="packClientName" style="font-weight:bold;">---</span></p>
+                    <p><strong>Вид транспорта:</strong> Автотранспорт / Авиаперевозка</p>
+                </div>
+
+                <table style="width:100%; border-collapse:collapse; margin-bottom:1.5rem;">
+                    <thead>
+                        <tr style="background:#f1f5f9;">
+                            <th style="border:1px solid #cbd5e1; padding:8px;">Место / Коробка</th>
+                            <th style="border:1px solid #cbd5e1; padding:8px;">Наименование сорта розы</th>
+                            <th style="border:1px solid #cbd5e1; padding:8px; text-align:center;">Количество пачек</th>
+                            <th style="border:1px solid #cbd5e1; padding:8px; text-align:center;">Статус упаковки</th>
+                        </tr>
+                    </thead>
+                    <tbody id="packItemsTableBody"></tbody>
+                </table>
+
+                <div style="display:flex; justify-content:space-between; margin-bottom:2rem; font-weight:bold; font-size:1rem;">
+                    <div>Общее количество пачек: <span id="packTotalPacks" style="color:var(--accent);">0</span> пач.</div>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; margin-top:3rem; font-size:0.9rem; border-top:1px dashed #ccc; padding-top:1rem;">
+                    <div>
+                        <p>Упаковал (Packer): ___________________</p>
+                    </div>
+                    <div>
+                        <p>Проверил (Controller): ___________________</p>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display:flex; gap:10px; margin-top:2rem;" class="no-print">
+                <button class="btn btn-success" style="flex:1;" onclick="window.print()">🖨️ Печать Packing List</button>
+                <button class="btn btn-dark" onclick="closePackingModal()">Закрыть</button>
             </div>
         </div>
     </div>
@@ -381,7 +448,7 @@
                     <div class="form-row">
                         <div class="form-group"><label>Название / Имя</label><input type="text" id="clientName" class="form-control" required placeholder="ООО Цветочный Рай"></div>
                         <div class="form-group"><label>Телефон</label><input type="text" id="clientPhone" class="form-control" required placeholder="+374 99 000000"></div>
-                        <div class="form-group"><label>Город</label><input type="text" id="clientCity" class="form-control" placeholder="Ереван"></div>
+                        <div class="form-group"><label>Город / Страна</label><input type="text" id="clientCity" class="form-control" placeholder="Алматы, Казахстан"></div>
                     </div>
                     <div style="display:flex; gap:8px;">
                         <button type="submit" class="btn btn-sm btn-success">Сохранить</button>
@@ -393,7 +460,7 @@
             <div class="table-responsive">
                 <table>
                     <thead>
-                        <tr><th>Клиент / Компания</th><th>Телефон</th><th>Город</th><th>Действия</th></tr>
+                        <tr><th>Клиент / Компания</th><th>Телефон</th><th>Город / Страна</th><th>Действия</th></tr>
                     </thead>
                     <tbody id="clientsTableBody"></tbody>
                 </table>
@@ -403,15 +470,15 @@
 
     <!-- 📋 МОДАЛЬНОЕ ОКНО ЗАКАЗОВ -->
     <div class="modal" id="ordersModal">
-        <div class="modal-content" style="max-width: 950px;">
+        <div class="modal-content" style="max-width: 1000px;">
             <div class="modal-header">
-                <h2>📋 История Заказов и Сделок</h2>
+                <h2>📋 История Заказов и Экспортных Сделок</h2>
                 <button class="close-btn" onclick="closeOrdersModal()">&times;</button>
             </div>
             <div class="table-responsive">
                 <table>
                     <thead>
-                        <tr><th>№ Заказа</th><th>Дата</th><th>Клиент</th><th>Сумма (֏)</th><th>Статус</th><th>Действия</th></tr>
+                        <tr><th>№ Заказа</th><th>Дата</th><th>Клиент</th><th>Сумма (֏)</th><th>Статус</th><th>Экспортные документы</th><th>Действия</th></tr>
                     </thead>
                     <tbody id="ordersTableBody"></tbody>
                 </table>
@@ -435,7 +502,7 @@
                 <form onsubmit="handleSaveProcurement(event)">
                     <input type="hidden" id="editingProcId" value="">
                     <div class="form-row">
-                        <div class="form-group"><label>Поставщик / Парник</label><input type="text" id="procSupplier" class="form-control" required placeholder="Парник №1 Ереван"></div>
+                        <div class="form-group"><label>Поставщик / Парник</label><input type="text" id="procSupplier" class="form-control" required placeholder="Парник №1 Раздан"></div>
                         <div class="form-group"><label>№ Документа</label><input type="text" id="procDocNum" class="form-control" required placeholder="ЗКП-101"></div>
                         <div class="form-group"><label>Дата прихода</label><input type="date" id="procDate" class="form-control" required></div>
                     </div>
@@ -792,7 +859,7 @@
                         name: name || email.split('@')[0],
                         role: isAdmin ? 'Admin' : 'Blocked'
                     });
-                    alert('Регистрация успешная!');
+                    alert('Регистрация успешна!');
                 }).catch(err => alert(err.message));
             } else {
                 auth.signInWithEmailAndPassword(email, password).catch(err => alert('Ошибка входа: ' + err.message));
@@ -805,7 +872,7 @@
             if (!flowers || flowers.length === 0) return alert('На складе нет товаров!');
             const wb = XLSX.utils.book_new();
             const wsData = [
-                ["🌸 ROSE GARDEN ARMENIA — ОСТАТКИ СКЛАДА"],
+                ["🌸 РОУЗ ГАРДЕН АРМЕНИЯ — ОСТАТКИ СКЛАДА"],
                 [`Дата выгрузки: ${new Date().toLocaleDateString('ru-RU')}`],
                 [],
                 ["№", "Вид розы", "Наименование сорта", "Размер", "Цена за пачку (֏)", "Остаток (пачек)", "Остаток (шт)", "Общая стоимость (֏)"]
@@ -1189,6 +1256,7 @@
                 id: orderId,
                 clientId: client.id,
                 clientName: client.name,
+                clientPhone: client.phone || '—',
                 date: new Date().toLocaleDateString('ru-RU'),
                 totalPrice,
                 status: document.getElementById('orderStatusSelect').value,
@@ -1218,6 +1286,7 @@
             renderCheckoutItemsTable();
         };
 
+        // Генерация Commercial Invoice (Инвойса)
         window.printOrderInvoice = function(id) {
             const order = orders.find(o => o.id === id);
             if (!order) return;
@@ -1225,6 +1294,7 @@
             document.getElementById('invOrderId').innerText = order.id;
             document.getElementById('invOrderDate').innerText = order.date || 'Сегодня';
             document.getElementById('invClientName').innerText = order.clientName || 'Покупатель';
+            document.getElementById('invClientPhone').innerText = 'Телефон / Контакты: ' + (order.clientPhone || '—');
             document.getElementById('invOrderStatus').innerText = order.status || 'Новый';
             document.getElementById('invTotalSum').innerText = Number(order.totalPrice || 0).toLocaleString();
 
@@ -1236,7 +1306,7 @@
                     <tr>
                         <td style="border:1px solid #cbd5e1; padding:6px; text-align:center;">${idx + 1}</td>
                         <td style="border:1px solid #cbd5e1; padding:6px;"><strong>${item.name}</strong></td>
-                        <td style="border:1px solid #cbd5e1; padding:6px; text-align:center;">${item.packs} пач</td>
+                        <td style="border:1px solid #cbd5e1; padding:6px; text-align:center;">${item.packs} пач.</td>
                         <td style="border:1px solid #cbd5e1; padding:6px; text-align:right;">${Number(item.price || 0).toLocaleString()} ֏</td>
                         <td style="border:1px solid #cbd5e1; padding:6px; text-align:right; font-weight:bold;">${itemSum.toLocaleString()} ֏</td>
                     </tr>
@@ -1248,6 +1318,39 @@
 
         window.closePrintModal = function() {
             document.getElementById('printInvoiceModal').classList.remove('active');
+        };
+
+        // Генерация Packing List (Упаковочного листа)
+        window.printPackingList = function(id) {
+            const order = orders.find(o => o.id === id);
+            if (!order) return;
+
+            document.getElementById('packOrderId').innerText = order.id;
+            document.getElementById('packOrderDate').innerText = order.date || 'Сегодня';
+            document.getElementById('packClientName').innerText = order.clientName || 'Покупатель';
+
+            const tbody = document.getElementById('packItemsTableBody');
+            tbody.innerHTML = '';
+            let totalPacks = 0;
+
+            (order.items || []).forEach((item, idx) => {
+                totalPacks += Number(item.packs || 0);
+                tbody.innerHTML += `
+                    <tr>
+                        <td style="border:1px solid #cbd5e1; padding:6px; text-align:center;">Коробка №${idx + 1}</td>
+                        <td style="border:1px solid #cbd5e1; padding:6px;"><strong>${item.name}</strong></td>
+                        <td style="border:1px solid #cbd5e1; padding:6px; text-align:center;">${item.packs} пач.</td>
+                        <td style="border:1px solid #cbd5e1; padding:6px; text-align:center;">Упаковано / Проверено</td>
+                    </tr>
+                `;
+            });
+
+            document.getElementById('packTotalPacks').innerText = totalPacks;
+            document.getElementById('printPackingModal').classList.add('active');
+        };
+
+        window.closePackingModal = function() {
+            document.getElementById('printPackingModal').classList.remove('active');
         };
 
         function renderOrdersTable() {
@@ -1269,7 +1372,10 @@
                             </select>
                         </td>
                         <td>
-                            <button class="btn btn-success btn-sm" onclick="printOrderInvoice('${o.id}')" title="Печать накладной">🖨️</button>
+                            <button class="btn btn-outline btn-sm" onclick="printOrderInvoice('${o.id}')" title="Инвойс">📄 Инвойс</button>
+                            <button class="btn btn-outline btn-sm" onclick="printPackingList('${o.id}')" title="Упаковочный лист">📦 Packing List</button>
+                        </td>
+                        <td>
                             <button class="btn btn-outline btn-sm" onclick="editOrder('${o.id}')" title="Редактировать">✏️</button>
                             <button class="btn btn-dark btn-sm" onclick="deleteOrder('${o.id}')" title="Удалить">🗑️</button>
                         </td>
