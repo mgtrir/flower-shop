@@ -123,8 +123,8 @@
 
         @media print {
             body * { visibility: hidden; }
-            #printInvoiceModal, #printInvoiceModal *, #printPackingModal, #printPackingModal * { visibility: visible; }
-            #printInvoiceModal, #printPackingModal { 
+            #printInvoiceModal, #printInvoiceModal *, #printPackingModal, #printPackingModal *, #printWarehouseInvoiceModal, #printWarehouseInvoiceModal * { visibility: visible; }
+            #printInvoiceModal, #printPackingModal, #printWarehouseInvoiceModal { 
                 position: absolute !important; 
                 left: 0 !important; 
                 top: 0 !important; 
@@ -403,6 +403,67 @@
         </div>
     </div>
 
+    <!-- 📦 СКЛАДСКОЙ ИНВОЙС БЕЗ ЦЕН (ИСПОЛЬЗУЕТ НАСТРОЙКУ ШТУК ИЗ КАРТОЧКИ СОРТА) -->
+    <div class="modal" id="printWarehouseInvoiceModal">
+        <div class="modal-content" style="max-width: 750px; padding: 2rem;">
+            <div class="modal-header no-print">
+                <h2>📋 Складской упаковочный лист (Без цен — Норма из карточки сорта)</h2>
+                <button class="close-btn" onclick="closeWarehouseInvoiceModal()">&times;</button>
+            </div>
+            
+            <div id="warehouseInvoiceContent" style="color:#000;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1.5rem;">
+                    <div>
+                        <h2 style="color:var(--accent); font-size:1.4rem;">ROSE GARDEN GREENHOUSE</h2>
+                        <p style="font-size:0.8rem; color:#555;">Армения, Котайкский марз, г. Раздан<br>Складской листок сборки для теплицы</p>
+                    </div>
+                    <div style="text-align:right;">
+                        <h3 style="font-size:1.2rem; color:#333;">СКЛАДСКОЙ ЛИСТ</h3>
+                        <p style="font-size:0.9rem;"><strong>Заказ №:</strong> <span id="whInvOrderId">---</span></p>
+                        <p style="font-size:0.9rem;"><strong>Дата:</strong> <span id="whInvOrderDate">---</span></p>
+                    </div>
+                </div>
+
+                <div style="background:#f8fafc; padding:10px; border-radius:6px; margin-bottom:1.2rem; font-size:0.9rem;">
+                    <p><strong>Покупатель (Consignee):</strong> <span id="whInvClientName" style="font-weight:bold;">---</span></p>
+                    <p style="font-size:0.80rem; color:#666; margin-top:4px;">* Штук в пачке берется автоматически из карточки каждого сорта (вы можете изменить это в настройках склада).</p>
+                </div>
+
+                <table style="width:100%; border-collapse:collapse; margin-bottom:1.5rem;">
+                    <thead>
+                        <tr style="background:#f1f5f9;">
+                            <th style="border:1px solid #cbd5e1; padding:6px; text-align:center;">№</th>
+                            <th style="border:1px solid #cbd5e1; padding:6px;">Наименование сорта и размер</th>
+                            <th style="border:1px solid #cbd5e1; padding:6px; text-align:center;">Кол-во пачек</th>
+                            <th style="border:1px solid #cbd5e1; padding:6px; text-align:center;">Штук в пачке</th>
+                            <th style="border:1px solid #cbd5e1; padding:6px; text-align:right;">Итого штук</th>
+                        </tr>
+                    </thead>
+                    <tbody id="whInvItemsTableBody"></tbody>
+                </table>
+
+                <div style="display:flex; justify-content:space-between; margin-bottom:2rem; font-weight:bold; font-size:1rem;">
+                    <div>Общее кол-во пачек: <span id="whInvTotalPacks" style="color:var(--accent);">0</span> пач.</div>
+                    <div>Общее кол-во штук: <span id="whInvTotalPieces" style="color:var(--accent);">0</span> шт.</div>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; margin-top:3rem; font-size:0.9rem; border-top:1px dashed #ccc; padding-top:1rem;">
+                    <div>
+                        <p>Сборщик склада: ___________________</p>
+                    </div>
+                    <div>
+                        <p>Ответственный: ___________________</p>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display:flex; gap:10px; margin-top:2rem;" class="no-print">
+                <button class="btn btn-success" style="flex:1;" onclick="window.print()">🖨️ Печать складского листа</button>
+                <button class="btn btn-dark" onclick="closeWarehouseInvoiceModal()">Закрыть</button>
+            </div>
+        </div>
+    </div>
+
     <!-- 📦 МОДАЛЬНОЕ ОКНО ПЕЧАТИ УПАКОВОЧНОГО ЛИСТА (PACKING LIST) -->
     <div class="modal" id="printPackingModal">
         <div class="modal-content" style="max-width: 750px; padding: 2rem;">
@@ -503,7 +564,7 @@
 
     <!-- 📋 МОДАЛЬНОЕ ОКНО ЗАКАЗОВ -->
     <div class="modal" id="ordersModal">
-        <div class="modal-content" style="max-width: 1000px;">
+        <div class="modal-content" style="max-width: 1050px;">
             <div class="modal-header">
                 <h2>📋 История Заказов и Экспортных Сделок</h2>
                 <button class="close-btn" onclick="closeOrdersModal()">&times;</button>
@@ -641,7 +702,7 @@
 
     <!-- 📦 МОДАЛЬНОЕ ОКНО СКЛАДА -->
     <div class="modal" id="adminModal">
-        <div class="modal-content" style="max-width: 1100px;">
+        <div class="modal-content" style="max-width: 1150px;">
             <div class="modal-header">
                 <h2>📦 Управление Складом и Цветами</h2>
                 <button class="close-btn" onclick="closeAdminModal()">&times;</button>
@@ -670,6 +731,7 @@
                                 <th>Название сорта</th>
                                 <th>Размер</th>
                                 <th>Цена за пачку (֏)</th>
+                                <th style="text-align:center;">Штук в пачке</th>
                                 <th style="text-align:center;">Остаток (Пачки)</th>
                                 <th style="text-align:center;">Остаток (Штук)</th>
                                 <th>Быстрый Приход / Списание (Пачки)</th>
@@ -688,7 +750,7 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label>Вид розы</label>
-                            <select id="flowerCategory" class="form-control" required>
+                            <select id="flowerCategory" class="form-control" required onchange="setDefaultPiecesForCategory()">
                                 <option value="Одноголовая">🌹 Одноголовая</option>
                                 <option value="Кустовая">🌿 Кустовая (Spray)</option>
                                 <option value="Эксклюзивная">🌟 Эксклюзивная</option>
@@ -709,12 +771,16 @@
                             <input type="number" id="flowerPrice" class="form-control" required placeholder="1000">
                         </div>
                         <div class="form-group">
+                            <label>Штук в одной пачке</label>
+                            <input type="number" id="flowerPcsPerPack" class="form-control" required value="15" placeholder="15">
+                        </div>
+                        <div class="form-group">
                             <label>Остаток (пачек)</label>
                             <input type="number" id="flowerPacks" class="form-control" required placeholder="10">
                         </div>
                         <div class="form-group">
                             <label>Остаток (шт)</label>
-                            <input type="number" id="flowerStock" class="form-control" required placeholder="100">
+                            <input type="number" id="flowerStock" class="form-control" required placeholder="150">
                         </div>
                     </div>
                     <div class="form-group">
@@ -834,6 +900,21 @@
         window.showWarehouseSection = function(sec) {
             document.getElementById('warehouseListSection').style.display = sec === 'list' ? 'block' : 'none';
             document.getElementById('warehouseAddSection').style.display = sec === 'add' ? 'block' : 'none';
+            if (sec === 'add' && !document.getElementById('editItemId').value) {
+                setDefaultPiecesForCategory();
+            }
+        };
+
+        window.setDefaultPiecesForCategory = function() {
+            const cat = document.getElementById('flowerCategory').value;
+            const pcsInput = document.getElementById('flowerPcsPerPack');
+            if (pcsInput) {
+                if (cat === 'Одноголовая') {
+                    pcsInput.value = 15;
+                } else {
+                    pcsInput.value = 10;
+                }
+            }
         };
 
         auth.onAuthStateChanged((user) => {
@@ -908,7 +989,7 @@
                 ["🌸 РОУЗ ГАРДЕН АРМЕНИЯ — ОСТАТКИ СКЛАДА"],
                 [`Дата выгрузки: ${new Date().toLocaleDateString('ru-RU')}`],
                 [],
-                ["№", "Вид розы", "Наименование сорта", "Размер", "Цена за пачку (֏)", "Остаток (пачек)", "Остаток (шт)", "Общая стоимость (֏)"]
+                ["№", "Вид розы", "Наименование сорта", "Размер", "Цена за пачку (֏)", "Штук в пачке", "Остаток (пачек)", "Остаток (шт)", "Общая стоимость (֏)"]
             ];
             let totalQty = 0, totalPacks = 0, totalVal = 0;
             flowers.forEach((f, idx) => {
@@ -916,9 +997,9 @@
                 totalQty += Number(f.stock || 0);
                 totalPacks += Number(f.packs || 0);
                 totalVal += itemTotal;
-                wsData.push([idx + 1, f.category || 'Одноголовая', f.name || '', f.size || '', Number(f.price || 0), Number(f.packs || 0), Number(f.stock || 0), itemTotal]);
+                wsData.push([idx + 1, f.category || 'Одноголовая', f.name || '', f.size || '', Number(f.price || 0), Number(f.pcsPerPack || 15), Number(f.packs || 0), Number(f.stock || 0), itemTotal]);
             });
-            wsData.push([], ["ИТОГО НА СКЛАДЕ", "", "", "", "", totalPacks, totalQty, totalVal]);
+            wsData.push([], ["ИТОГО НА СКЛАДЕ", "", "", "", "", "", totalPacks, totalQty, totalVal]);
             const ws = XLSX.utils.aoa_to_sheet(wsData);
             XLSX.utils.book_append_sheet(wb, ws, "Остатки Склада");
             XLSX.writeFile(wb, `RoseGarden_Stock_${Date.now()}.xlsx`);
@@ -984,6 +1065,7 @@
                                     category: 'Одноголовая',
                                     size: item.size,
                                     price: 1000,
+                                    pcsPerPack: 15,
                                     stock: qty,
                                     packs: packs,
                                     image: DEFAULT_FLOWER_IMAGE
@@ -1176,6 +1258,8 @@
                 return {
                     flowerId: i.flowerId,
                     name: flower ? flower.name + ' (' + flower.size + ')' : 'Цветок',
+                    category: flower ? (flower.category || 'Одноголовая') : 'Одноголовая',
+                    pcsPerPack: flower ? (flower.pcsPerPack || 15) : 15,
                     packs: i.packs,
                     price: flower ? flower.price : 0
                 };
@@ -1260,6 +1344,8 @@
                 activeOrderItems.push({
                     flowerId: flower.id,
                     name: flower.name + ' (' + flower.size + ')',
+                    category: flower.category || 'Одноголовая',
+                    pcsPerPack: flower.pcsPerPack || 15,
                     packs: packs,
                     price: flower.price
                 });
@@ -1319,7 +1405,7 @@
             renderCheckoutItemsTable();
         };
 
-        // Генерация Commercial Invoice (Инвойса)
+        // Генерация Commercial Invoice (Инвойса с ценами)
         window.printOrderInvoice = function(id) {
             const order = orders.find(o => o.id === id);
             if (!order) return;
@@ -1351,6 +1437,51 @@
 
         window.closePrintModal = function() {
             document.getElementById('printInvoiceModal').classList.remove('active');
+        };
+
+        // 📋 ГЕНЕРАЦИЯ СКЛАДСКОГО ИНВОЙСА БЕЗ ЦЕН (АВТОМАТИЧЕСКИ ИЗ КАРТОЧЕК СОРТОВ)
+        window.printWarehouseInvoice = function(id) {
+            const order = orders.find(o => o.id === id);
+            if (!order) return;
+
+            document.getElementById('whInvOrderId').innerText = order.id;
+            document.getElementById('whInvOrderDate').innerText = order.date || 'Сегодня';
+            document.getElementById('whInvClientName').innerText = order.clientName || 'Покупатель';
+
+            const tbody = document.getElementById('whInvItemsTableBody');
+            tbody.innerHTML = '';
+            let totalPacks = 0;
+            let totalPieces = 0;
+
+            (order.items || []).forEach((item, idx) => {
+                const packs = Number(item.packs || 0);
+                totalPacks += packs;
+
+                // Берем норму штук в пачке из заказанного товара или ищем в актуальном складе
+                const flowerObj = flowers.find(f => f.id === item.flowerId);
+                const pcsPerPack = item.pcsPerPack || (flowerObj ? flowerObj.pcsPerPack : 15) || 15;
+
+                const itemPieces = packs * pcsPerPack;
+                totalPieces += itemPieces;
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td style="border:1px solid #cbd5e1; padding:6px; text-align:center;">${idx + 1}</td>
+                        <td style="border:1px solid #cbd5e1; padding:6px;"><strong>${item.name}</strong></td>
+                        <td style="border:1px solid #cbd5e1; padding:6px; text-align:center; font-weight:bold;">${packs} пач.</td>
+                        <td style="border:1px solid #cbd5e1; padding:6px; text-align:center;">${pcsPerPack} шт/пач</td>
+                        <td style="border:1px solid #cbd5e1; padding:6px; text-align:right; font-weight:bold; color:var(--accent);">${itemPieces} шт.</td>
+                    </tr>
+                `;
+            });
+
+            document.getElementById('whInvTotalPacks').innerText = totalPacks;
+            document.getElementById('whInvTotalPieces').innerText = totalPieces;
+            document.getElementById('printWarehouseInvoiceModal').classList.add('active');
+        };
+
+        window.closeWarehouseInvoiceModal = function() {
+            document.getElementById('printWarehouseInvoiceModal').classList.remove('active');
         };
 
         // Генерация Packing List (Упаковочного листа)
@@ -1405,8 +1536,9 @@
                             </select>
                         </td>
                         <td>
-                            <button class="btn btn-outline btn-sm" onclick="printOrderInvoice('${o.id}')" title="Инвойс">📄 Инвойс</button>
-                            <button class="btn btn-outline btn-sm" onclick="printPackingList('${o.id}')" title="Упаковочный лист">📦 Packing List</button>
+                            <button class="btn btn-outline btn-sm" onclick="printOrderInvoice('${o.id}')" title="Инвойс с ценами">📄 Инвойс</button>
+                            <button class="btn btn-success btn-sm" onclick="printWarehouseInvoice('${o.id}')" title="Складской лист без цен">📋 Склад</button>
+                            <button class="btn btn-outline btn-sm" onclick="printPackingList('${o.id}')" title="Упаковочный лист">📦 Packing</button>
                         </td>
                         <td>
                             <button class="btn btn-outline btn-sm" onclick="editOrder('${o.id}')" title="Редактировать">✏️</button>
@@ -1618,6 +1750,9 @@
                     <td>${f.size}</td>
                     <td><strong>${f.price} ֏</strong></td>
                     <td style="text-align:center;">
+                        <input type="number" class="stock-direct-input" style="color:#d97706;" value="${f.pcsPerPack || 15}" onchange="updateFlowerPcsPerPackDirect(${idx}, this.value)">
+                    </td>
+                    <td style="text-align:center;">
                         <input type="number" class="stock-direct-input" style="color:var(--accent);" value="${f.packs || 0}" onchange="updateFlowerPacksDirect(${idx}, this.value)">
                     </td>
                     <td style="text-align:center;">
@@ -1638,6 +1773,13 @@
                 tbody.appendChild(tr);
             });
         }
+
+        window.updateFlowerPcsPerPackDirect = function(idx, val) {
+            const num = parseInt(val, 10);
+            if (isNaN(num)) return;
+            flowers[idx].pcsPerPack = num;
+            db.ref('inventory').set(flowers);
+        };
 
         window.updateFlowerPacksDirect = function(idx, val) {
             const num = parseInt(val, 10);
@@ -1670,6 +1812,7 @@
                 name: document.getElementById('flowerName').value,
                 size: document.getElementById('flowerSize').value,
                 price: Number(document.getElementById('flowerPrice').value),
+                pcsPerPack: Number(document.getElementById('flowerPcsPerPack').value || 15),
                 packs: Number(document.getElementById('flowerPacks').value || 0),
                 stock: Number(document.getElementById('flowerStock').value || 0),
                 image: document.getElementById('flowerImage').value || DEFAULT_FLOWER_IMAGE
@@ -1705,6 +1848,7 @@
             document.getElementById('flowerName').value = flower.name;
             document.getElementById('flowerSize').value = flower.size;
             document.getElementById('flowerPrice').value = flower.price;
+            document.getElementById('flowerPcsPerPack').value = flower.pcsPerPack || 15;
             document.getElementById('flowerPacks').value = flower.packs || 0;
             document.getElementById('flowerStock').value = flower.stock || 0;
             document.getElementById('flowerImage').value = flower.image || DEFAULT_FLOWER_IMAGE;
