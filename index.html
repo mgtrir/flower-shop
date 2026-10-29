@@ -121,43 +121,57 @@
         .auth-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #fcf8f8; z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 1rem; }
         .auth-box { background: white; padding: 2rem; border-radius: 12px; border: 1px solid #ddd; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
 
+        /* ИСПРАВЛЕННЫЙ ИДЕАЛЬНЫЙ СТИЛЬ ПЕЧАТИ */
         @media print {
-            body * { visibility: hidden; }
-            #printInvoiceModal, #printInvoiceModal *, #printPackingModal, #printPackingModal *, #printWarehouseInvoiceModal, #printWarehouseInvoiceModal * { visibility: visible; }
-            #printInvoiceModal, #printPackingModal, #printWarehouseInvoiceModal { 
-                position: absolute !important; 
-                left: 0 !important; 
-                top: 0 !important; 
-                width: 100% !important; 
+            body * { display: none !important; }
+            #printWarehouseInvoiceModal.active, #printWarehouseInvoiceModal.active *,
+            #printInvoiceModal.active, #printInvoiceModal.active *,
+            #printPackingModal.active, #printPackingModal.active * {
+                visibility: visible !important;
+            }
+            #printWarehouseInvoiceModal.active, #printInvoiceModal.active, #printPackingModal.active {
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
                 height: auto !important;
-                background: white !important; 
-                padding: 0 !important; 
+                background: white !important;
+                z-index: 99999 !important;
                 margin: 0 !important;
-                box-shadow: none !important; 
-                max-height: none !important;
-                overflow: visible !important;
+                padding: 10mm !important;
+                display: block !important;
+            }
+            #printWarehouseInvoiceModal.active *, #printInvoiceModal.active *, #printPackingModal.active * {
+                display: revert !important;
+            }
+            #printWarehouseInvoiceModal.active table, #printInvoiceModal.active table, #printPackingModal.active table {
+                display: table !important;
+                width: 100% !important;
+            }
+            #printWarehouseInvoiceModal.active tr, #printInvoiceModal.active tr, #printPackingModal.active tr {
+                display: table-row !important;
+            }
+            #printWarehouseInvoiceModal.active th, #printWarehouseInvoiceModal.active td,
+            #printInvoiceModal.active th, #printInvoiceModal.active td,
+            #printPackingModal.active th, #printPackingModal.active td {
+                display: table-cell !important;
             }
             .modal-content {
                 max-height: none !important;
-                height: auto !important;
                 overflow: visible !important;
-                box-shadow: none !important;
-                padding: 5mm !important;
-                width: 100% !important;
                 border: none !important;
+                box-shadow: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                width: 100% !important;
             }
-            table { font-size: 0.65rem !important; page-break-inside: auto; }
+            table { font-size: 0.75rem !important; page-break-inside: auto; }
             tr { page-break-inside: avoid; page-break-after: auto; }
             thead { display: table-header-group; }
-            th, td { padding: 2px 4px !important; }
             .no-print { display: none !important; }
             @page { 
                 size: A4 portrait; 
                 margin: 10mm; 
-            }
-            body, html { 
-                height: auto !important; 
-                overflow: visible !important; 
             }
         }
     </style>
@@ -276,7 +290,7 @@
         </div>
     </div>
 
-    <!-- 💾 МОДАЛЬНОЕ ОКНО ОФОРМЛЕНИЯ / РЕДАКТИРОВАНИЯ СДЕЛКИ -->
+    <!-- МОДАЛЬНОЕ ОКНО ОФОРМЛЕНИЯ СДЕЛКИ -->
     <div class="modal" id="saveOrderModal">
         <div class="modal-content" style="max-width: 750px;">
             <div class="modal-header">
@@ -314,7 +328,6 @@
                         </table>
                     </div>
 
-                    <!-- Добавление нового товара прямо в редактировании заказа -->
                     <div style="margin-top: 10px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
                         <select id="editAddFlowerSelect" class="form-control" style="flex:2; min-width:180px;"></select>
                         <input type="number" id="editAddPacksInput" class="form-control" value="10" style="width:90px;" placeholder="Пач">
@@ -333,9 +346,9 @@
         </div>
     </div>
 
-    <!-- 🖨️ МОДАЛЬНОЕ ОКНО ПЕЧАТИ ИНВОЙСА -->
+    <!-- МОДАЛЬНОЕ ОКНО ПЕЧАТИ ИНВОЙСА -->
     <div class="modal" id="printInvoiceModal">
-        <div class="modal-content" style="max-width: 750px; padding: 2rem;">
+        <div class="modal-content" style="max-width: 750px; padding: 1.5rem;">
             <div class="modal-header no-print">
                 <h2>📄 Экспортный Коммерческий Инвойс (Commercial Invoice)</h2>
                 <button class="close-btn" onclick="closePrintModal()">&times;</button>
@@ -387,12 +400,8 @@
                 </div>
 
                 <div style="display:flex; justify-content:space-between; margin-top:3rem; font-size:0.9rem; border-top:1px dashed #ccc; padding-top:1rem;">
-                    <div>
-                        <p>От продавца (Seller): ___________________</p>
-                    </div>
-                    <div>
-                        <p>Получатель (Buyer): ___________________</p>
-                    </div>
+                    <div><p>От продавца (Seller): ___________________</p></div>
+                    <div><p>Получатель (Buyer): ___________________</p></div>
                 </div>
             </div>
 
@@ -403,11 +412,11 @@
         </div>
     </div>
 
-    <!-- 📦 СКЛАДСКОЙ ИНВОЙС БЕЗ ЦЕН (ИСПОЛЬЗУЕТ НАСТРОЙКУ ШТУК ИЗ КАРТОЧКИ СОРТА) -->
+    <!-- СКЛАДСКОЙ ИНВОЙС БЕЗ ЦЕН -->
     <div class="modal" id="printWarehouseInvoiceModal">
-        <div class="modal-content" style="max-width: 750px; padding: 2rem;">
+        <div class="modal-content" style="max-width: 750px; padding: 1.5rem;">
             <div class="modal-header no-print">
-                <h2>📋 Складской упаковочный лист (Без цен — Норма из карточки сорта)</h2>
+                <h2>📋 Складской упаковочный лист (Без цен)</h2>
                 <button class="close-btn" onclick="closeWarehouseInvoiceModal()">&times;</button>
             </div>
             
@@ -426,8 +435,11 @@
 
                 <div style="background:#f8fafc; padding:10px; border-radius:6px; margin-bottom:1.2rem; font-size:0.9rem;">
                     <p><strong>Покупатель (Consignee):</strong> <span id="whInvClientName" style="font-weight:bold;">---</span></p>
-                    <p style="font-size:0.80rem; color:#666; margin-top:4px;">* Штук в пачке берется автоматически из карточки каждого сорта (вы можете изменить это в настройках склада).</p>
+                    <p style="font-size:0.80rem; color:#666; margin-top:4px;">* Штук в пачке берется автоматически из карточки каждого сорта.</p>
                 </div>
+
+                <!-- Сводка по категориям из карточки склада -->
+                <div id="whInvCategorySummary" style="background:#f1f5f9; padding:8px 12px; border-radius:6px; margin-bottom:12px; font-size:0.85rem; border:1px solid #cbd5e1;"></div>
 
                 <table style="width:100%; border-collapse:collapse; margin-bottom:1.5rem;">
                     <thead>
@@ -448,12 +460,8 @@
                 </div>
 
                 <div style="display:flex; justify-content:space-between; margin-top:3rem; font-size:0.9rem; border-top:1px dashed #ccc; padding-top:1rem;">
-                    <div>
-                        <p>Сборщик склада: ___________________</p>
-                    </div>
-                    <div>
-                        <p>Ответственный: ___________________</p>
-                    </div>
+                    <div><p>Сборщик склада: ___________________</p></div>
+                    <div><p>Ответственный: ___________________</p></div>
                 </div>
             </div>
 
@@ -464,9 +472,9 @@
         </div>
     </div>
 
-    <!-- 📦 МОДАЛЬНОЕ ОКНО ПЕЧАТИ УПАКОВОЧНОГО ЛИСТА (PACKING LIST) -->
+    <!-- PACKING LIST -->
     <div class="modal" id="printPackingModal">
-        <div class="modal-content" style="max-width: 750px; padding: 2rem;">
+        <div class="modal-content" style="max-width: 750px; padding: 1.5rem;">
             <div class="modal-header no-print">
                 <h2>📦 Экспортный Упаковочный Лист (Packing List)</h2>
                 <button class="close-btn" onclick="closePackingModal()">&times;</button>
@@ -487,7 +495,6 @@
 
                 <div style="background:#f8fafc; padding:10px; border-radius:6px; margin-bottom:1.2rem; font-size:0.9rem;">
                     <p><strong>Покупатель (Consignee):</strong> <span id="packClientName" style="font-weight:bold;">---</span></p>
-                    <p><strong>Вид транспорта:</strong> Автотранспорт / Авиаперевозка</p>
                 </div>
 
                 <table style="width:100%; border-collapse:collapse; margin-bottom:1.5rem;">
@@ -507,12 +514,8 @@
                 </div>
 
                 <div style="display:flex; justify-content:space-between; margin-top:3rem; font-size:0.9rem; border-top:1px dashed #ccc; padding-top:1rem;">
-                    <div>
-                        <p>Упаковал (Packer): ___________________</p>
-                    </div>
-                    <div>
-                        <p>Проверил (Controller): ___________________</p>
-                    </div>
+                    <div><p>Упаковал (Packer): ___________________</p></div>
+                    <div><p>Проверил (Controller): ___________________</p></div>
                 </div>
             </div>
 
@@ -523,7 +526,7 @@
         </div>
     </div>
 
-    <!-- 👥 МОДАЛЬНОЕ ОКНО КЛИЕНТОВ -->
+    <!-- МОДАЛЬНОЕ ОКНО КЛИЕНТОВ -->
     <div class="modal" id="clientsModal">
         <div class="modal-content" style="max-width: 900px;">
             <div class="modal-header">
@@ -562,12 +565,15 @@
         </div>
     </div>
 
-    <!-- 📋 МОДАЛЬНОЕ ОКНО ЗАКАЗОВ -->
+    <!-- МОДАЛЬНОЕ ОКНО ЗАКАЗОВ -->
     <div class="modal" id="ordersModal">
-        <div class="modal-content" style="max-width: 1050px;">
+        <div class="modal-content" style="max-width: 1100px;">
             <div class="modal-header">
                 <h2>📋 История Заказов и Экспортных Сделок</h2>
-                <button class="close-btn" onclick="closeOrdersModal()">&times;</button>
+                <div style="display:flex; gap:8px;">
+                    <button class="btn btn-dark btn-sm" onclick="exportOrdersExcel()">📊 Выгрузить заказы в Excel</button>
+                    <button class="close-btn" onclick="closeOrdersModal()">&times;</button>
+                </div>
             </div>
             <div class="table-responsive">
                 <table>
@@ -580,7 +586,7 @@
         </div>
     </div>
 
-    <!-- 📑 МОДАЛЬНОЕ ОКНО ЗАКУПА -->
+    <!-- МОДАЛЬНОЕ ОКНО ЗАКУПА -->
     <div class="modal" id="procurementsModal">
         <div class="modal-content" style="max-width: 950px;">
             <div class="modal-header">
@@ -613,15 +619,9 @@
                         </div>
 
                         <div style="margin-top: 0.8rem; display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end;">
-                            <div style="flex:2; min-width:180px;">
-                                <select id="procSelectFlower" class="form-control"></select>
-                            </div>
-                            <div style="width:110px;">
-                                <input type="number" id="procPriceInput" class="form-control" placeholder="Закуп ֏">
-                            </div>
-                            <div style="width:100px;">
-                                <input type="number" id="procQtyInput" class="form-control" value="10" placeholder="Пачек">
-                            </div>
+                            <div style="flex:2; min-width:180px;"><select id="procSelectFlower" class="form-control"></select></div>
+                            <div style="width:110px;"><input type="number" id="procPriceInput" class="form-control" placeholder="Закуп ֏"></div>
+                            <div style="width:100px;"><input type="number" id="procQtyInput" class="form-control" value="10" placeholder="Пачек"></div>
                             <button type="button" class="btn btn-sm btn-outline" onclick="addProcurementRow()">+ Добавить сорт</button>
                         </div>
                     </div>
@@ -647,7 +647,7 @@
         </div>
     </div>
 
-    <!-- 💰 МОДАЛЬНОЕ ОКНО КАССЫ -->
+    <!-- МОДАЛЬНОЕ ОКНО КАССЫ -->
     <div class="modal" id="financeModal">
         <div class="modal-content" style="max-width: 900px;">
             <div class="modal-header">
@@ -662,7 +662,7 @@
         </div>
     </div>
 
-    <!-- 📊 МОДАЛЬНОЕ ОКНО АНАЛИТИКИ -->
+    <!-- МОДАЛЬНОЕ ОКНО АНАЛИТИКИ -->
     <div class="modal" id="analyticsModal">
         <div class="modal-content" style="max-width: 900px;">
             <div class="modal-header">
@@ -682,7 +682,7 @@
         </div>
     </div>
 
-    <!-- 👑 МОДАЛЬНОЕ ОКНО ДОСТУПОВ -->
+    <!-- МОДАЛЬНОЕ ОКНО ДОСТУПОВ -->
     <div class="modal" id="rolesModal">
         <div class="modal-content" style="max-width: 800px;">
             <div class="modal-header">
@@ -700,7 +700,7 @@
         </div>
     </div>
 
-    <!-- 📦 МОДАЛЬНОЕ ОКНО СКЛАДА -->
+    <!-- МОДАЛЬНОЕ ОКНО СКЛАДА -->
     <div class="modal" id="adminModal">
         <div class="modal-content" style="max-width: 1150px;">
             <div class="modal-header">
@@ -726,16 +726,9 @@
                     <table>
                         <thead>
                             <tr>
-                                <th>Фото</th>
-                                <th>Вид</th>
-                                <th>Название сорта</th>
-                                <th>Размер</th>
-                                <th>Цена за пачку (֏)</th>
-                                <th style="text-align:center;">Штук в пачке</th>
-                                <th style="text-align:center;">Остаток (Пачки)</th>
-                                <th style="text-align:center;">Остаток (Штук)</th>
-                                <th>Быстрый Приход / Списание (Пачки)</th>
-                                <th>Действия</th>
+                                <th>Фото</th><th>Вид</th><th>Название сорта</th><th>Размер</th><th>Цена за пачку (֏)</th>
+                                <th style="text-align:center;">Штук в пачке</th><th style="text-align:center;">Остаток (Пачки)</th>
+                                <th style="text-align:center;">Остаток (Штук)</th><th>Быстрый Приход / Списание</th><th>Действия</th>
                             </tr>
                         </thead>
                         <tbody id="adminTableBody"></tbody>
@@ -762,26 +755,11 @@
                         </div>
                     </div>
                     <div class="form-row">
-                        <div class="form-group">
-                            <label>Размер</label>
-                            <input type="text" id="flowerSize" class="form-control" required placeholder="60 см">
-                        </div>
-                        <div class="form-group">
-                            <label>Цена за пачку (֏)</label>
-                            <input type="number" id="flowerPrice" class="form-control" required placeholder="1000">
-                        </div>
-                        <div class="form-group">
-                            <label>Штук в одной пачке</label>
-                            <input type="number" id="flowerPcsPerPack" class="form-control" required value="15" placeholder="15">
-                        </div>
-                        <div class="form-group">
-                            <label>Остаток (пачек)</label>
-                            <input type="number" id="flowerPacks" class="form-control" required placeholder="10">
-                        </div>
-                        <div class="form-group">
-                            <label>Остаток (шт)</label>
-                            <input type="number" id="flowerStock" class="form-control" required placeholder="150">
-                        </div>
+                        <div class="form-group"><label>Размер</label><input type="text" id="flowerSize" class="form-control" required placeholder="60 см"></div>
+                        <div class="form-group"><label>Цена за пачку (֏)</label><input type="number" id="flowerPrice" class="form-control" required placeholder="1000"></div>
+                        <div class="form-group"><label>Штук в одной пачке</label><input type="number" id="flowerPcsPerPack" class="form-control" required value="15" placeholder="15"></div>
+                        <div class="form-group"><label>Остаток (пачек)</label><input type="number" id="flowerPacks" class="form-control" required placeholder="10"></div>
+                        <div class="form-group"><label>Остаток (шт)</label><input type="number" id="flowerStock" class="form-control" required placeholder="150"></div>
                     </div>
                     <div class="form-group">
                         <label>Ссылка на картинку (URL)</label>
@@ -823,17 +801,12 @@
         let procurements = [];
         let currentProcurementItems = [];
         let cart = {};
-        
         let activeOrderItems = [];
 
         try {
             const savedCart = localStorage.getItem('rosegarden_cart');
-            if (savedCart) {
-                cart = JSON.parse(savedCart);
-            }
-        } catch (e) {
-            cart = {};
-        }
+            if (savedCart) cart = JSON.parse(savedCart);
+        } catch (e) { cart = {}; }
 
         let selectedTypeFilter = 'ALL';
         let selectedSizeFilter = 'ALL';
@@ -846,7 +819,6 @@
         window.setCardSize = function(size, el) {
             document.querySelectorAll('#cardSizeFilters .size-chip').forEach(c => c.classList.remove('active'));
             el.classList.add('active');
-
             const root = document.documentElement;
             if (size === 'compact') {
                 root.style.setProperty('--card-min-width', '200px');
@@ -860,10 +832,7 @@
             }
         };
 
-        window.openClientsModal = function() {
-            document.getElementById('clientsModal').classList.add('active');
-            renderClientsTable();
-        };
+        window.openClientsModal = function() { document.getElementById('clientsModal').classList.add('active'); renderClientsTable(); };
         window.closeClientsModal = function() { document.getElementById('clientsModal').classList.remove('active'); };
 
         window.openOrdersModal = function() {
@@ -874,6 +843,25 @@
             });
         };
         window.closeOrdersModal = function() { document.getElementById('ordersModal').classList.remove('active'); };
+
+        window.exportOrdersExcel = function() {
+            if (!orders || orders.length === 0) return alert('Нет заказов!');
+            const wb = XLSX.utils.book_new();
+            const wsData = [
+                ["🌸 РОУЗ ГАРДЕН — ЗАКАЗЫ"],
+                ["№ Заказа", "Дата", "Клиент", "Телефон", "Статус", "Состав", "Сумма (֏)"]
+            ];
+            let total = 0;
+            orders.forEach(o => {
+                total += Number(o.totalPrice || 0);
+                let itemsStr = (o.items || []).map(i => `${i.name}: ${i.packs} пач.`).join(' | ');
+                wsData.push([o.id, o.date, o.clientName, o.clientPhone, o.status, itemsStr, o.totalPrice]);
+            });
+            wsData.push([], ["ИТОГО", "", "", "", "", "", total]);
+            const ws = XLSX.utils.aoa_to_sheet(wsData);
+            XLSX.utils.book_append_sheet(wb, ws, "Заказы");
+            XLSX.writeFile(wb, `RoseGarden_Orders_${Date.now()}.xlsx`);
+        };
 
         window.openProcurementsModal = function() {
             document.getElementById('procurementsModal').classList.add('active');
@@ -900,21 +888,13 @@
         window.showWarehouseSection = function(sec) {
             document.getElementById('warehouseListSection').style.display = sec === 'list' ? 'block' : 'none';
             document.getElementById('warehouseAddSection').style.display = sec === 'add' ? 'block' : 'none';
-            if (sec === 'add' && !document.getElementById('editItemId').value) {
-                setDefaultPiecesForCategory();
-            }
+            if (sec === 'add' && !document.getElementById('editItemId').value) setDefaultPiecesForCategory();
         };
 
         window.setDefaultPiecesForCategory = function() {
             const cat = document.getElementById('flowerCategory').value;
             const pcsInput = document.getElementById('flowerPcsPerPack');
-            if (pcsInput) {
-                if (cat === 'Одноголовая') {
-                    pcsInput.value = 15;
-                } else {
-                    pcsInput.value = 10;
-                }
-            }
+            if (pcsInput) pcsInput.value = (cat === 'Одноголовая') ? 15 : 10;
         };
 
         auth.onAuthStateChanged((user) => {
@@ -940,8 +920,7 @@
         });
 
         function applyRolePermissions() {
-            const adminElements = document.querySelectorAll('.admin-only');
-            adminElements.forEach(el => el.style.display = userRole === 'Admin' ? 'inline-flex' : 'none');
+            document.querySelectorAll('.admin-only').forEach(el => el.style.display = userRole === 'Admin' ? 'inline-flex' : 'none');
         }
 
         function getRoleBadge(role) {
@@ -952,8 +931,8 @@
 
         window.toggleAuthMode = function() {
             isRegisterMode = !isRegisterMode;
-            document.getElementById('authTitle').innerText = isRegisterMode ? 'Регистрация нового сотрудника' : 'Войдите в систему сотрудника';
-            document.getElementById('authSubmitBtn').innerText = isRegisterMode ? 'Зарегистрироваться' : 'Войти в CRM';
+            document.getElementById('authTitle').innerText = isRegisterMode ? 'Регистрация' : 'Вход в CRM';
+            document.getElementById('authSubmitBtn').innerText = isRegisterMode ? 'Зарегистрироваться' : 'Войти';
             document.getElementById('authToggleText').innerText = isRegisterMode ? 'Уже есть аккаунт?' : 'Нет аккаунта?';
             document.getElementById('authToggleBtn').innerText = isRegisterMode ? 'Войти' : 'Зарегистрироваться';
             document.getElementById('authNameGroup').style.display = isRegisterMode ? 'block' : 'none';
@@ -968,47 +947,40 @@
             if (isRegisterMode) {
                 auth.createUserWithEmailAndPassword(email, password).then((cred) => {
                     const isAdmin = email.includes('admin') || email === 'mgtir11@gmail.com';
-                    db.ref('users/' + cred.user.uid).set({
-                        email: email,
-                        name: name || email.split('@')[0],
-                        role: isAdmin ? 'Admin' : 'Blocked'
-                    });
-                    alert('Регистрация успешна!');
+                    db.ref('users/' + cred.user.uid).set({ email, name: name || email.split('@')[0], role: isAdmin ? 'Admin' : 'Blocked' });
+                    alert('Успешно!');
                 }).catch(err => alert(err.message));
             } else {
-                auth.signInWithEmailAndPassword(email, password).catch(err => alert('Ошибка входа: ' + err.message));
+                auth.signInWithEmailAndPassword(email, password).catch(err => alert('Ошибка: ' + err.message));
             }
         };
 
         window.handleLogout = function() { auth.signOut(); };
 
         window.exportStockExcel = function() {
-            if (!flowers || flowers.length === 0) return alert('На складе нет товаров!');
+            if (!flowers || flowers.length === 0) return alert('Пусто!');
             const wb = XLSX.utils.book_new();
             const wsData = [
-                ["🌸 РОУЗ ГАРДЕН АРМЕНИЯ — ОСТАТКИ СКЛАДА"],
-                [`Дата выгрузки: ${new Date().toLocaleDateString('ru-RU')}`],
-                [],
-                ["№", "Вид розы", "Наименование сорта", "Размер", "Цена за пачку (֏)", "Штук в пачке", "Остаток (пачек)", "Остаток (шт)", "Общая стоимость (֏)"]
+                ["🌸 РОУЗ ГАРДЕН — ОСТАТКИ"],
+                ["№", "Вид", "Сорт", "Размер", "Цена", "Штук/пач", "Пачки", "Штук", "Сумма"]
             ];
-            let totalQty = 0, totalPacks = 0, totalVal = 0;
+            let tPacks = 0, tQty = 0, tSum = 0;
             flowers.forEach((f, idx) => {
-                const itemTotal = Number(f.price || 0) * Number(f.packs || 0);
-                totalQty += Number(f.stock || 0);
-                totalPacks += Number(f.packs || 0);
-                totalVal += itemTotal;
-                wsData.push([idx + 1, f.category || 'Одноголовая', f.name || '', f.size || '', Number(f.price || 0), Number(f.pcsPerPack || 15), Number(f.packs || 0), Number(f.stock || 0), itemTotal]);
+                let s = (f.price || 0) * (f.packs || 0);
+                tPacks += Number(f.packs || 0);
+                tQty += Number(f.stock || 0);
+                tSum += s;
+                wsData.push([idx+1, f.category, f.name, f.size, f.price, f.pcsPerPack || 15, f.packs || 0, f.stock || 0, s]);
             });
-            wsData.push([], ["ИТОГО НА СКЛАДЕ", "", "", "", "", "", totalPacks, totalQty, totalVal]);
+            wsData.push([], ["ИТОГО", "", "", "", "", "", tPacks, tQty, tSum]);
             const ws = XLSX.utils.aoa_to_sheet(wsData);
-            XLSX.utils.book_append_sheet(wb, ws, "Остатки Склада");
+            XLSX.utils.book_append_sheet(wb, ws, "Склад");
             XLSX.writeFile(wb, `RoseGarden_Stock_${Date.now()}.xlsx`);
         };
 
         window.importDailyStock = function(e) {
             const file = e.target.files[0];
             if (!file) return;
-
             const reader = new FileReader();
             reader.onload = function(evt) {
                 try {
@@ -1016,8 +988,7 @@
                     const workbook = XLSX.read(data, { type: 'array' });
                     const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
                     const rows = XLSX.utils.sheet_to_json(firstSheet, { header: 1, defval: "" });
-
-                    if (rows.length === 0) return alert('Файл пуст!');
+                    if (rows.length === 0) return alert('Пустой файл!');
 
                     const sizeColumns = [
                         { stockColIdx: 1, packColIdx: 2, size: '30 см' },
@@ -1025,73 +996,33 @@
                         { stockColIdx: 5, packColIdx: 6, size: '50 см' },
                         { stockColIdx: 7, packColIdx: 8, size: '60 см' },
                         { stockColIdx: 9, packColIdx: 10, size: '70 см' },
-                        { stockColIdx: 11, packColIdx: 12, size: '80 см' },
-                        { stockColIdx: 13, packColIdx: 14, size: '90 см' },
-                        { stockColIdx: 15, packColIdx: 16, size: '100 см' }
+                        { stockColIdx: 11, packColIdx: 12, size: '80 см' }
                     ];
-
-                    let updatedCount = 0;
-                    let createdCount = 0;
 
                     for (let i = 6; i < rows.length; i++) {
                         const row = rows[i];
                         const flowerName = row[0] ? String(row[0]).trim() : '';
-
-                        if (!flowerName || flowerName.includes('Ընդամենը') || flowerName.includes('Итого') || /[ա-ֆԱ-Ֆ]/.test(flowerName)) continue;
+                        if (!flowerName || flowerName.includes('Итого') || flowerName.includes('Ընդամենը')) continue;
 
                         sizeColumns.forEach(item => {
-                            const rawQty = row[item.stockColIdx];
-                            const rawPacks = row[item.packColIdx];
-
-                            let qty = parseInt(rawQty, 10);
-                            if (isNaN(qty) || rawQty === '-' || rawQty === '') qty = 0;
-
-                            let packs = parseInt(rawPacks, 10);
-                            if (isNaN(packs) || rawPacks === '-' || rawPacks === '') packs = 0;
-
-                            let existingFlower = flowers.find(f => 
-                                f.name.toLowerCase() === flowerName.toLowerCase() && 
-                                (f.size && f.size.includes(item.size.replace(' см', '')))
-                            );
-
-                            if (existingFlower) {
-                                existingFlower.stock = qty;
-                                existingFlower.packs = packs;
-                                updatedCount++;
+                            let qty = parseInt(row[item.stockColIdx], 10) || 0;
+                            let packs = parseInt(row[item.packColIdx], 10) || 0;
+                            let existing = flowers.find(f => f.name.toLowerCase() === flowerName.toLowerCase() && f.size.includes(item.size.replace(' см','')));
+                            if (existing) {
+                                existing.stock = qty;
+                                existing.packs = packs;
                             } else if (qty > 0 || packs > 0) {
                                 flowers.push({
-                                    id: 'FLW-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
-                                    name: flowerName,
-                                    category: 'Одноголовая',
-                                    size: item.size,
-                                    price: 1000,
-                                    pcsPerPack: 15,
-                                    stock: qty,
-                                    packs: packs,
-                                    image: DEFAULT_FLOWER_IMAGE
+                                    id: 'FLW-' + Date.now() + '-' + Math.floor(Math.random()*1000),
+                                    name: flowerName, category: 'Одноголовая', size: item.size,
+                                    price: 1000, pcsPerPack: 15, stock: qty, packs: packs, image: DEFAULT_FLOWER_IMAGE
                                 });
-                                createdCount++;
                             }
                         });
                     }
-
-                    flowers.forEach(f => {
-                        const realPhotoMatch = flowers.find(src => 
-                            src.name.toLowerCase() === f.name.toLowerCase() && 
-                            src.image && 
-                            !src.image.includes('photo-1518709268805')
-                        );
-                        if (realPhotoMatch) {
-                            f.image = realPhotoMatch.image;
-                        }
-                    });
-
                     db.ref('inventory').set(flowers);
-                    alert(`✅ Остатки обновлены! Обновлено: ${updatedCount}, Добавлено: ${createdCount}`);
-                    e.target.value = '';
-                } catch (err) {
-                    alert('Ошибка чтения файла Excel: ' + err.message);
-                }
+                    alert('Успешно импортировано!');
+                } catch(err) { alert('Ошибка: ' + err.message); }
             };
             reader.readAsArrayBuffer(file);
         };
@@ -1110,18 +1041,8 @@
         function renderNameFilterChips() {
             const container = document.getElementById('nameFilterChips');
             if (!container) return;
-            
-            let availableFlowers = flowers;
-            if (selectedTypeFilter !== 'ALL') {
-                availableFlowers = flowers.filter(f => f.category === selectedTypeFilter);
-            }
-
-            const uniqueNames = [...new Set(availableFlowers.map(f => f.name))].sort();
-            
-            if (selectedNameFilter !== 'ALL' && !uniqueNames.includes(selectedNameFilter)) {
-                selectedNameFilter = 'ALL';
-            }
-
+            let available = selectedTypeFilter === 'ALL' ? flowers : flowers.filter(f => f.category === selectedTypeFilter);
+            let uniqueNames = [...new Set(available.map(f => f.name))].sort();
             container.innerHTML = `<span class="size-chip ${selectedNameFilter === 'ALL' ? 'active' : ''}" onclick="filterName('ALL', this)">Все сорта</span>`;
             uniqueNames.forEach(name => {
                 container.innerHTML += `<span class="size-chip ${selectedNameFilter === name ? 'active' : ''}" onclick="filterName('${name}', this)">${name}</span>`;
@@ -1152,370 +1073,286 @@
 
         function renderCatalog() {
             const grid = document.getElementById('catalogGrid');
-            const search = document.getElementById('searchInput') ? document.getElementById('searchInput').value.toLowerCase() : '';
+            const search = document.getElementById('searchInput').value.toLowerCase();
             grid.innerHTML = '';
-
-            let filtered = flowers.filter(f => {
-                const matchesSearch = (f.name && f.name.toLowerCase().includes(search));
-                const matchesType = selectedTypeFilter === 'ALL' || f.category === selectedTypeFilter;
-                const matchesSize = selectedSizeFilter === 'ALL' || (f.size && f.size.includes(selectedSizeFilter));
-                const matchesName = selectedNameFilter === 'ALL' || f.name === selectedNameFilter;
-                return matchesSearch && matchesType && matchesSize && matchesName;
-            });
-
-            filtered.forEach(f => {
-                const card = document.createElement('div');
-                card.className = 'card';
-                const packsAvailable = f.packs || 0;
-                card.innerHTML = `
-                    <div class="image-wrapper">
-                        <img src="${f.image || DEFAULT_FLOWER_IMAGE}">
-                        <div class="size-tag">${f.size}</div>
-                        <div class="category-tag">${f.category || 'Одноголовая'}</div>
-                    </div>
-                    <div class="card-body">
-                        <h3 class="card-title">${f.name}</h3>
-                        <p style="margin-bottom:0.5rem; font-size:0.9rem;">${f.price} ֏ / пачка | Остаток: <strong>${packsAvailable} пач (${f.stock || 0} шт)</strong></p>
-                        <div class="card-footer-action">
-                            <div class="cart-input-box">
-                                <button class="btn btn-outline btn-sm" onclick="adjustCardQty('${f.id}', -1)">-</button>
-                                <input type="number" id="cardQty_${f.id}" class="cart-qty-input" value="1">
-                                <button class="btn btn-outline btn-sm" onclick="adjustCardQty('${f.id}', 1)">+</button>
-                                <button class="btn btn-success btn-sm" style="flex:1;" onclick="addToCartDirect('${f.id}')">🛒 В корзину</button>
+            flowers.filter(f => {
+                return (f.name.toLowerCase().includes(search)) &&
+                       (selectedTypeFilter === 'ALL' || f.category === selectedTypeFilter) &&
+                       (selectedSizeFilter === 'ALL' || f.size.includes(selectedSizeFilter)) &&
+                       (selectedNameFilter === 'ALL' || f.name === selectedNameFilter);
+            }).forEach(f => {
+                grid.innerHTML += `
+                    <div class="card">
+                        <div class="image-wrapper">
+                            <img src="${f.image || DEFAULT_FLOWER_IMAGE}">
+                            <div class="size-tag">${f.size}</div>
+                            <div class="category-tag">${f.category || 'Одноголовая'}</div>
+                        </div>
+                        <div class="card-body">
+                            <h3 class="card-title">${f.name}</h3>
+                            <p style="margin-bottom:0.5rem; font-size:0.9rem;">${f.price} ֏ | Остаток: <strong>${f.packs || 0} пач</strong></p>
+                            <div class="card-footer-action">
+                                <div class="cart-input-box">
+                                    <button class="btn btn-outline btn-sm" onclick="adjustCardQty('${f.id}', -1)">-</button>
+                                    <input type="number" id="cardQty_${f.id}" class="cart-qty-input" value="1">
+                                    <button class="btn btn-outline btn-sm" onclick="adjustCardQty('${f.id}', 1)">+</button>
+                                    <button class="btn btn-success btn-sm" style="flex:1;" onclick="addToCartDirect('${f.id}')">🛒 В корзину</button>
+                                </div>
                             </div>
                         </div>
                     </div>
                 `;
-                grid.appendChild(card);
             });
         }
 
         window.adjustCardQty = function(id, delta) {
             const input = document.getElementById(`cardQty_${id}`);
-            if (!input) return;
-            let val = parseInt(input.value, 10) || 0;
-            input.value = Math.max(1, val + delta);
+            if (input) input.value = Math.max(1, (parseInt(input.value, 10) || 0) + delta);
         };
 
         window.addToCartDirect = function(id) {
             const flower = flowers.find(f => f.id === id);
             if (!flower) return;
-            const input = document.getElementById(`cardQty_${id}`);
-            const packsToAdd = parseInt(input.value, 10) || 1;
-
+            const packs = parseInt(document.getElementById(`cardQty_${id}`).value, 10) || 1;
             if (!cart[id]) cart[id] = { flowerId: flower.id, packs: 0 };
-            cart[id].packs += packsToAdd;
-            saveCartToStorage();
+            cart[id].packs += packs;
+            localStorage.setItem('rosegarden_cart', JSON.stringify(cart));
             updateCartBar();
         };
 
-        function saveCartToStorage() {
-            try {
-                localStorage.setItem('rosegarden_cart', JSON.stringify(cart));
-            } catch (e) {}
-        }
-
         function updateCartBar() {
             const bar = document.getElementById('cartBar');
-            const cartItems = Object.values(cart);
-            if (cartItems.length === 0) { bar.style.display = 'none'; return; }
+            const items = Object.values(cart);
+            if (items.length === 0) { bar.style.display = 'none'; return; }
             bar.style.display = 'flex';
-            let totalPacks = 0, totalSum = 0;
-            cartItems.forEach(i => {
-                const flower = flowers.find(f => f.id === i.flowerId);
-                const price = flower ? flower.price : 0;
-                totalPacks += i.packs;
-                totalSum += i.packs * price;
+            let tPacks = 0, tSum = 0;
+            items.forEach(i => {
+                let f = flowers.find(fl => fl.id === i.flowerId);
+                tPacks += i.packs;
+                tSum += i.packs * (f ? f.price : 0);
             });
-            document.getElementById('cartCount').innerText = totalPacks;
-            document.getElementById('cartTotal').innerText = totalSum.toLocaleString();
+            document.getElementById('cartCount').innerText = tPacks;
+            document.getElementById('cartTotal').innerText = tSum.toLocaleString();
         }
 
-        window.clearCart = function() { 
-            cart = {}; 
-            saveCartToStorage();
-            updateCartBar(); 
-        };
+        window.clearCart = function() { cart = {}; localStorage.removeItem('rosegarden_cart'); updateCartBar(); };
 
         function populateEditOrderFlowerSelect() {
             const sel = document.getElementById('editAddFlowerSelect');
             if (!sel) return;
-            sel.innerHTML = '<option value="">-- Добавить другой сорт --</option>';
-            flowers.forEach(f => {
-                sel.innerHTML += `<option value="${f.id}">${f.name} (${f.size}) - ${f.price} ֏</option>`;
-            });
+            sel.innerHTML = '<option value="">-- Добавить сорт --</option>';
+            flowers.forEach(f => sel.innerHTML += `<option value="${f.id}">${f.name} (${f.size}) - ${f.price} ֏</option>`);
         }
 
         window.openSaveOrderModal = function() {
             if (Object.keys(cart).length === 0) return alert('Корзина пуста!');
-
             document.getElementById('saveOrderModal').classList.add('active');
-            document.getElementById('orderModalTitle').innerText = '💾 Оформление Продажи Клиенту';
+            document.getElementById('orderModalTitle').innerText = '💾 Оформление Продажи';
             document.getElementById('editingOrderId').value = '';
-
             activeOrderItems = Object.values(cart).map(i => {
-                const flower = flowers.find(f => f.id === i.flowerId);
+                let f = flowers.find(fl => fl.id === i.flowerId);
+                let sizeStr = f ? (f.size.includes('см') ? f.size : f.size + ' см') : '';
                 return {
                     flowerId: i.flowerId,
-                    name: flower ? flower.name + ' (' + flower.size + ')' : 'Цветок',
-                    category: flower ? (flower.category || 'Одноголовая') : 'Одноголовая',
-                    pcsPerPack: flower ? (flower.pcsPerPack || 15) : 15,
+                    name: f ? `${f.name} (${sizeStr})` : 'Цветок',
+                    category: f ? (f.category || 'Одноголовая') : 'Одноголовая',
+                    pcsPerPack: f ? (f.pcsPerPack || 15) : 15,
                     packs: i.packs,
-                    price: flower ? flower.price : 0
+                    price: f ? f.price : 0
                 };
             });
-
             renderCheckoutItemsTable();
             loadClientsIntoSelect('');
         };
-
         window.closeSaveOrderModal = function() { document.getElementById('saveOrderModal').classList.remove('active'); };
 
-        function loadClientsIntoSelect(selectedClientId) {
+        function loadClientsIntoSelect(selectedId) {
             const sel = document.getElementById('orderClientSelect');
-            sel.innerHTML = '<option value="">-- Выберите клиента --</option>';
-            db.ref('clients').once('value').then((snapshot) => {
-                const loadedClients = snapshot.val() ? Object.values(snapshot.val()) : [];
-                clients = loadedClients;
-                if (clients.length === 0) {
-                    sel.innerHTML = '<option value="">⚠️ Нет клиентов (добавьте в разделе "Клиенты")</option>';
-                } else {
-                    clients.forEach(c => {
-                        sel.innerHTML += `<option value="${c.id}" ${c.id === selectedClientId ? 'selected' : ''}>${c.name} (${c.phone})</option>`;
-                    });
-                }
-            });
+            sel.innerHTML = '<option value="">-- Клиент --</option>';
+            clients.forEach(c => sel.innerHTML += `<option value="${c.id}" ${c.id === selectedId ? 'selected' : ''}>${c.name} (${c.phone})</option>`);
         }
 
         function renderCheckoutItemsTable() {
             const tbody = document.getElementById('checkoutItemsTableBody');
             tbody.innerHTML = '';
-            let totalSum = 0;
-
+            let sumTotal = 0;
             activeOrderItems.forEach((item, idx) => {
-                const sum = (item.packs || 0) * (item.price || 0);
-                totalSum += sum;
+                let s = item.packs * item.price;
+                sumTotal += s;
                 tbody.innerHTML += `
                     <tr>
                         <td><strong>${item.name}</strong></td>
                         <td>${item.price} ֏</td>
-                        <td>
-                            <input type="number" class="form-control" style="width:70px; padding:2px;" value="${item.packs}" onchange="updateActiveOrderItemQty(${idx}, this.value)">
-                        </td>
-                        <td><strong>${sum.toLocaleString()} ֏</strong></td>
-                        <td>
-                            <button type="button" class="btn btn-dark btn-sm" onclick="removeActiveOrderItem(${idx})">🗑️</button>
-                        </td>
+                        <td><input type="number" class="form-control" style="width:70px; padding:2px;" value="${item.packs}" onchange="activeOrderItems[${idx}].packs=Math.max(1,parseInt(this.value)||1); renderCheckoutItemsTable();"></td>
+                        <td><strong>${s.toLocaleString()} ֏</strong></td>
+                        <td><button type="button" class="btn btn-dark btn-sm" onclick="activeOrderItems.splice(${idx},1); renderCheckoutItemsTable();">🗑️</button></td>
                     </tr>
                 `;
             });
-
-            document.getElementById('checkoutTotalSum').innerText = totalSum.toLocaleString();
+            document.getElementById('checkoutTotalSum').innerText = sumTotal.toLocaleString();
         }
 
-        window.updateActiveOrderItemQty = function(idx, val) {
-            const qty = parseInt(val, 10);
-            if (isNaN(qty) || qty < 1) {
-                activeOrderItems[idx].packs = 1;
-            } else {
-                activeOrderItems[idx].packs = qty;
-            }
-            renderCheckoutItemsTable();
-        };
-
-        window.removeActiveOrderItem = function(idx) {
-            activeOrderItems.splice(idx, 1);
-            renderCheckoutItemsTable();
-        };
-
         window.addFlowerToEditingOrder = function() {
-            const flowerId = document.getElementById('editAddFlowerSelect').value;
-            const qtyInput = document.getElementById('editAddPacksInput');
-            const packs = parseInt(qtyInput.value, 10) || 1;
-
-            if (!flowerId) return alert('Выберите сорт для добавления!');
-            const flower = flowers.find(f => f.id === flowerId);
-            if (!flower) return;
-
-            const existing = activeOrderItems.find(i => i.flowerId === flowerId);
-            if (existing) {
-                existing.packs += packs;
-            } else {
-                activeOrderItems.push({
-                    flowerId: flower.id,
-                    name: flower.name + ' (' + flower.size + ')',
-                    category: flower.category || 'Одноголовая',
-                    pcsPerPack: flower.pcsPerPack || 15,
-                    packs: packs,
-                    price: flower.price
-                });
-            }
-
+            const fId = document.getElementById('editAddFlowerSelect').value;
+            const packs = parseInt(document.getElementById('editAddPacksInput').value, 10) || 1;
+            if (!fId) return;
+            const f = flowers.find(fl => fl.id === fId);
+            if (!f) return;
+            let sizeStr = f.size.includes('см') ? f.size : f.size + ' см';
+            let fullName = `${f.name} (${sizeStr})`;
+            let existing = activeOrderItems.find(i => i.flowerId === fId);
+            if (existing) existing.packs += packs;
+            else activeOrderItems.push({ flowerId: f.id, name: fullName, category: f.category || 'Одноголовая', pcsPerPack: f.pcsPerPack || 15, packs, price: f.price });
             renderCheckoutItemsTable();
-            document.getElementById('editAddFlowerSelect').value = '';
-            qtyInput.value = '10';
         };
 
         window.handleCheckoutSubmit = function(e) {
             e.preventDefault();
             const clientId = document.getElementById('orderClientSelect').value;
             if (!clientId) return alert('Выберите клиента!');
-            if (activeOrderItems.length === 0) return alert('В заказе должен быть хотя бы один товар!');
-            
             const client = clients.find(c => c.id === clientId);
             const editingId = document.getElementById('editingOrderId').value;
             const orderId = editingId || 'ORD-' + Date.now().toString().slice(-6);
 
-            let totalPrice = 0;
-            activeOrderItems.forEach(i => {
-                totalPrice += (i.packs || 0) * (i.price || 0);
-            });
-
+            let totalPrice = activeOrderItems.reduce((acc, i) => acc + (i.packs * i.price), 0);
             db.ref('orders/' + orderId).set({
-                id: orderId,
-                clientId: client.id,
-                clientName: client.name,
-                clientPhone: client.phone || '—',
-                date: new Date().toLocaleDateString('ru-RU'),
-                totalPrice,
-                status: document.getElementById('orderStatusSelect').value,
-                items: activeOrderItems
+                id: orderId, clientId: client.id, clientName: client.name, clientPhone: client.phone || '',
+                date: new Date().toLocaleDateString('ru-RU'), totalPrice, status: document.getElementById('orderStatusSelect').value, items: activeOrderItems
             });
 
-            if (!editingId) {
-                clearCart();
-            }
-
+            if (!editingId) clearCart();
             closeSaveOrderModal();
-            alert('Сделка успешно сохранена!');
+            alert('Сохранено!');
         };
 
         window.editOrder = function(id) {
             const order = orders.find(o => o.id === id);
             if (!order) return;
-
             document.getElementById('saveOrderModal').classList.add('active');
-            document.getElementById('orderModalTitle').innerText = '✏️ Редактирование Заказа ' + order.id;
+            document.getElementById('orderModalTitle').innerText = '✏️ Редактирование ' + order.id;
             document.getElementById('editingOrderId').value = order.id;
-
             document.getElementById('orderStatusSelect').value = order.status || 'Новый';
             loadClientsIntoSelect(order.clientId);
-
             activeOrderItems = JSON.parse(JSON.stringify(order.items || []));
             renderCheckoutItemsTable();
         };
 
-        // Генерация Commercial Invoice (Инвойса с ценами)
         window.printOrderInvoice = function(id) {
             const order = orders.find(o => o.id === id);
             if (!order) return;
-
             document.getElementById('invOrderId').innerText = order.id;
-            document.getElementById('invOrderDate').innerText = order.date || 'Сегодня';
-            document.getElementById('invClientName').innerText = order.clientName || 'Покупатель';
-            document.getElementById('invClientPhone').innerText = 'Телефон / Контакты: ' + (order.clientPhone || '—');
-            document.getElementById('invOrderStatus').innerText = order.status || 'Новый';
+            document.getElementById('invOrderDate').innerText = order.date;
+            document.getElementById('invClientName').innerText = order.clientName;
+            document.getElementById('invClientPhone').innerText = 'Тел: ' + order.clientPhone;
+            document.getElementById('invOrderStatus').innerText = order.status;
             document.getElementById('invTotalSum').innerText = Number(order.totalPrice || 0).toLocaleString();
 
             const tbody = document.getElementById('invItemsTableBody');
             tbody.innerHTML = '';
-            (order.items || []).forEach((item, idx) => {
-                const itemSum = (item.packs || 0) * (item.price || 0);
+            order.items.forEach((item, idx) => {
                 tbody.innerHTML += `
                     <tr>
-                        <td style="border:1px solid #cbd5e1; padding:4px; text-align:center;">${idx + 1}</td>
-                        <td style="border:1px solid #cbd5e1; padding:4px;"><strong>${item.name}</strong></td>
+                        <td style="border:1px solid #cbd5e1; padding:4px; text-align:center;">${idx+1}</td>
+                        <td style="border:1px solid #cbd5e1; padding:4px;">${item.name}</td>
                         <td style="border:1px solid #cbd5e1; padding:4px; text-align:center;">${item.packs} пач.</td>
-                        <td style="border:1px solid #cbd5e1; padding:4px; text-align:right;">${Number(item.price || 0).toLocaleString()} ֏</td>
-                        <td style="border:1px solid #cbd5e1; padding:4px; text-align:right; font-weight:bold;">${itemSum.toLocaleString()} ֏</td>
+                        <td style="border:1px solid #cbd5e1; padding:4px; text-align:right;">${item.price} ֏</td>
+                        <td style="border:1px solid #cbd5e1; padding:4px; text-align:right;">${item.packs * item.price} ֏</td>
                     </tr>
                 `;
             });
-
             document.getElementById('printInvoiceModal').classList.add('active');
         };
+        window.closePrintModal = function() { document.getElementById('printInvoiceModal').classList.remove('active'); };
 
-        window.closePrintModal = function() {
-            document.getElementById('printInvoiceModal').classList.remove('active');
-        };
-
-        // 📋 ГЕНЕРАЦИЯ СКЛАДСКОГО ИНВОЙСА БЕЗ ЦЕН (АВТОМАТИЧЕСКИ ИЗ КАРТОЧЕК СОРТОВ)
         window.printWarehouseInvoice = function(id) {
             const order = orders.find(o => o.id === id);
             if (!order) return;
-
             document.getElementById('whInvOrderId').innerText = order.id;
-            document.getElementById('whInvOrderDate').innerText = order.date || 'Сегодня';
-            document.getElementById('whInvClientName').innerText = order.clientName || 'Покупатель';
+            document.getElementById('whInvOrderDate').innerText = order.date;
+            document.getElementById('whInvClientName').innerText = order.clientName;
 
             const tbody = document.getElementById('whInvItemsTableBody');
             tbody.innerHTML = '';
-            let totalPacks = 0;
-            let totalPieces = 0;
+            let totalPacks = 0, totalPieces = 0;
+            let statsByType = { 
+                'Одноголовая': { packs: 0, pieces: 0 }, 
+                'Кустовая': { packs: 0, pieces: 0 }, 
+                'Эксклюзивная': { packs: 0, pieces: 0 } 
+            };
 
-            (order.items || []).forEach((item, idx) => {
+            order.items.forEach((item, idx) => {
                 const packs = Number(item.packs || 0);
                 totalPacks += packs;
-
-                // Берем норму штук в пачке из заказанного товара или ищем в актуальном складе
-                const flowerObj = flowers.find(f => f.id === item.flowerId);
-                const pcsPerPack = item.pcsPerPack || (flowerObj ? flowerObj.pcsPerPack : 15) || 15;
-
-                const itemPieces = packs * pcsPerPack;
+                
+                const f = flowers.find(fl => fl.id === item.flowerId) || flowers.find(fl => `${fl.name} (${fl.size})` === item.name);
+                const pcs = item.pcsPerPack || (f ? f.pcsPerPack : 15) || 15;
+                const itemPieces = packs * pcs;
                 totalPieces += itemPieces;
+
+                let cat = (f ? f.category : '') || item.category || 'Одноголовая';
+
+                if (!statsByType[cat]) statsByType[cat] = { packs: 0, pieces: 0 };
+                statsByType[cat].packs += packs;
+                statsByType[cat].pieces += itemPieces;
+
+                // Аккуратное форматирование названия и размера со ссылкой на склад
+                let displayName = item.name;
+                if (f) {
+                    let sizeStr = f.size.includes('см') ? f.size : f.size + ' см';
+                    displayName = `${f.name} (${sizeStr})`;
+                }
 
                 tbody.innerHTML += `
                     <tr>
-                        <td style="border:1px solid #cbd5e1; padding:6px; text-align:center;">${idx + 1}</td>
-                        <td style="border:1px solid #cbd5e1; padding:6px;"><strong>${item.name}</strong></td>
-                        <td style="border:1px solid #cbd5e1; padding:6px; text-align:center; font-weight:bold;">${packs} пач.</td>
-                        <td style="border:1px solid #cbd5e1; padding:6px; text-align:center;">${pcsPerPack} шт/пач</td>
-                        <td style="border:1px solid #cbd5e1; padding:6px; text-align:right; font-weight:bold; color:var(--accent);">${itemPieces} шт.</td>
+                        <td style="border:1px solid #cbd5e1; padding:5px; text-align:center;">${idx+1}</td>
+                        <td style="border:1px solid #cbd5e1; padding:5px;"><strong>${displayName}</strong></td>
+                        <td style="border:1px solid #cbd5e1; padding:5px; text-align:center; font-weight:bold;">${packs} пач.</td>
+                        <td style="border:1px solid #cbd5e1; padding:5px; text-align:center;">${pcs} шт/пач</td>
+                        <td style="border:1px solid #cbd5e1; padding:5px; text-align:right; font-weight:bold;">${itemPieces} шт.</td>
                     </tr>
                 `;
             });
+
+            document.getElementById('whInvCategorySummary').innerHTML = `
+                <div style="font-weight:bold; margin-bottom:4px;">Сводка по категориям:</div>
+                <div style="display:flex; gap:15px; flex-wrap:wrap;">
+                    <div>🌹 Одноголовые: <strong>${statsByType['Одноголовая'].packs}</strong> пач. (${statsByType['Одноголовая'].pieces} шт.)</div>
+                    <div>🌿 Кустовые: <strong>${statsByType['Кустовая'].packs}</strong> пач. (${statsByType['Кустовая'].pieces} шт.)</div>
+                    <div>🌟 Эксклюзивные: <strong>${statsByType['Эксклюзивная'].packs}</strong> пач. (${statsByType['Эксклюзивная'].pieces} шт.)</div>
+                </div>
+            `;
 
             document.getElementById('whInvTotalPacks').innerText = totalPacks;
             document.getElementById('whInvTotalPieces').innerText = totalPieces;
             document.getElementById('printWarehouseInvoiceModal').classList.add('active');
         };
+        window.closeWarehouseInvoiceModal = function() { document.getElementById('printWarehouseInvoiceModal').classList.remove('active'); };
 
-        window.closeWarehouseInvoiceModal = function() {
-            document.getElementById('printWarehouseInvoiceModal').classList.remove('active');
-        };
-
-        // Генерация Packing List (Упаковочного листа)
         window.printPackingList = function(id) {
             const order = orders.find(o => o.id === id);
             if (!order) return;
-
             document.getElementById('packOrderId').innerText = order.id;
-            document.getElementById('packOrderDate').innerText = order.date || 'Сегодня';
-            document.getElementById('packClientName').innerText = order.clientName || 'Покупатель';
+            document.getElementById('packOrderDate').innerText = order.date;
+            document.getElementById('packClientName').innerText = order.clientName;
 
             const tbody = document.getElementById('packItemsTableBody');
             tbody.innerHTML = '';
-            let totalPacks = 0;
-
-            (order.items || []).forEach((item, idx) => {
-                totalPacks += Number(item.packs || 0);
+            let total = 0;
+            order.items.forEach((item, idx) => {
+                total += item.packs;
                 tbody.innerHTML += `
                     <tr>
-                        <td style="border:1px solid #cbd5e1; padding:4px; text-align:center;">Коробка №${idx + 1}</td>
-                        <td style="border:1px solid #cbd5e1; padding:4px;"><strong>${item.name}</strong></td>
+                        <td style="border:1px solid #cbd5e1; padding:4px; text-align:center;">Место №${idx+1}</td>
+                        <td style="border:1px solid #cbd5e1; padding:4px;">${item.name}</td>
                         <td style="border:1px solid #cbd5e1; padding:4px; text-align:center;">${item.packs} пач.</td>
-                        <td style="border:1px solid #cbd5e1; padding:4px; text-align:center;">Упаковано / Проверено</td>
+                        <td style="border:1px solid #cbd5e1; padding:4px; text-align:center;">Упаковано</td>
                     </tr>
                 `;
             });
-
-            document.getElementById('packTotalPacks').innerText = totalPacks;
+            document.getElementById('packTotalPacks').innerText = total;
             document.getElementById('printPackingModal').classList.add('active');
         };
-
-        window.closePackingModal = function() {
-            document.getElementById('printPackingModal').classList.remove('active');
-        };
+        window.closePackingModal = function() { document.getElementById('printPackingModal').classList.remove('active'); };
 
         function renderOrdersTable() {
             const tbody = document.getElementById('ordersTableBody');
@@ -1523,46 +1360,34 @@
             orders.forEach(o => {
                 tbody.innerHTML += `
                     <tr>
-                        <td><strong>${o.id || 'ORD-101'}</strong></td>
-                        <td>${o.date || 'Сегодня'}</td>
-                        <td>${o.clientName || 'Покупатель'}</td>
+                        <td><strong>${o.id}</strong></td><td>${o.date}</td><td>${o.clientName}</td>
                         <td><strong>${Number(o.totalPrice || 0).toLocaleString()} ֏</strong></td>
+                        <td><select onchange="db.ref('orders/${o.id}').update({status:this.value})" class="form-control" style="padding:2px;"><option value="Новый" ${o.status==='Новый'?'selected':''}>Новый</option><option value="В работе" ${o.status==='В работе'?'selected':''}>В работе</option><option value="Выполнен" ${o.status==='Выполнен'?'selected':''}>Выполнен</option></select></td>
                         <td>
-                            <select onchange="updateOrderStatus('${o.id}', this.value)" class="form-control" style="padding:2px 5px;">
-                                <option value="Новый" ${o.status === 'Новый' ? 'selected' : ''}>Новый</option>
-                                <option value="В работе" ${o.status === 'В работе' ? 'selected' : ''}>В работе</option>
-                                <option value="Выполнен" ${o.status === 'Выполнен' ? 'selected' : ''}>Выполнен</option>
-                                <option value="Отменен" ${o.status === 'Отменен' ? 'selected' : ''}>Отменен</option>
-                            </select>
+                            <button class="btn btn-outline btn-sm" onclick="printOrderInvoice('${o.id}')">📄 Инвойс</button>
+                            <button class="btn btn-success btn-sm" onclick="printWarehouseInvoice('${o.id}')">📋 Склад</button>
+                            <button class="btn btn-outline btn-sm" onclick="printPackingList('${o.id}')">📦 Pack</button>
                         </td>
                         <td>
-                            <button class="btn btn-outline btn-sm" onclick="printOrderInvoice('${o.id}')" title="Инвойс с ценами">📄 Инвойс</button>
-                            <button class="btn btn-success btn-sm" onclick="printWarehouseInvoice('${o.id}')" title="Складской лист без цен">📋 Склад</button>
-                            <button class="btn btn-outline btn-sm" onclick="printPackingList('${o.id}')" title="Упаковочный лист">📦 Packing</button>
-                        </td>
-                        <td>
-                            <button class="btn btn-outline btn-sm" onclick="editOrder('${o.id}')" title="Редактировать">✏️</button>
-                            <button class="btn btn-dark btn-sm" onclick="deleteOrder('${o.id}')" title="Удалить">🗑️</button>
+                            <button class="btn btn-outline btn-sm" onclick="editOrder('${o.id}')">✏️</button>
+                            <button class="btn btn-dark btn-sm" onclick="if(confirm('Удалить?')) db.ref('orders/${o.id}').remove();">🗑️</button>
                         </td>
                     </tr>
                 `;
             });
         }
-        window.updateOrderStatus = function(id, status) { db.ref('orders/' + id).update({ status }); };
-        window.deleteOrder = function(id) { if (confirm('Удалить заказ?')) db.ref('orders/' + id).remove(); };
 
         function populateProcurementFlowerSelect() {
             const sel = document.getElementById('procSelectFlower');
             if (!sel) return;
-            sel.innerHTML = '<option value="">-- Выберите сорт --</option>';
+            sel.innerHTML = '<option value="">-- Сорт --</option>';
             flowers.forEach(f => sel.innerHTML += `<option value="${f.id}">${f.name} (${f.size})</option>`);
         }
 
         window.openNewProcurementForm = function() {
             document.getElementById('newProcurementSection').style.display = 'block';
-            document.getElementById('procFormTitle').innerText = 'Новый Документ Прихода';
+            document.getElementById('procFormTitle').innerText = 'Новый Закуп';
             document.getElementById('editingProcId').value = '';
-            document.getElementById('procSupplier').value = '';
             document.getElementById('procDocNum').value = 'ЗКП-' + Date.now().toString().slice(-4);
             document.getElementById('procDate').value = new Date().toISOString().split('T')[0];
             currentProcurementItems = [];
@@ -1570,32 +1395,13 @@
         };
         window.closeNewProcurementForm = function() { document.getElementById('newProcurementSection').style.display = 'none'; };
 
-        window.editProcurement = function(id) {
-            const proc = procurements.find(p => p.id === id);
-            if (!proc) return;
-            document.getElementById('newProcurementSection').style.display = 'block';
-            document.getElementById('procFormTitle').innerText = '✏️ Редактирование Акта Закупа ' + proc.id;
-            document.getElementById('editingProcId').value = proc.id;
-            document.getElementById('procSupplier').value = proc.supplier;
-            document.getElementById('procDocNum').value = proc.id;
-            document.getElementById('procDate').value = proc.date;
-            currentProcurementItems = JSON.parse(JSON.stringify(proc.items || []));
-            renderProcurementItemsTable();
-        };
-
         window.addProcurementRow = function() {
-            const flowerId = document.getElementById('procSelectFlower').value;
+            const fId = document.getElementById('procSelectFlower').value;
             const price = Number(document.getElementById('procPriceInput').value);
             const packs = Number(document.getElementById('procQtyInput').value);
-            if (!flowerId || price <= 0 || packs <= 0) return alert('Заполните данные закупа!');
-            const flower = flowers.find(f => f.id === flowerId);
-            if (!flower) return;
-            currentProcurementItems.push({ flowerId: flower.id, name: flower.name, size: flower.size, price, packs, sum: price * packs });
-            renderProcurementItemsTable();
-        };
-
-        window.removeProcurementRow = function(idx) {
-            currentProcurementItems.splice(idx, 1);
+            if (!fId || price <= 0 || packs <= 0) return;
+            const f = flowers.find(fl => fl.id === fId);
+            currentProcurementItems.push({ flowerId: f.id, name: f.name, size: f.size, price, packs, sum: price * packs });
             renderProcurementItemsTable();
         };
 
@@ -1605,136 +1411,68 @@
             let total = 0;
             currentProcurementItems.forEach((item, idx) => {
                 total += item.sum;
-                tbody.innerHTML += `<tr><td><strong>${item.name}</strong> (${item.size})</td><td>${item.price} ֏</td><td><strong>${item.packs} пач</strong></td><td style="color:var(--accent); font-weight:bold;">${item.sum.toLocaleString()} ֏</td><td><button type="button" class="btn btn-dark btn-sm" onclick="removeProcurementRow(${idx})">🗑️</button></td></tr>`;
+                tbody.innerHTML += `<tr><td>${item.name} (${item.size})</td><td>${item.price} ֏</td><td><strong>${item.packs} пач</strong></td><td>${item.sum.toLocaleString()} ֏</td><td><button type="button" class="btn btn-dark btn-sm" onclick="currentProcurementItems.splice(${idx},1); renderProcurementItemsTable();">🗑️</button></td></tr>`;
             });
             document.getElementById('procTotalDisplay').innerText = total.toLocaleString();
         }
 
         window.handleSaveProcurement = function(e) {
             e.preventDefault();
-            if (currentProcurementItems.length === 0) return alert('Добавьте цветы в акт!');
-            const editingId = document.getElementById('editingProcId').value;
-            const id = editingId || document.getElementById('procDocNum').value || 'PROC-' + Date.now().toString().slice(-6);
-
-            if (editingId) {
-                const oldProc = procurements.find(p => p.id === editingId);
-                if (oldProc && oldProc.items) {
-                    oldProc.items.forEach(oldItem => {
-                        const fIdx = flowers.findIndex(f => f.id === oldItem.flowerId);
-                        if (fIdx >= 0) flowers[fIdx].packs = (flowers[fIdx].packs || 0) - (oldItem.packs || 0);
-                    });
-                }
-            }
-
-            currentProcurementItems.forEach(pItem => {
-                const fIdx = flowers.findIndex(f => f.id === pItem.flowerId);
-                if (fIdx >= 0) flowers[fIdx].packs = (flowers[fIdx].packs || 0) + pItem.packs;
+            if (currentProcurementItems.length === 0) return;
+            const id = document.getElementById('editingProcId').value || document.getElementById('procDocNum').value;
+            currentProcurementItems.forEach(item => {
+                let f = flowers.find(fl => fl.id === item.flowerId);
+                if (f) f.packs = (f.packs || 0) + item.packs;
             });
-
-            const doc = {
-                id,
-                supplier: document.getElementById('procSupplier').value,
+            db.ref('procurements/' + id).set({
+                id, supplier: document.getElementById('procSupplier').value,
                 date: document.getElementById('procDate').value,
-                totalPrice: currentProcurementItems.reduce((a, b) => a + b.sum, 0),
-                items: currentProcurementItems
-            };
-
-            db.ref('procurements/' + id).set(doc);
+                totalPrice: currentProcurementItems.reduce((a,b)=>a+b.sum,0), items: currentProcurementItems
+            });
             db.ref('inventory').set(flowers);
-
             closeNewProcurementForm();
-            alert('Акт закупа и остатки пачек успешно обновлены!');
+            alert('Закуп проведен!');
         };
 
         function renderProcurementsTable() {
             const tbody = document.getElementById('procurementsTableBody');
             tbody.innerHTML = '';
             procurements.forEach(p => {
-                tbody.innerHTML += `
-                    <tr>
-                        <td><strong>${p.id}</strong></td>
-                        <td>${p.date}</td>
-                        <td>${p.supplier}</td>
-                        <td style="color:var(--accent); font-weight:bold;">${Number(p.totalPrice || 0).toLocaleString()} ֏</td>
-                        <td>
-                            <button class="btn btn-outline btn-sm" onclick="editProcurement('${p.id}')">✏️</button>
-                            <button class="btn btn-dark btn-sm" onclick="deleteProcurement('${p.id}')">🗑️</button>
-                        </td>
-                    </tr>
-                `;
+                tbody.innerHTML += `<tr><td><strong>${p.id}</strong></td><td>${p.date}</td><td>${p.supplier}</td><td>${Number(p.totalPrice||0).toLocaleString()} ֏</td><td><button class="btn btn-dark btn-sm" onclick="db.ref('procurements/${p.id}').remove()">🗑️</button></td></tr>`;
             });
         }
 
-        window.deleteProcurement = function(id) {
-            if (confirm('Удалить закуп? Остатки пачек будут уменьшены.')) {
-                const proc = procurements.find(p => p.id === id);
-                if (proc && proc.items) {
-                    proc.items.forEach(item => {
-                        const fIdx = flowers.findIndex(f => f.id === item.flowerId);
-                        if (fIdx >= 0) flowers[fIdx].packs = (flowers[fIdx].packs || 0) - (item.packs || 0);
-                    });
-                    db.ref('inventory').set(flowers);
-                }
-                db.ref('procurements/' + id).remove();
-            }
-        };
-
-        window.openAddClientForm = function() {
-            document.getElementById('addClientSection').style.display = 'block';
-            document.getElementById('clientFormTitle').innerText = 'Добавить Клиента';
-            document.getElementById('clientId').value = '';
-            document.getElementById('clientName').value = '';
-            document.getElementById('clientPhone').value = '';
-            document.getElementById('clientCity').value = '';
-        };
+        window.openAddClientForm = function() { document.getElementById('addClientSection').style.display = 'block'; };
         window.closeAddClientForm = function() { document.getElementById('addClientSection').style.display = 'none'; };
 
         window.handleSaveClient = function(e) {
             e.preventDefault();
-            const id = document.getElementById('clientId').value || 'CLI-' + Date.now().toString().slice(-6);
+            const id = 'CLI-' + Date.now().toString().slice(-6);
             db.ref('clients/' + id).set({
-                id,
-                name: document.getElementById('clientName').value,
-                phone: document.getElementById('clientPhone').value,
-                city: document.getElementById('clientCity').value
+                id, name: document.getElementById('clientName').value,
+                phone: document.getElementById('clientPhone').value, city: document.getElementById('clientCity').value
             });
             closeAddClientForm();
-            alert('Клиент сохранён!');
-        };
-
-        window.editClient = function(id) {
-            const client = clients.find(c => c.id === id);
-            if (!client) return;
-            openAddClientForm();
-            document.getElementById('clientFormTitle').innerText = 'Редактировать Клиента';
-            document.getElementById('clientId').value = client.id;
-            document.getElementById('clientName').value = client.name;
-            document.getElementById('clientPhone').value = client.phone;
-            document.getElementById('clientCity').value = client.city || '';
+            alert('Клиент сохранен!');
         };
 
         function renderClientsTable() {
             const tbody = document.getElementById('clientsTableBody');
             tbody.innerHTML = '';
-            clients.forEach(c => tbody.innerHTML += `<tr><td><strong>${c.name}</strong></td><td>${c.phone}</td><td>${c.city || '—'}</td><td><button class="btn btn-outline btn-sm" onclick="editClient('${c.id}')">✏️</button> <button class="btn btn-dark btn-sm" onclick="deleteClient('${c.id}')">🗑️</button></td></tr>`);
+            clients.forEach(c => tbody.innerHTML += `<tr><td><strong>${c.name}</strong></td><td>${c.phone}</td><td>${c.city||''}</td><td><button class="btn btn-dark btn-sm" onclick="db.ref('clients/${c.id}').remove()">🗑️</button></td></tr>`);
         }
-        window.deleteClient = function(id) { if (confirm('Удалить?')) db.ref('clients/' + id).remove(); };
 
         function calculateFinance() {
-            let totalIncome = 0;
-            orders.forEach(o => totalIncome += Number(o.totalPrice || 0));
-            let procurementCosts = 0;
-            procurements.forEach(p => procurementCosts += Number(p.totalPrice || 0));
-            document.getElementById('finTotalIncome').innerText = totalIncome.toLocaleString() + ' ֏';
-            document.getElementById('finTotalExpense').innerText = procurementCosts.toLocaleString() + ' ֏';
-            document.getElementById('finNetProfit').innerText = (totalIncome - procurementCosts).toLocaleString() + ' ֏';
+            let income = 0; orders.forEach(o => income += Number(o.totalPrice || 0));
+            let expense = 0; procurements.forEach(p => expense += Number(p.totalPrice || 0));
+            document.getElementById('finTotalIncome').innerText = income.toLocaleString() + ' ֏';
+            document.getElementById('finTotalExpense').innerText = expense.toLocaleString() + ' ֏';
+            document.getElementById('finNetProfit').innerText = (income - expense).toLocaleString() + ' ֏';
         }
 
         function renderCharts() {
-            const ctx1 = document.getElementById('categoryChart').getContext('2d');
-            const ctx2 = document.getElementById('revenueChart').getContext('2d');
-            new Chart(ctx1, { type: 'pie', data: { labels: ['🌹 Одноголовые', '🌿 Кустовые', '🌟 Эксклюзивные'], datasets: [{ data: [65, 20, 15], backgroundColor: ['#d45d79', '#2e7d32', '#f59e0b'] }] } });
-            new Chart(ctx2, { type: 'bar', data: { labels: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'], datasets: [{ label: 'Выручка (֏)', data: [150000, 210000, 180000, 250000, 320000, 480000, 410000], backgroundColor: '#d45d79' }] } });
+            new Chart(document.getElementById('categoryChart').getContext('2d'), { type: 'pie', data: { labels: ['Одноголовые', 'Кустовые', 'Эксклюзивные'], datasets: [{ data: [65, 20, 15], backgroundColor: ['#d45d79', '#2e7d32', '#f59e0b'] }] } });
+            new Chart(document.getElementById('revenueChart').getContext('2d'), { type: 'bar', data: { labels: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'], datasets: [{ label: 'Выручка (֏)', data: [150, 210, 180, 250, 320, 480, 410], backgroundColor: '#d45d79' }] } });
         }
 
         function renderAdminTable() {
@@ -1742,123 +1480,64 @@
             if (!tbody) return;
             tbody.innerHTML = '';
             flowers.forEach((f, idx) => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td><img src="${f.image || DEFAULT_FLOWER_IMAGE}" style="width:38px; height:38px; object-fit:cover; border-radius:4px;"></td>
-                    <td><span class="role-badge role-manager">${f.category || 'Одноголовая'}</span></td>
-                    <td><strong>${f.name}</strong></td>
-                    <td>${f.size}</td>
-                    <td><strong>${f.price} ֏</strong></td>
-                    <td style="text-align:center;">
-                        <input type="number" class="stock-direct-input" style="color:#d97706;" value="${f.pcsPerPack || 15}" onchange="updateFlowerPcsPerPackDirect(${idx}, this.value)">
-                    </td>
-                    <td style="text-align:center;">
-                        <input type="number" class="stock-direct-input" style="color:var(--accent);" value="${f.packs || 0}" onchange="updateFlowerPacksDirect(${idx}, this.value)">
-                    </td>
-                    <td style="text-align:center;">
-                        <input type="number" class="stock-direct-input" value="${f.stock || 0}" onchange="updateFlowerStockDirect(${idx}, this.value)">
-                    </td>
-                    <td>
-                        <div class="stock-action-box">
-                            <input type="number" id="batchQty_${idx}" class="stock-num-input" value="10">
-                            <button class="btn btn-success btn-sm" onclick="applyBatchStock(${idx}, 'add')">+</button>
-                            <button class="btn btn-danger btn-sm" onclick="applyBatchStock(${idx}, 'sub')">-</button>
-                        </div>
-                    </td>
-                    <td>
-                        <button class="btn btn-outline btn-sm" onclick="editFlower('${f.id}')">✏️</button>
-                        <button class="btn btn-dark btn-sm" onclick="deleteFlower('${f.id}')">🗑️</button>
-                    </td>
+                tbody.innerHTML += `
+                    <tr>
+                        <td><img src="${f.image || DEFAULT_FLOWER_IMAGE}" style="width:36px; height:36px; object-fit:cover; border-radius:4px;"></td>
+                        <td>${f.category || 'Одноголовая'}</td>
+                        <td><strong>${f.name}</strong></td>
+                        <td>${f.size}</td>
+                        <td>${f.price} ֏</td>
+                        <td style="text-align:center;"><input type="number" class="stock-direct-input" value="${f.pcsPerPack || 15}" onchange="flowers[${idx}].pcsPerPack=Number(this.value); db.ref('inventory').set(flowers);"></td>
+                        <td style="text-align:center;"><input type="number" class="stock-direct-input" value="${f.packs || 0}" onchange="flowers[${idx}].packs=Number(this.value); db.ref('inventory').set(flowers);"></td>
+                        <td style="text-align:center;"><input type="number" class="stock-direct-input" value="${f.stock || 0}" onchange="flowers[${idx}].stock=Number(this.value); db.ref('inventory').set(flowers);"></td>
+                        <td>
+                            <div class="stock-action-box">
+                                <input type="number" id="batch_${idx}" class="stock-num-input" value="10">
+                                <button class="btn btn-success btn-sm" onclick="flowers[${idx}].packs=(flowers[${idx}].packs||0)+Number(document.getElementById('batch_${idx}').value); db.ref('inventory').set(flowers);">+</button>
+                                <button class="btn btn-danger btn-sm" onclick="flowers[${idx}].packs=(flowers[${idx}].packs||0)-Number(document.getElementById('batch_${idx}').value); db.ref('inventory').set(flowers);">-</button>
+                            </div>
+                        </td>
+                        <td>
+                            <button class="btn btn-outline btn-sm" onclick="editFlower('${f.id}')">✏️</button>
+                            <button class="btn btn-dark btn-sm" onclick="flowers=flowers.filter(x=>x.id!=='${f.id}'); db.ref('inventory').set(flowers);">🗑️</button>
+                        </td>
+                    </tr>
                 `;
-                tbody.appendChild(tr);
             });
         }
-
-        window.updateFlowerPcsPerPackDirect = function(idx, val) {
-            const num = parseInt(val, 10);
-            if (isNaN(num)) return;
-            flowers[idx].pcsPerPack = num;
-            db.ref('inventory').set(flowers);
-        };
-
-        window.updateFlowerPacksDirect = function(idx, val) {
-            const num = parseInt(val, 10);
-            if (isNaN(num)) return;
-            flowers[idx].packs = num;
-            db.ref('inventory').set(flowers);
-        };
-
-        window.updateFlowerStockDirect = function(idx, val) {
-            const num = parseInt(val, 10);
-            if (isNaN(num)) return;
-            flowers[idx].stock = num;
-            db.ref('inventory').set(flowers);
-        };
-
-        window.applyBatchStock = function(idx, action) {
-            const input = document.getElementById(`batchQty_${idx}`);
-            const val = parseInt(input.value, 10);
-            if (isNaN(val) || val <= 0) return alert('Введите число пачек!');
-            flowers[idx].packs = action === 'add' ? (flowers[idx].packs || 0) + val : (flowers[idx].packs || 0) - val;
-            db.ref('inventory').set(flowers);
-        };
 
         window.handleFlowerFormSubmit = function(e) {
             e.preventDefault();
             const id = document.getElementById('editItemId').value || 'FLW-' + Date.now();
             const newItem = {
-                id,
-                category: document.getElementById('flowerCategory').value,
-                name: document.getElementById('flowerName').value,
-                size: document.getElementById('flowerSize').value,
+                id, category: document.getElementById('flowerCategory').value,
+                name: document.getElementById('flowerName').value, size: document.getElementById('flowerSize').value,
                 price: Number(document.getElementById('flowerPrice').value),
                 pcsPerPack: Number(document.getElementById('flowerPcsPerPack').value || 15),
                 packs: Number(document.getElementById('flowerPacks').value || 0),
                 stock: Number(document.getElementById('flowerStock').value || 0),
                 image: document.getElementById('flowerImage').value || DEFAULT_FLOWER_IMAGE
             };
-
-            const existingIdx = flowers.findIndex(f => f.id === id);
-            if (existingIdx >= 0) {
-                flowers[existingIdx] = newItem;
-            } else {
-                flowers.push(newItem);
-            }
-
-            if (newItem.image && !newItem.image.includes('photo-1518709268805')) {
-                flowers.forEach(f => {
-                    if (f.name.toLowerCase() === newItem.name.toLowerCase()) {
-                        f.image = newItem.image;
-                    }
-                });
-            }
-
+            let idx = flowers.findIndex(f => f.id === id);
+            if (idx >= 0) flowers[idx] = newItem; else flowers.push(newItem);
             db.ref('inventory').set(flowers);
             showWarehouseSection('list');
-            alert('Сорт сохранен!');
         };
 
         window.editFlower = function(id) {
-            const flower = flowers.find(f => f.id === id);
-            if (!flower) return;
+            const f = flowers.find(fl => fl.id === id);
+            if (!f) return;
             showWarehouseSection('add');
-            document.getElementById('flowerFormTitle').innerText = 'Изменить Сорт Роз';
-            document.getElementById('editItemId').value = flower.id;
-            document.getElementById('flowerCategory').value = flower.category || 'Одноголовая';
-            document.getElementById('flowerName').value = flower.name;
-            document.getElementById('flowerSize').value = flower.size;
-            document.getElementById('flowerPrice').value = flower.price;
-            document.getElementById('flowerPcsPerPack').value = flower.pcsPerPack || 15;
-            document.getElementById('flowerPacks').value = flower.packs || 0;
-            document.getElementById('flowerStock').value = flower.stock || 0;
-            document.getElementById('flowerImage').value = flower.image || DEFAULT_FLOWER_IMAGE;
-        };
-
-        window.deleteFlower = function(id) {
-            if (confirm('Удалить сорт со склада?')) {
-                flowers = flowers.filter(f => f.id !== id);
-                db.ref('inventory').set(flowers);
-            }
+            document.getElementById('flowerFormTitle').innerText = 'Изменить Сорт';
+            document.getElementById('editItemId').value = f.id;
+            document.getElementById('flowerCategory').value = f.category || 'Одноголовая';
+            document.getElementById('flowerName').value = f.name;
+            document.getElementById('flowerSize').value = f.size;
+            document.getElementById('flowerPrice').value = f.price;
+            document.getElementById('flowerPcsPerPack').value = f.pcsPerPack || 15;
+            document.getElementById('flowerPacks').value = f.packs || 0;
+            document.getElementById('flowerStock').value = f.stock || 0;
+            document.getElementById('flowerImage').value = f.image || DEFAULT_FLOWER_IMAGE;
         };
 
         function renderRolesTable() {
@@ -1867,11 +1546,10 @@
             db.ref('users').once('value', (s) => {
                 const users = s.val() ? Object.entries(s.val()) : [];
                 users.forEach(([uid, u]) => {
-                    tbody.innerHTML += `<tr><td><strong>${u.name || 'Сотрудник'}</strong></td><td>${u.email}</td><td>${getRoleBadge(u.role)}</td><td><select onchange="changeUserRole('${uid}', this.value)" class="form-control" style="padding:2px 5px;"><option value="Blocked" ${u.role === 'Blocked' ? 'selected' : ''}>Заблокирован</option><option value="Manager" ${u.role === 'Manager' ? 'selected' : ''}>Менеджер</option><option value="Admin" ${u.role === 'Admin' ? 'selected' : ''}>Администратор</option></select></td></tr>`;
+                    tbody.innerHTML += `<tr><td><strong>${u.name || ''}</strong></td><td>${u.email}</td><td>${getRoleBadge(u.role)}</td><td><select onchange="db.ref('users/${uid}').update({role:this.value})" class="form-control" style="padding:2px;"><option value="Blocked" ${u.role==='Blocked'?'selected':''}>Blocked</option><option value="Manager" ${u.role==='Manager'?'selected':''}>Manager</option><option value="Admin" ${u.role==='Admin'?'selected':''}>Admin</option></select></td></tr>`;
                 });
             });
         }
-        window.changeUserRole = function(uid, role) { db.ref('users/' + uid).update({ role }); alert('Права обновлены!'); };
     </script>
 </body>
 </html>
