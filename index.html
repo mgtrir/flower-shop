@@ -121,7 +121,7 @@
         .auth-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #fcf8f8; z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 1rem; }
         .auth-box { background: white; padding: 2rem; border-radius: 12px; border: 1px solid #ddd; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
 
-        /* ИСПРАВЛЕННЫЙ ИДЕАЛЬНЫЙ СТИЛЬ ПЕЧАТИ */
+        /* ИДЕАЛЬНЫЙ СТИЛЬ ПЕЧАТИ */
         @media print {
             body * { display: none !important; }
             #printWarehouseInvoiceModal.active, #printWarehouseInvoiceModal.active *,
@@ -171,7 +171,7 @@
             .no-print { display: none !important; }
             @page { 
                 size: A4 portrait; 
-                margin: 10mm; 
+                margin: 5mm 10mm 10mm 10mm; 
             }
         }
     </style>
@@ -412,62 +412,61 @@
         </div>
     </div>
 
-    <!-- СКЛАДСКОЙ ИНВОЙС БЕЗ ЦЕН -->
+    <!-- СКЛАДСКОЙ ИНВОЙС НА АНГЛИЙСКОМ -->
     <div class="modal" id="printWarehouseInvoiceModal">
         <div class="modal-content" style="max-width: 750px; padding: 1.5rem;">
-            <div class="modal-header no-print">
-                <h2>📋 Складской упаковочный лист (Без цен)</h2>
+            <div style="display:flex; justify-content:flex-end; margin-bottom:0.5rem;" class="no-print">
                 <button class="close-btn" onclick="closeWarehouseInvoiceModal()">&times;</button>
             </div>
             
             <div id="warehouseInvoiceContent" style="color:#000;">
                 <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1.5rem;">
                     <div>
-                        <h2 style="color:var(--accent); font-size:1.4rem;">ROSE GARDEN GREENHOUSE</h2>
-                        <p style="font-size:0.8rem; color:#555;">Армения, Котайкский марз, г. Раздан<br>Складской листок сборки для теплицы</p>
+                        <h2 style="color:var(--accent); font-size:1.4rem; margin-bottom:2px;">ROSE GARDEN GREENHOUSE</h2>
+                        <p style="font-size:0.8rem; color:#555;">Armenia, Kotayk Region, Hrazdan<br>Greenhouse Wholesale & Export Operations</p>
                     </div>
                     <div style="text-align:right;">
-                        <h3 style="font-size:1.2rem; color:#333;">СКЛАДСКОЙ ЛИСТ</h3>
-                        <p style="font-size:0.9rem;"><strong>Заказ №:</strong> <span id="whInvOrderId">---</span></p>
-                        <p style="font-size:0.9rem;"><strong>Дата:</strong> <span id="whInvOrderDate">---</span></p>
+                        <h3 style="font-size:1.2rem; color:#333; margin-bottom:2px;">WAREHOUSE / ASSEMBLY SHEET</h3>
+                        <p style="font-size:0.9rem;"><strong>Order ID:</strong> <span id="whInvOrderId">---</span></p>
+                        <p style="font-size:0.9rem;"><strong>Date:</strong> <span id="whInvOrderDate">---</span></p>
                     </div>
                 </div>
 
                 <div style="background:#f8fafc; padding:10px; border-radius:6px; margin-bottom:1.2rem; font-size:0.9rem;">
-                    <p><strong>Покупатель (Consignee):</strong> <span id="whInvClientName" style="font-weight:bold;">---</span></p>
-                    <p style="font-size:0.80rem; color:#666; margin-top:4px;">* Штук в пачке берется автоматически из карточки каждого сорта.</p>
+                    <p><strong>Consignee / Client:</strong> <span id="whInvClientName" style="font-weight:bold;">---</span></p>
+                    <p style="font-size:0.80rem; color:#666; margin-top:4px;">* Pieces per pack are determined automatically from each variety's master settings.</p>
                 </div>
 
-                <!-- Сводка по категориям из карточки склада -->
-                <div id="whInvCategorySummary" style="background:#f1f5f9; padding:8px 12px; border-radius:6px; margin-bottom:12px; font-size:0.85rem; border:1px solid #cbd5e1;"></div>
-
-                <table style="width:100%; border-collapse:collapse; margin-bottom:1.5rem;">
+                <table style="width:100%; border-collapse:collapse; margin-bottom:1rem;">
                     <thead>
                         <tr style="background:#f1f5f9;">
-                            <th style="border:1px solid #cbd5e1; padding:6px; text-align:center;">№</th>
-                            <th style="border:1px solid #cbd5e1; padding:6px;">Наименование сорта и размер</th>
-                            <th style="border:1px solid #cbd5e1; padding:6px; text-align:center;">Кол-во пачек</th>
-                            <th style="border:1px solid #cbd5e1; padding:6px; text-align:center;">Штук в пачке</th>
-                            <th style="border:1px solid #cbd5e1; padding:6px; text-align:right;">Итого штук</th>
+                            <th style="border:1px solid #cbd5e1; padding:6px; text-align:center;">No.</th>
+                            <th style="border:1px solid #cbd5e1; padding:6px;">Variety & Stem Length</th>
+                            <th style="border:1px solid #cbd5e1; padding:6px; text-align:center;">Packs</th>
+                            <th style="border:1px solid #cbd5e1; padding:6px; text-align:center;">Pcs/Pack</th>
+                            <th style="border:1px solid #cbd5e1; padding:6px; text-align:right;">Total Stems</th>
                         </tr>
                     </thead>
                     <tbody id="whInvItemsTableBody"></tbody>
                 </table>
 
-                <div style="display:flex; justify-content:space-between; margin-bottom:2rem; font-weight:bold; font-size:1rem;">
-                    <div>Общее кол-во пачек: <span id="whInvTotalPacks" style="color:var(--accent);">0</span> пач.</div>
-                    <div>Общее кол-во штук: <span id="whInvTotalPieces" style="color:var(--accent);">0</span> шт.</div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:1rem; font-weight:bold; font-size:0.95rem;">
+                    <div>Total Packs: <span id="whInvTotalPacks" style="color:var(--accent);">0</span> packs</div>
+                    <div>Total Stems: <span id="whInvTotalPieces" style="color:var(--accent);">0</span> pcs.</div>
                 </div>
 
-                <div style="display:flex; justify-content:space-between; margin-top:3rem; font-size:0.9rem; border-top:1px dashed #ccc; padding-top:1rem;">
-                    <div><p>Сборщик склада: ___________________</p></div>
-                    <div><p>Ответственный: ___________________</p></div>
+                <!-- СВОДКА НА АНГЛИЙСКОМ -->
+                <div id="whInvCategorySummary" style="background:#f8fafc; padding:8px 10px; border-radius:6px; margin-bottom:1.5rem; font-size:0.8rem; border:1px solid #cbd5e1;"></div>
+
+                <div style="display:flex; justify-content:space-between; margin-top:2rem; font-size:0.9rem; border-top:1px dashed #ccc; padding-top:1rem;">
+                    <div><p>Warehouse Packer: ___________________</p></div>
+                    <div><p>Operations Manager: ___________________</p></div>
                 </div>
             </div>
 
             <div style="display:flex; gap:10px; margin-top:2rem;" class="no-print">
-                <button class="btn btn-success" style="flex:1;" onclick="window.print()">🖨️ Печать складского листа</button>
-                <button class="btn btn-dark" onclick="closeWarehouseInvoiceModal()">Закрыть</button>
+                <button class="btn btn-success" style="flex:1;" onclick="window.print()">🖨️ Print Warehouse Sheet</button>
+                <button class="btn btn-dark" onclick="closeWarehouseInvoiceModal()">Close</button>
             </div>
         </div>
     </div>
@@ -1274,31 +1273,31 @@
             const tbody = document.getElementById('whInvItemsTableBody');
             tbody.innerHTML = '';
             let totalPacks = 0, totalPieces = 0;
-            let statsByType = { 
-                'Одноголовая': { packs: 0, pieces: 0 }, 
-                'Кустовая': { packs: 0, pieces: 0 }, 
-                'Эксклюзивная': { packs: 0, pieces: 0 } 
-            };
+            let groupedByCategory = {};
 
             order.items.forEach((item, idx) => {
                 const packs = Number(item.packs || 0);
                 totalPacks += packs;
                 
                 const f = flowers.find(fl => fl.id === item.flowerId) || flowers.find(fl => `${fl.name} (${fl.size})` === item.name);
-                const pcs = item.pcsPerPack || (f ? f.pcsPerPack : 15) || 15;
+                const pcs = item.pcsPerPack || (f ? f.pcsPerPack : 10) || 10;
                 const itemPieces = packs * pcs;
                 totalPieces += itemPieces;
 
-                let cat = (f ? f.category : '') || item.category || 'Одноголовая';
+                let cat = (f ? f.category : '') || item.category || 'Single-head';
+                let sizeVal = f ? f.size : (item.name.match(/\((.*?)\)/)?.[1] || 'Standard');
+                if (!sizeVal.includes('cm') && !sizeVal.includes('см')) sizeVal += ' cm';
 
-                if (!statsByType[cat]) statsByType[cat] = { packs: 0, pieces: 0 };
-                statsByType[cat].packs += packs;
-                statsByType[cat].pieces += itemPieces;
+                if (!groupedByCategory[cat]) groupedByCategory[cat] = {};
+                if (!groupedByCategory[cat][sizeVal]) {
+                    groupedByCategory[cat][sizeVal] = { packs: 0, pieces: 0 };
+                }
+                groupedByCategory[cat][sizeVal].packs += packs;
+                groupedByCategory[cat][sizeVal].pieces += itemPieces;
 
-                // Аккуратное форматирование названия и размера со ссылкой на склад
                 let displayName = item.name;
                 if (f) {
-                    let sizeStr = f.size.includes('см') ? f.size : f.size + ' см';
+                    let sizeStr = f.size.includes('cm') || f.size.includes('см') ? f.size : f.size + ' cm';
                     displayName = `${f.name} (${sizeStr})`;
                 }
 
@@ -1306,19 +1305,57 @@
                     <tr>
                         <td style="border:1px solid #cbd5e1; padding:5px; text-align:center;">${idx+1}</td>
                         <td style="border:1px solid #cbd5e1; padding:5px;"><strong>${displayName}</strong></td>
-                        <td style="border:1px solid #cbd5e1; padding:5px; text-align:center; font-weight:bold;">${packs} пач.</td>
-                        <td style="border:1px solid #cbd5e1; padding:5px; text-align:center;">${pcs} шт/пач</td>
-                        <td style="border:1px solid #cbd5e1; padding:5px; text-align:right; font-weight:bold;">${itemPieces} шт.</td>
+                        <td style="border:1px solid #cbd5e1; padding:5px; text-align:center; font-weight:bold;">${packs} packs</td>
+                        <td style="border:1px solid #cbd5e1; padding:5px; text-align:center;">${pcs} pcs/pack</td>
+                        <td style="border:1px solid #cbd5e1; padding:5px; text-align:right; font-weight:bold;">${itemPieces} pcs.</td>
                     </tr>
                 `;
             });
 
+            const catTranslations = {
+                'Одноголовая': 'Single-head Roses',
+                'Кустовая': 'Spray Roses',
+                'Эксклюзивная': 'Exclusive Roses'
+            };
+
+            let summaryHtmlEn = '';
+
+            for (let [catName, sizesObj] of Object.entries(groupedByCategory)) {
+                let icon = '🌹';
+                if (catName.includes('Кустовая')) icon = '🌿';
+                if (catName.includes('Эксклюзивная')) icon = '🌟';
+
+                let catEn = catTranslations[catName] || catName;
+
+                let catTotalPacks = 0;
+                let catTotalPieces = 0;
+                let sizesHtmlEn = '';
+
+                for (let [sizeName, data] of Object.entries(sizesObj)) {
+                    catTotalPacks += data.packs;
+                    catTotalPieces += data.pieces;
+                    sizesHtmlEn += `
+                        <div style="margin-left: 15px; font-size: 0.78rem;">
+                            — ${sizeName.replace('см', 'cm')}: ${data.packs} packs / ${data.pieces} pcs.
+                        </div>
+                    `;
+                }
+
+                summaryHtmlEn += `
+                    <div style="margin-bottom: 8px;">
+                        <strong>${icon} ${catEn}:</strong>
+                        ${sizesHtmlEn}
+                        <div style="margin-left: 15px; font-size: 0.78rem; font-weight: bold; color: var(--accent); margin-top: 2px;">
+                            Total for «${catEn}»: ${catTotalPacks} packs / ${catTotalPieces} pcs.
+                        </div>
+                    </div>
+                `;
+            }
+
             document.getElementById('whInvCategorySummary').innerHTML = `
-                <div style="font-weight:bold; margin-bottom:4px;">Сводка по категориям:</div>
-                <div style="display:flex; gap:15px; flex-wrap:wrap;">
-                    <div>🌹 Одноголовые: <strong>${statsByType['Одноголовая'].packs}</strong> пач. (${statsByType['Одноголовая'].pieces} шт.)</div>
-                    <div>🌿 Кустовые: <strong>${statsByType['Кустовая'].packs}</strong> пач. (${statsByType['Кустовая'].pieces} шт.)</div>
-                    <div>🌟 Эксклюзивные: <strong>${statsByType['Эксклюзивная'].packs}</strong> пач. (${statsByType['Эксклюзивная'].pieces} шт.)</div>
+                <div style="font-weight:bold; margin-bottom:6px;">Assembly Summary by Types and Sizes:</div>
+                <div style="font-size: 0.8rem; line-height: 1.4;">
+                    ${summaryHtmlEn}
                 </div>
             `;
 
