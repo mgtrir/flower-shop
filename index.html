@@ -121,7 +121,6 @@
         .auth-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #fcf8f8; z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 1rem; }
         .auth-box { background: white; padding: 2rem; border-radius: 12px; border: 1px solid #ddd; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
 
-        /* ИДЕАЛЬНЫЙ СТИЛЬ ПЕЧАТИ */
         @media print {
             body * { display: none !important; }
             #printWarehouseInvoiceModal.active, #printWarehouseInvoiceModal.active *,
@@ -281,7 +280,7 @@
     <!-- Корзина Продаж -->
     <div class="cart-bar" id="cartBar" style="display: none;">
         <div class="cart-info">
-            В заказе: <strong id="cartCount">0</strong> пачек | Сумма: <strong id="cartTotal" style="color:var(--primary); font-size:1.1rem;">0</strong> ֏
+            В заказе: <strong id="cartCount">0</strong> пачек
         </div>
         <div class="cart-actions" style="display:flex; gap:8px;">
             <button class="btn btn-success btn-sm" onclick="openSaveOrderModal()">💾 Оформить Сделку</button>
@@ -301,8 +300,8 @@
                 <input type="hidden" id="editingOrderId" value="">
                 <div class="form-row">
                     <div class="form-group" style="flex:2;">
-                        <label>Выберите Клиента</label>
-                        <select id="orderClientSelect" class="form-control" required>
+                        <label>Выберите Клиента (Цены подставятся из персонального прайса)</label>
+                        <select id="orderClientSelect" class="form-control" required onchange="onClientSelectChanged()">
                             <option value="">Загрузка клиентов...</option>
                         </select>
                     </div>
@@ -322,7 +321,7 @@
                     <div class="table-responsive">
                         <table>
                             <thead>
-                                <tr><th>Сорт / Цветок</th><th>Цена (֏)</th><th>Пачек</th><th>Сумма</th><th>Действия</th></tr>
+                                <tr><th>Сорт / Цветок</th><th>Валюта</th><th>Цена из прайса</th><th>Пачек</th><th>Сумма</th><th>Действия</th></tr>
                             </thead>
                             <tbody id="checkoutItemsTableBody"></tbody>
                         </table>
@@ -335,7 +334,7 @@
                     </div>
 
                     <hr style="margin:0.8rem 0; border:0; border-top:1px solid #ddd;">
-                    <div style="font-size:1.1rem; font-weight:bold; text-align:right;">Итого: <span id="checkoutTotalSum" style="color:var(--primary);">0</span> ֏</div>
+                    <div style="font-size:1.1rem; font-weight:bold; text-align:right;">Итого: <span id="checkoutTotalSum" style="color:var(--primary);">0</span></div>
                 </div>
 
                 <div style="display:flex; gap:8px;">
@@ -346,68 +345,129 @@
         </div>
     </div>
 
-    <!-- МОДАЛЬНОЕ ОКНО ПЕЧАТИ ИНВОЙСА -->
+    <!-- МОДАЛЬНОЕ ОКНО ПЕРСОНАЛЬНЫХ ЦЕН КЛИЕНТА -->
+    <div class="modal" id="clientPricesModal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2>Персональные Цены Клиента: <span id="pricingClientName" style="color:var(--primary);"></span></h2>
+                <button class="close-btn" onclick="closeClientPricesModal()">&times;</button>
+            </div>
+            <input type="hidden" id="pricingClientId" value="">
+            <p style="font-size: 0.85rem; color: #666; margin-bottom: 1rem;">
+                Укажите точную цену за единицу (штуку) для этого клиента. Все счета и инвойсы будут формироваться строго по этим ценам.
+            </p>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Вид и Длина (Категория / Размер)</th>
+                            <th>Цена в драмах (AMD)</th>
+                            <th>Цена в долларах (USD) и Валюта</th>
+                        </tr>
+                    </thead>
+                    <tbody id="clientPricesTableBody"></tbody>
+                </table>
+            </div>
+            <div style="margin-top: 1.5rem; display: flex; gap: 8px;">
+                <button type="button" class="btn btn-success" onclick="saveClientPrices()">💾 Сохранить цены клиента</button>
+                <button type="button" class="btn btn-dark" onclick="closeClientPricesModal()">Закрыть</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- КОММЕРЧЕСКИЙ ИНВОЙС КАК НА ФОТО -->
     <div class="modal" id="printInvoiceModal">
-        <div class="modal-content" style="max-width: 750px; padding: 1.5rem;">
+        <div class="modal-content" style="max-width: 780px; padding: 2rem; background: #fff;">
             <div class="modal-header no-print">
-                <h2>📄 Экспортный Коммерческий Инвойс (Commercial Invoice)</h2>
+                <h2>📄 Commercial Invoice</h2>
                 <button class="close-btn" onclick="closePrintModal()">&times;</button>
             </div>
             
-            <div id="invoiceContent" style="color:#000;">
-                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1.5rem;">
+            <div id="invoiceContent" style="color:#000; font-size: 0.9rem;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1.5rem; border-bottom: 1px solid #ccc; padding-bottom: 10px;">
                     <div>
-                        <h2 style="color:var(--primary); font-size:1.4rem;">ROSE GARDEN GREENHOUSE</h2>
-                        <p style="font-size:0.8rem; color:#555;">Армения, Котайкский марз, г. Раздан<br>Тепличное хозяйство оптовой торговли роз<br>Email: info@rosegarden.am</p>
+                        <h2 style="font-size: 1.5rem; font-weight: bold; letter-spacing: 0.5px; margin-bottom: 5px;">INVOICE</h2>
                     </div>
-                    <div style="text-align:right;">
-                        <h3 style="font-size:1.2rem; color:#333;">COMMERCIAL INVOICE</h3>
-                        <p style="font-size:0.9rem;"><strong>№:</strong> <span id="invOrderId">---</span></p>
-                        <p style="font-size:0.9rem;"><strong>Дата:</strong> <span id="invOrderDate">---</span></p>
+                    <div style="text-align:right; font-size: 0.9rem;">
+                        <p><strong>Invoice Number:</strong> <span id="invOrderId">2710-1</span></p>
+                        <p><strong>Date:</strong> <span id="invOrderDate">27/10/2026</span></p>
                     </div>
                 </div>
 
-                <div style="background:#f8fafc; padding:10px; border-radius:6px; margin-bottom:1.2rem; font-size:0.9rem; display:flex; justify-content:space-between;">
-                    <div>
-                        <p><strong>Покупатель (Consignee):</strong></p>
-                        <p id="invClientName" style="font-size:1rem; font-weight:bold;">---</p>
-                        <p id="invClientPhone">Телефон: ---</p>
+                <div style="display:flex; justify-content:space-between; margin-bottom:1.5rem; font-size: 0.85rem; line-height: 1.5;">
+                    <div style="width: 48%;">
+                        <p style="font-weight: bold; font-size: 0.95rem; margin-bottom: 4px;">Rose Garden LLC</p>
+                        <p>Tax Code: 02927742</p>
+                        <p>Phone Number: +374 33 058 058</p>
+                        <p>e-mail: info@rosegarden.am</p>
+                        <p>Adress: Armenia Yerevan Koryun 19</p>
                     </div>
-                    <div>
-                        <p><strong>Условия поставки (Incoterms):</strong> FCA / EXW</p>
-                        <p><strong>Валюта расчетов:</strong> AMD (֏)</p>
-                        <p><strong>Статус заказа:</strong> <span id="invOrderStatus">---</span></p>
+                    <div style="width: 48%;">
+                        <p style="font-weight: bold; font-size: 0.85rem;">Bill to:</p>
+                        <p id="invClientName" style="font-weight: bold; font-size: 0.95rem;">Tulpar general trading llc</p>
+                        <p>Registr No. 2599653</p>
+                        <p>Main License No. 1179218</p>
+                        <p>DCCI No. 457202</p>
+                        <p id="invClientPhone" style="display:none;"></p>
                     </div>
                 </div>
 
-                <table style="width:100%; border-collapse:collapse; margin-bottom:1.5rem;">
+                <table style="width:100%; border-collapse:collapse; margin-bottom:1.5rem; border: 1px solid #333; font-size: 0.85rem;">
+                    <tr>
+                        <td style="border: 1px solid #333; padding: 6px 10px; width: 50%;"><strong>Amount Total</strong></td>
+                        <td style="border: 1px solid #333; padding: 6px 10px; text-align: right; width: 25%; font-weight: bold;"><span id="invTopAmountUsd">$0,00</span></td>
+                        <td style="border: 1px solid #333; padding: 6px 10px; width: 25%;">Total Value of Flowers</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #333; padding: 6px 10px;"><strong>Total Units</strong></td>
+                        <td style="border: 1px solid #333; padding: 6px 10px; text-align: right; font-weight: bold;"><span id="invTopTotalUnits">0</span></td>
+                        <td style="border: 1px solid #333; padding: 6px 10px;">Total Number of Flowers</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #333; padding: 6px 10px;"><strong>Bruto kg</strong></td>
+                        <td style="border: 1px solid #333; padding: 6px 10px; text-align: right;"><input type="text" id="inputBruto" value="174,8" style="width: 80px; text-align: right; border: 1px solid #ccc; padding: 2px;"></td>
+                        <td style="border: 1px solid #333; padding: 6px 10px;"></td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #333; padding: 6px 10px;"><strong>Neto kg</strong></td>
+                        <td style="border: 1px solid #333; padding: 6px 10px; text-align: right;"><input type="text" id="inputNeto" value="143,45" style="width: 80px; text-align: right; border: 1px solid #ccc; padding: 2px;"></td>
+                        <td style="border: 1px solid #333; padding: 6px 10px;"></td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #333; padding: 6px 10px;"><strong>Total Boxes</strong></td>
+                        <td style="border: 1px solid #333; padding: 6px 10px; text-align: right;"><input type="text" id="inputBoxes" value="11" style="width: 80px; text-align: right; border: 1px solid #ccc; padding: 2px; font-weight: bold;"></td>
+                        <td style="border: 1px solid #333; padding: 6px 10px;">Total Number of Boxes</td>
+                    </tr>
+                </table>
+
+                <!-- ОСНОВНАЯ ТАБЛИЦА С ИТОГО КАК НА ФОТО -->
+                <table style="width:100%; border-collapse:collapse; margin-bottom:1rem; border: 1px solid #333; font-size: 0.85rem;">
                     <thead>
-                        <tr style="background:#f1f5f9;">
-                            <th style="border:1px solid #cbd5e1; padding:8px;">№</th>
-                            <th style="border:1px solid #cbd5e1; padding:8px;">Наименование сорта (Description)</th>
-                            <th style="border:1px solid #cbd5e1; padding:8px; text-align:center;">Кол-во пачек</th>
-                            <th style="border:1px solid #cbd5e1; padding:8px; text-align:right;">Цена за пачку (֏)</th>
-                            <th style="border:1px solid #cbd5e1; padding:8px; text-align:right;">Сумма (֏)</th>
+                        <tr style="background:#2b579a; color: white;">
+                            <th style="border:1px solid #333; padding:6px 8px; text-align:left;">Description</th>
+                            <th style="border:1px solid #333; padding:6px 8px; text-align:center; width: 60px;">SM</th>
+                            <th style="border:1px solid #333; padding:6px 8px; text-align:center; width: 80px;">Quantity</th>
+                            <th style="border:1px solid #333; padding:6px 8px; text-align:right; width: 90px;">Price</th>
+                            <th style="border:1px solid #333; padding:6px 8px; text-align:right; width: 100px;">Cost</th>
                         </tr>
                     </thead>
                     <tbody id="invItemsTableBody"></tbody>
                 </table>
 
-                <div style="display:flex; justify-content:flex-end; margin-bottom:2rem;">
-                    <div style="font-size:1.2rem; font-weight:bold;">
-                        Итого к оплате (Total): <span id="invTotalSum" style="color:var(--primary);">0</span> ֏
-                    </div>
+                <!-- БЛОК ПОДПИСЕЙ КАК НА ФОТО -->
+                <div style="display:flex; justify-content:space-between; margin-top:3rem; font-size:0.9rem; page-break-inside: avoid;">
+                    <div><p>Director</p></div>
+                    <div style="text-align:right;"><p>Armen Aghababyan</p></div>
                 </div>
 
-                <div style="display:flex; justify-content:space-between; margin-top:3rem; font-size:0.9rem; border-top:1px dashed #ccc; padding-top:1rem;">
-                    <div><p>От продавца (Seller): ___________________</p></div>
-                    <div><p>Получатель (Buyer): ___________________</p></div>
+                <div style="font-size:0.85rem; color:#555; margin-top:2rem;" class="no-print">
+                    <p><strong>Order Status:</strong> <span id="invOrderStatus">---</span></p>
                 </div>
             </div>
 
             <div style="display:flex; gap:10px; margin-top:2rem;" class="no-print">
-                <button class="btn btn-success" style="flex:1;" onclick="window.print()">🖨️ Печать / Сохранить в PDF</button>
-                <button class="btn btn-dark" onclick="closePrintModal()">Закрыть</button>
+                <button class="btn btn-success" style="flex:1;" onclick="window.print()">🖨️ Print / Save as PDF</button>
+                <button class="btn btn-dark" onclick="closePrintModal()">Close</button>
             </div>
         </div>
     </div>
@@ -423,28 +483,27 @@
                 <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1.5rem;">
                     <div>
                         <h2 style="color:var(--accent); font-size:1.4rem; margin-bottom:2px;">ROSE GARDEN GREENHOUSE</h2>
-                        <p style="font-size:0.8rem; color:#555;">Armenia, Kotayk Region, Hrazdan<br>Greenhouse Wholesale & Export Operations</p>
+                        <p style="font-size:0.8rem; color:#555;">Armenia, Kotayk Region, Hrazdan<br>Greenhouse Warehouse Assembly List</p>
                     </div>
                     <div style="text-align:right;">
-                        <h3 style="font-size:1.2rem; color:#333; margin-bottom:2px;">WAREHOUSE / ASSEMBLY SHEET</h3>
-                        <p style="font-size:0.9rem;"><strong>Order ID:</strong> <span id="whInvOrderId">---</span></p>
+                        <h3 style="font-size:1.2rem; color:#333; margin-bottom:2px;">WAREHOUSE ASSEMBLY LIST</h3>
+                        <p style="font-size:0.9rem;"><strong>Order №:</strong> <span id="whInvOrderId">---</span></p>
                         <p style="font-size:0.9rem;"><strong>Date:</strong> <span id="whInvOrderDate">---</span></p>
                     </div>
                 </div>
 
                 <div style="background:#f8fafc; padding:10px; border-radius:6px; margin-bottom:1.2rem; font-size:0.9rem;">
-                    <p><strong>Consignee / Client:</strong> <span id="whInvClientName" style="font-weight:bold;">---</span></p>
-                    <p style="font-size:0.80rem; color:#666; margin-top:4px;">* Pieces per pack are determined automatically from each variety's master settings.</p>
+                    <p><strong>Consignee (Client):</strong> <span id="whInvClientName" style="font-weight:bold;">---</span></p>
                 </div>
 
                 <table style="width:100%; border-collapse:collapse; margin-bottom:1rem;">
                     <thead>
                         <tr style="background:#f1f5f9;">
-                            <th style="border:1px solid #cbd5e1; padding:6px; text-align:center;">No.</th>
-                            <th style="border:1px solid #cbd5e1; padding:6px;">Variety & Stem Length</th>
+                            <th style="border:1px solid #cbd5e1; padding:6px; text-align:center;">№</th>
+                            <th style="border:1px solid #cbd5e1; padding:6px;">Variety Description & Size</th>
                             <th style="border:1px solid #cbd5e1; padding:6px; text-align:center;">Packs</th>
-                            <th style="border:1px solid #cbd5e1; padding:6px; text-align:center;">Pcs/Pack</th>
-                            <th style="border:1px solid #cbd5e1; padding:6px; text-align:right;">Total Stems</th>
+                            <th style="border:1px solid #cbd5e1; padding:6px; text-align:center;">Pcs / Pack</th>
+                            <th style="border:1px solid #cbd5e1; padding:6px; text-align:right;">Total Pieces</th>
                         </tr>
                     </thead>
                     <tbody id="whInvItemsTableBody"></tbody>
@@ -452,20 +511,19 @@
 
                 <div style="display:flex; justify-content:space-between; margin-bottom:1rem; font-weight:bold; font-size:0.95rem;">
                     <div>Total Packs: <span id="whInvTotalPacks" style="color:var(--accent);">0</span> packs</div>
-                    <div>Total Stems: <span id="whInvTotalPieces" style="color:var(--accent);">0</span> pcs.</div>
+                    <div>Total Pieces: <span id="whInvTotalPieces" style="color:var(--accent);">0</span> pcs.</div>
                 </div>
 
-                <!-- СВОДКА НА АНГЛИЙСКОМ -->
                 <div id="whInvCategorySummary" style="background:#f8fafc; padding:8px 10px; border-radius:6px; margin-bottom:1.5rem; font-size:0.8rem; border:1px solid #cbd5e1;"></div>
 
                 <div style="display:flex; justify-content:space-between; margin-top:2rem; font-size:0.9rem; border-top:1px dashed #ccc; padding-top:1rem;">
                     <div><p>Warehouse Packer: ___________________</p></div>
-                    <div><p>Operations Manager: ___________________</p></div>
+                    <div><p>Manager / Supervisor: ___________________</p></div>
                 </div>
             </div>
 
             <div style="display:flex; gap:10px; margin-top:2rem;" class="no-print">
-                <button class="btn btn-success" style="flex:1;" onclick="window.print()">🖨️ Print Warehouse Sheet</button>
+                <button class="btn btn-success" style="flex:1;" onclick="window.print()">🖨️ Print Warehouse List</button>
                 <button class="btn btn-dark" onclick="closeWarehouseInvoiceModal()">Close</button>
             </div>
         </div>
@@ -475,7 +533,7 @@
     <div class="modal" id="printPackingModal">
         <div class="modal-content" style="max-width: 750px; padding: 1.5rem;">
             <div class="modal-header no-print">
-                <h2>📦 Экспортный Упаковочный Лист (Packing List)</h2>
+                <h2>📦 Packing List</h2>
                 <button class="close-btn" onclick="closePackingModal()">&times;</button>
             </div>
             
@@ -483,51 +541,51 @@
                 <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1.5rem;">
                     <div>
                         <h2 style="color:var(--accent); font-size:1.4rem;">ROSE GARDEN GREENHOUSE</h2>
-                        <p style="font-size:0.8rem; color:#555;">Армения, Котайкский марз, г. Раздан<br>Отдел экспортной логистики</p>
+                        <p style="font-size:0.8rem; color:#555;">Armenia, Kotayk Region, Hrazdan<br>Export Logistics Department</p>
                     </div>
                     <div style="text-align:right;">
                         <h3 style="font-size:1.2rem; color:#333;">PACKING LIST</h3>
-                        <p style="font-size:0.9rem;"><strong>Заказ №:</strong> <span id="packOrderId">---</span></p>
-                        <p style="font-size:0.9rem;"><strong>Дата:</strong> <span id="packOrderDate">---</span></p>
+                        <p style="font-size:0.9rem;"><strong>Order №:</strong> <span id="packOrderId">---</span></p>
+                        <p style="font-size:0.9rem;"><strong>Date:</strong> <span id="packOrderDate">---</span></p>
                     </div>
                 </div>
 
                 <div style="background:#f8fafc; padding:10px; border-radius:6px; margin-bottom:1.2rem; font-size:0.9rem;">
-                    <p><strong>Покупатель (Consignee):</strong> <span id="packClientName" style="font-weight:bold;">---</span></p>
+                    <p><strong>Consignee:</strong> <span id="packClientName" style="font-weight:bold;">---</span></p>
                 </div>
 
                 <table style="width:100%; border-collapse:collapse; margin-bottom:1.5rem;">
                     <thead>
                         <tr style="background:#f1f5f9;">
-                            <th style="border:1px solid #cbd5e1; padding:8px;">Место / Коробка</th>
-                            <th style="border:1px solid #cbd5e1; padding:8px;">Наименование сорта розы</th>
-                            <th style="border:1px solid #cbd5e1; padding:8px; text-align:center;">Количество пачек</th>
-                            <th style="border:1px solid #cbd5e1; padding:8px; text-align:center;">Статус упаковки</th>
+                            <th style="border:1px solid #cbd5e1; padding:8px;">Box / Position</th>
+                            <th style="border:1px solid #cbd5e1; padding:8px;">Variety Description</th>
+                            <th style="border:1px solid #cbd5e1; padding:8px; text-align:center;">Packs</th>
+                            <th style="border:1px solid #cbd5e1; padding:8px; text-align:center;">Status</th>
                         </tr>
                     </thead>
                     <tbody id="packItemsTableBody"></tbody>
                 </table>
 
                 <div style="display:flex; justify-content:space-between; margin-bottom:2rem; font-weight:bold; font-size:1rem;">
-                    <div>Общее количество пачек: <span id="packTotalPacks" style="color:var(--accent);">0</span> пач.</div>
+                    <div>Total Packs: <span id="packTotalPacks" style="color:var(--accent);">0</span> packs</div>
                 </div>
 
                 <div style="display:flex; justify-content:space-between; margin-top:3rem; font-size:0.9rem; border-top:1px dashed #ccc; padding-top:1rem;">
-                    <div><p>Упаковал (Packer): ___________________</p></div>
-                    <div><p>Проверил (Controller): ___________________</p></div>
+                    <div><p>Packer: ___________________</p></div>
+                    <div><p>Controller: ___________________</p></div>
                 </div>
             </div>
 
             <div style="display:flex; gap:10px; margin-top:2rem;" class="no-print">
-                <button class="btn btn-success" style="flex:1;" onclick="window.print()">🖨️ Печать Packing List</button>
-                <button class="btn btn-dark" onclick="closePackingModal()">Закрыть</button>
+                <button class="btn btn-success" style="flex:1;" onclick="window.print()">🖨️ Print Packing List</button>
+                <button class="btn btn-dark" onclick="closePackingModal()">Close</button>
             </div>
         </div>
     </div>
 
     <!-- МОДАЛЬНОЕ ОКНО КЛИЕНТОВ -->
     <div class="modal" id="clientsModal">
-        <div class="modal-content" style="max-width: 900px;">
+        <div class="modal-content" style="max-width: 950px;">
             <div class="modal-header">
                 <h2>👥 База Клиентов и Контрагентов</h2>
                 <button class="close-btn" onclick="closeClientsModal()">&times;</button>
@@ -540,7 +598,7 @@
             <div id="addClientSection" style="display:none; background:#f9f9f9; padding:1.2rem; border-radius:8px; margin-bottom:1.2rem; border:1px solid #ddd;">
                 <h3 style="margin-bottom:0.8rem; color:var(--primary);" id="clientFormTitle">Добавить Клиента</h3>
                 <form onsubmit="handleSaveClient(event)">
-                    <input type="hidden" id="clientId">
+                    <input type="hidden" id="clientId" value="">
                     <div class="form-row">
                         <div class="form-group"><label>Название / Имя</label><input type="text" id="clientName" class="form-control" required placeholder="ООО Цветочный Рай"></div>
                         <div class="form-group"><label>Телефон</label><input type="text" id="clientPhone" class="form-control" required placeholder="+374 99 000000"></div>
@@ -556,7 +614,7 @@
             <div class="table-responsive">
                 <table>
                     <thead>
-                        <tr><th>Клиент / Компания</th><th>Телефон</th><th>Город / Страна</th><th>Действия</th></tr>
+                        <tr><th>Клиент / Компания</th><th>Телефон</th><th>Город / Страна</th><th>Персональные Цены</th><th>Действия</th></tr>
                     </thead>
                     <tbody id="clientsTableBody"></tbody>
                 </table>
@@ -577,7 +635,7 @@
             <div class="table-responsive">
                 <table>
                     <thead>
-                        <tr><th>№ Заказа</th><th>Дата</th><th>Клиент</th><th>Сумма (֏)</th><th>Статус</th><th>Экспортные документы</th><th>Действия</th></tr>
+                        <tr><th>№ Заказа</th><th>Дата</th><th>Клиент</th><th>Сумма</th><th>Статус</th><th>Экспортные документы</th><th>Действия</th></tr>
                     </thead>
                     <tbody id="ordersTableBody"></tbody>
                 </table>
@@ -674,7 +732,7 @@
                     <canvas id="categoryChart"></canvas>
                 </div>
                 <div style="background:#f8fafc; padding:1rem; border-radius:8px; border:1px solid #e2e8f0;">
-                    <h3 style="font-size:0.95rem; margin-bottom:0.8rem; text-align:center;">Выручка по дням (֏)</h3>
+                    <h3 style="font-size:0.95rem; margin-bottom:0.8rem; text-align:center;">Выручка по дням</h3>
                     <canvas id="revenueChart"></canvas>
                 </div>
             </div>
@@ -725,7 +783,7 @@
                     <table>
                         <thead>
                             <tr>
-                                <th>Фото</th><th>Вид</th><th>Название сорта</th><th>Размер</th><th>Цена за пачку (֏)</th>
+                                <th>Фото</th><th>Вид</th><th>Название сорта</th><th>Размер</th>
                                 <th style="text-align:center;">Штук в пачке</th><th style="text-align:center;">Остаток (Пачки)</th>
                                 <th style="text-align:center;">Остаток (Штук)</th><th>Быстрый Приход / Списание</th><th>Действия</th>
                             </tr>
@@ -755,7 +813,6 @@
                     </div>
                     <div class="form-row">
                         <div class="form-group"><label>Размер</label><input type="text" id="flowerSize" class="form-control" required placeholder="60 см"></div>
-                        <div class="form-group"><label>Цена за пачку (֏)</label><input type="number" id="flowerPrice" class="form-control" required placeholder="1000"></div>
                         <div class="form-group"><label>Штук в одной пачке</label><input type="number" id="flowerPcsPerPack" class="form-control" required value="15" placeholder="15"></div>
                         <div class="form-group"><label>Остаток (пачек)</label><input type="number" id="flowerPacks" class="form-control" required placeholder="10"></div>
                         <div class="form-group"><label>Остаток (шт)</label><input type="number" id="flowerStock" class="form-control" required placeholder="150"></div>
@@ -813,6 +870,9 @@
 
         db.ref('clients').on('value', (s) => {
             clients = s.val() ? Object.values(s.val()) : [];
+            if (document.getElementById('clientsModal').classList.contains('active')) {
+                renderClientsTable();
+            }
         });
 
         window.setCardSize = function(size, el) {
@@ -848,12 +908,12 @@
             const wb = XLSX.utils.book_new();
             const wsData = [
                 ["🌸 РОУЗ ГАРДЕН — ЗАКАЗЫ"],
-                ["№ Заказа", "Дата", "Клиент", "Телефон", "Статус", "Состав", "Сумма (֏)"]
+                ["№ Заказа", "Дата", "Клиент", "Телефон", "Статус", "Состав", "Сумма"]
             ];
             let total = 0;
             orders.forEach(o => {
                 total += Number(o.totalPrice || 0);
-                let itemsStr = (o.items || []).map(i => `${i.name}: ${i.packs} пач.`).join(' | ');
+                let itemsStr = (o.items || []).map(i => `${i.name}: ${i.packs} пач. (${i.price} ${i.currency || '֏'})`).join(' | ');
                 wsData.push([o.id, o.date, o.clientName, o.clientPhone, o.status, itemsStr, o.totalPrice]);
             });
             wsData.push([], ["ИТОГО", "", "", "", "", "", total]);
@@ -961,17 +1021,15 @@
             const wb = XLSX.utils.book_new();
             const wsData = [
                 ["🌸 РОУЗ ГАРДЕН — ОСТАТКИ"],
-                ["№", "Вид", "Сорт", "Размер", "Цена", "Штук/пач", "Пачки", "Штук", "Сумма"]
+                ["№", "Вид", "Сорт", "Размер", "Штук/пач", "Пачки", "Штук"]
             ];
-            let tPacks = 0, tQty = 0, tSum = 0;
+            let tPacks = 0, tQty = 0;
             flowers.forEach((f, idx) => {
-                let s = (f.price || 0) * (f.packs || 0);
                 tPacks += Number(f.packs || 0);
                 tQty += Number(f.stock || 0);
-                tSum += s;
-                wsData.push([idx+1, f.category, f.name, f.size, f.price, f.pcsPerPack || 15, f.packs || 0, f.stock || 0, s]);
+                wsData.push([idx+1, f.category, f.name, f.size, f.pcsPerPack || 15, f.packs || 0, f.stock || 0]);
             });
-            wsData.push([], ["ИТОГО", "", "", "", "", "", tPacks, tQty, tSum]);
+            wsData.push([], ["ИТОГО", "", "", "", tPacks, tQty]);
             const ws = XLSX.utils.aoa_to_sheet(wsData);
             XLSX.utils.book_append_sheet(wb, ws, "Склад");
             XLSX.writeFile(wb, `RoseGarden_Stock_${Date.now()}.xlsx`);
@@ -990,23 +1048,22 @@
                     if (rows.length === 0) return alert('Пустой файл!');
 
                     const sizeColumns = [
-                        { stockColIdx: 1, packColIdx: 2, size: '30 см' },
-                        { stockColIdx: 3, packColIdx: 4, size: '40 см' },
-                        { stockColIdx: 5, packColIdx: 6, size: '50 см' },
-                        { stockColIdx: 7, packColIdx: 8, size: '60 см' },
-                        { stockColIdx: 9, packColIdx: 10, size: '70 см' },
-                        { stockColIdx: 11, packColIdx: 12, size: '80 см' }
+                        { stockColIdx: 1, packColIdx: 2, size: '40 см' },
+                        { stockColIdx: 3, packColIdx: 4, size: '50 см' },
+                        { stockColIdx: 5, packColIdx: 6, size: '60 см' },
+                        { stockColIdx: 7, packColIdx: 8, size: '70 см' },
+                        { stockColIdx: 9, packColIdx: 10, size: '80 см' }
                     ];
 
                     for (let i = 6; i < rows.length; i++) {
                         const row = rows[i];
                         const flowerName = row[0] ? String(row[0]).trim() : '';
-                        if (!flowerName || flowerName.includes('Итого') || flowerName.includes('Ընդամենը')) continue;
+                        if (!flowerName || flowerName.includes('Итого')) continue;
 
                         sizeColumns.forEach(item => {
                             let qty = parseInt(row[item.stockColIdx], 10) || 0;
                             let packs = parseInt(row[item.packColIdx], 10) || 0;
-                            let existing = flowers.find(f => f.name.toLowerCase() === flowerName.toLowerCase() && f.size.includes(item.size.replace(' см','')));
+                            let existing = flowers.find(f => f.name.toLowerCase() === flowerName.toLowerCase() && f.size === item.size);
                             if (existing) {
                                 existing.stock = qty;
                                 existing.packs = packs;
@@ -1014,7 +1071,7 @@
                                 flowers.push({
                                     id: 'FLW-' + Date.now() + '-' + Math.floor(Math.random()*1000),
                                     name: flowerName, category: 'Одноголовая', size: item.size,
-                                    price: 1000, pcsPerPack: 15, stock: qty, packs: packs, image: DEFAULT_FLOWER_IMAGE
+                                    pcsPerPack: 15, stock: qty, packs: packs, image: DEFAULT_FLOWER_IMAGE
                                 });
                             }
                         });
@@ -1089,7 +1146,7 @@
                         </div>
                         <div class="card-body">
                             <h3 class="card-title">${f.name}</h3>
-                            <p style="margin-bottom:0.5rem; font-size:0.9rem;">${f.price} ֏ | Остаток: <strong>${f.packs || 0} пач</strong></p>
+                            <p style="margin-bottom:0.5rem; font-size:0.9rem;">Остаток: <strong>${f.packs || 0} пач</strong></p>
                             <div class="card-footer-action">
                                 <div class="cart-input-box">
                                     <button class="btn btn-outline btn-sm" onclick="adjustCardQty('${f.id}', -1)">-</button>
@@ -1124,14 +1181,9 @@
             const items = Object.values(cart);
             if (items.length === 0) { bar.style.display = 'none'; return; }
             bar.style.display = 'flex';
-            let tPacks = 0, tSum = 0;
-            items.forEach(i => {
-                let f = flowers.find(fl => fl.id === i.flowerId);
-                tPacks += i.packs;
-                tSum += i.packs * (f ? f.price : 0);
-            });
+            let tPacks = 0;
+            items.forEach(i => { tPacks += i.packs; });
             document.getElementById('cartCount').innerText = tPacks;
-            document.getElementById('cartTotal').innerText = tSum.toLocaleString();
         }
 
         window.clearCart = function() { cart = {}; localStorage.removeItem('rosegarden_cart'); updateCartBar(); };
@@ -1140,7 +1192,7 @@
             const sel = document.getElementById('editAddFlowerSelect');
             if (!sel) return;
             sel.innerHTML = '<option value="">-- Добавить сорт --</option>';
-            flowers.forEach(f => sel.innerHTML += `<option value="${f.id}">${f.name} (${f.size}) - ${f.price} ֏</option>`);
+            flowers.forEach(f => sel.innerHTML += `<option value="${f.id}">${f.name} (${f.size})</option>`);
         }
 
         window.openSaveOrderModal = function() {
@@ -1148,47 +1200,106 @@
             document.getElementById('saveOrderModal').classList.add('active');
             document.getElementById('orderModalTitle').innerText = '💾 Оформление Продажи';
             document.getElementById('editingOrderId').value = '';
+            
             activeOrderItems = Object.values(cart).map(i => {
                 let f = flowers.find(fl => fl.id === i.flowerId);
-                let sizeStr = f ? (f.size.includes('см') ? f.size : f.size + ' см') : '';
                 return {
                     flowerId: i.flowerId,
-                    name: f ? `${f.name} (${sizeStr})` : 'Цветок',
+                    name: f ? f.name : 'Цветок',
                     category: f ? (f.category || 'Одноголовая') : 'Одноголовая',
+                    size: f ? f.size : '60 см',
                     pcsPerPack: f ? (f.pcsPerPack || 15) : 15,
                     packs: i.packs,
-                    price: f ? f.price : 0
+                    price: 0,
+                    currency: 'AMD'
                 };
             });
-            renderCheckoutItemsTable();
             loadClientsIntoSelect('');
+            applyClientPricesToActiveOrder();
+            renderCheckoutItemsTable();
         };
         window.closeSaveOrderModal = function() { document.getElementById('saveOrderModal').classList.remove('active'); };
 
         function loadClientsIntoSelect(selectedId) {
             const sel = document.getElementById('orderClientSelect');
-            sel.innerHTML = '<option value="">-- Клиент --</option>';
+            sel.innerHTML = '<option value="">-- Выберите клиента --</option>';
             clients.forEach(c => sel.innerHTML += `<option value="${c.id}" ${c.id === selectedId ? 'selected' : ''}>${c.name} (${c.phone})</option>`);
+        }
+
+        window.onClientSelectChanged = function() {
+            applyClientPricesToActiveOrder();
+            renderCheckoutItemsTable();
+        };
+
+        function applyClientPricesToActiveOrder() {
+            const clientId = document.getElementById('orderClientSelect').value;
+            const client = clients.find(c => c.id === clientId);
+            
+            activeOrderItems.forEach(item => {
+                let f = flowers.find(fl => fl.id === item.flowerId);
+                let cat = f ? f.category : item.category;
+                let size = f ? f.size : item.size;
+                let key = `${cat}_${size}`.replace(/\s+/g, '_');
+
+                if (client && client.customPrices && client.customPrices[key]) {
+                    let cp = client.customPrices[key];
+                    if (cp.currency === 'USD' && Number(cp.usdPrice) > 0) {
+                        item.price = Number(cp.usdPrice);
+                        item.currency = 'USD';
+                    } else if (Number(cp.amdPrice) > 0) {
+                        item.price = Number(cp.amdPrice);
+                        item.currency = 'AMD';
+                    } else if (Number(cp.usdPrice) > 0) {
+                        item.price = Number(cp.usdPrice);
+                        item.currency = 'USD';
+                    }
+                } else {
+                    item.price = 0;
+                    item.currency = 'AMD';
+                }
+            });
         }
 
         function renderCheckoutItemsTable() {
             const tbody = document.getElementById('checkoutItemsTableBody');
             tbody.innerHTML = '';
-            let sumTotal = 0;
+            let sumTotalAmd = 0;
+            let sumTotalUsd = 0;
+            let hasUsd = false;
+            let hasAmd = false;
+
             activeOrderItems.forEach((item, idx) => {
-                let s = item.packs * item.price;
-                sumTotal += s;
+                let totalPieces = item.packs * (item.pcsPerPack || 15);
+                let s = totalPieces * item.price;
+                if (item.currency === 'USD') {
+                    sumTotalUsd += s;
+                    hasUsd = true;
+                } else {
+                    sumTotalAmd += s;
+                    hasAmd = true;
+                }
+
                 tbody.innerHTML += `
                     <tr>
-                        <td><strong>${item.name}</strong></td>
-                        <td>${item.price} ֏</td>
+                        <td><strong>${item.name} (${item.size})</strong></td>
+                        <td>
+                            <select class="form-control" style="padding:2px; width:80px;" onchange="activeOrderItems[${idx}].currency=this.value; applyClientPricesToActiveOrder(); renderCheckoutItemsTable();">
+                                <option value="AMD" ${item.currency==='AMD'?'selected':''}>AMD (֏)</option>
+                                <option value="USD" ${item.currency==='USD'?'selected':''}>USD ($)</option>
+                            </select>
+                        </td>
+                        <td><input type="number" class="form-control" style="width:90px; padding:2px;" value="${item.price}" onchange="activeOrderItems[${idx}].price=Number(this.value); renderCheckoutItemsTable();"></td>
                         <td><input type="number" class="form-control" style="width:70px; padding:2px;" value="${item.packs}" onchange="activeOrderItems[${idx}].packs=Math.max(1,parseInt(this.value)||1); renderCheckoutItemsTable();"></td>
-                        <td><strong>${s.toLocaleString()} ֏</strong></td>
+                        <td><strong>${s.toLocaleString()} ${item.currency === 'USD' ? '$' : '֏'}</strong></td>
                         <td><button type="button" class="btn btn-dark btn-sm" onclick="activeOrderItems.splice(${idx},1); renderCheckoutItemsTable();">🗑️</button></td>
                     </tr>
                 `;
             });
-            document.getElementById('checkoutTotalSum').innerText = sumTotal.toLocaleString();
+
+            let totalStr = '';
+            if (hasAmd) totalStr += `${sumTotalAmd.toLocaleString()} ֏ `;
+            if (hasUsd) totalStr += `${hasAmd ? '+ ' : ''}${sumTotalUsd.toLocaleString()} $`;
+            document.getElementById('checkoutTotalSum').innerText = totalStr || '0';
         }
 
         window.addFlowerToEditingOrder = function() {
@@ -1197,11 +1308,18 @@
             if (!fId) return;
             const f = flowers.find(fl => fl.id === fId);
             if (!f) return;
-            let sizeStr = f.size.includes('см') ? f.size : f.size + ' см';
-            let fullName = `${f.name} (${sizeStr})`;
-            let existing = activeOrderItems.find(i => i.flowerId === fId);
-            if (existing) existing.packs += packs;
-            else activeOrderItems.push({ flowerId: f.id, name: fullName, category: f.category || 'Одноголовая', pcsPerPack: f.pcsPerPack || 15, packs, price: f.price });
+            
+            activeOrderItems.push({ 
+                flowerId: f.id, 
+                name: f.name, 
+                category: f.category || 'Одноголовая', 
+                size: f.size,
+                pcsPerPack: f.pcsPerPack || 15, 
+                packs, 
+                price: 0,
+                currency: 'AMD'
+            });
+            applyClientPricesToActiveOrder();
             renderCheckoutItemsTable();
         };
 
@@ -1213,10 +1331,17 @@
             const editingId = document.getElementById('editingOrderId').value;
             const orderId = editingId || 'ORD-' + Date.now().toString().slice(-6);
 
-            let totalPrice = activeOrderItems.reduce((acc, i) => acc + (i.packs * i.price), 0);
+            let totalPriceCalc = activeOrderItems.reduce((acc, i) => acc + (i.packs * (i.pcsPerPack || 15) * i.price), 0);
+            
             db.ref('orders/' + orderId).set({
-                id: orderId, clientId: client.id, clientName: client.name, clientPhone: client.phone || '',
-                date: new Date().toLocaleDateString('ru-RU'), totalPrice, status: document.getElementById('orderStatusSelect').value, items: activeOrderItems
+                id: orderId, 
+                clientId: client.id, 
+                clientName: client.name, 
+                clientPhone: client.phone || '',
+                date: new Date().toLocaleDateString('ru-RU'), 
+                totalPrice: totalPriceCalc, 
+                status: document.getElementById('orderStatusSelect').value, 
+                items: activeOrderItems
             });
 
             if (!editingId) clearCart();
@@ -1236,29 +1361,188 @@
             renderCheckoutItemsTable();
         };
 
-        window.printOrderInvoice = function(id) {
-            const order = orders.find(o => o.id === id);
-            if (!order) return;
-            document.getElementById('invOrderId').innerText = order.id;
-            document.getElementById('invOrderDate').innerText = order.date;
-            document.getElementById('invClientName').innerText = order.clientName;
-            document.getElementById('invClientPhone').innerText = 'Тел: ' + order.clientPhone;
-            document.getElementById('invOrderStatus').innerText = order.status;
-            document.getElementById('invTotalSum').innerText = Number(order.totalPrice || 0).toLocaleString();
+        // --- УПРАВЛЕНИЕ ПЕРСОНАЛЬНЫМИ ЦЕНАМИ КЛИЕНТА ---
+        window.openClientPricesModal = function(clientId) {
+            const client = clients.find(c => c.id === clientId);
+            if (!client) return;
+            document.getElementById('pricingClientId').value = client.id;
+            document.getElementById('pricingClientName').innerText = client.name;
 
-            const tbody = document.getElementById('invItemsTableBody');
+            let combinations = [
+                { category: 'Одноголовая', size: '40 см' },
+                { category: 'Одноголовая', size: '50 см' },
+                { category: 'Одноголовая', size: '60 см' },
+                { category: 'Одноголовая', size: '70 см' },
+                { category: 'Одноголовая', size: '80 см' },
+                { category: 'Кустовая', size: '50 см' },
+                { category: 'Кустовая', size: '60 см' },
+                { category: 'Кустовая', size: '70 см' },
+                { category: 'Эксклюзивная', size: '60 см' },
+                { category: 'Эксклюзивная', size: '70 см' }
+            ];
+
+            flowers.forEach(f => {
+                if (!combinations.some(c => c.category === f.category && c.size === f.size)) {
+                    combinations.push({ category: f.category || 'Одноголовая', size: f.size || '60 см' });
+                }
+            });
+
+            const tbody = document.getElementById('clientPricesTableBody');
             tbody.innerHTML = '';
-            order.items.forEach((item, idx) => {
+
+            combinations.forEach(comb => {
+                let key = `${comb.category}_${comb.size}`.replace(/\s+/g, '_');
+                let savedAmd = '';
+                let savedUsd = '';
+                let savedCurr = 'AMD';
+
+                if (client.customPrices && client.customPrices[key]) {
+                    savedAmd = client.customPrices[key].amdPrice || '';
+                    savedUsd = client.customPrices[key].usdPrice || '';
+                    savedCurr = client.customPrices[key].currency || 'AMD';
+                }
+
                 tbody.innerHTML += `
-                    <tr>
-                        <td style="border:1px solid #cbd5e1; padding:4px; text-align:center;">${idx+1}</td>
-                        <td style="border:1px solid #cbd5e1; padding:4px;">${item.name}</td>
-                        <td style="border:1px solid #cbd5e1; padding:4px; text-align:center;">${item.packs} пач.</td>
-                        <td style="border:1px solid #cbd5e1; padding:4px; text-align:right;">${item.price} ֏</td>
-                        <td style="border:1px solid #cbd5e1; padding:4px; text-align:right;">${item.packs * item.price} ֏</td>
+                    <tr data-key="${key}" data-cat="${comb.category}" data-size="${comb.size}">
+                        <td><strong>${comb.category}</strong> (${comb.size})</td>
+                        <td><input type="number" class="form-control price-amd" value="${savedAmd}" placeholder="Цена за ед. AMD"></td>
+                        <td>
+                            <div style="display:flex; gap:6px; align-items:center;">
+                                <input type="number" class="form-control price-usd" value="${savedUsd}" placeholder="Цена за ед. USD">
+                                <select class="form-control price-curr" style="width:90px;">
+                                    <option value="AMD" ${savedCurr==='AMD'?'selected':''}>AMD</option>
+                                    <option value="USD" ${savedCurr==='USD'?'selected':''}>USD</option>
+                                </select>
+                            </div>
+                        </td>
                     </tr>
                 `;
             });
+
+            document.getElementById('clientPricesModal').classList.add('active');
+        };
+
+        window.closeClientPricesModal = function() {
+            document.getElementById('clientPricesModal').classList.remove('active');
+        };
+
+        window.saveClientPrices = function() {
+            const clientId = document.getElementById('pricingClientId').value;
+            const rows = document.querySelectorAll('#clientPricesTableBody tr');
+            let customPrices = {};
+
+            rows.forEach(row => {
+                let key = row.getAttribute('data-key');
+                let amdPrice = row.querySelector('.price-amd').value;
+                let usdPrice = row.querySelector('.price-usd').value;
+                let currency = row.querySelector('.price-curr').value;
+
+                if (amdPrice || usdPrice) {
+                    customPrices[key] = {
+                        amdPrice: amdPrice ? Number(amdPrice) : 0,
+                        usdPrice: usdPrice ? Number(usdPrice) : 0,
+                        currency: currency
+                    };
+                }
+            });
+
+            db.ref('clients/' + clientId + '/customPrices').set(customPrices).then(() => {
+                alert('Персональные цены успешно сохранены!');
+                closeClientPricesModal();
+            }).catch(err => {
+                alert('Ошибка: ' + err.message);
+            });
+        };
+
+        window.printOrderInvoice = function(id) {
+            const order = orders.find(o => o.id === id);
+            if (!order) return;
+
+            const client = clients.find(c => c.id === order.clientId);
+
+            document.getElementById('invOrderId').innerText = order.id;
+            document.getElementById('invOrderDate').innerText = order.date;
+            document.getElementById('invClientName').innerText = order.clientName;
+            document.getElementById('invClientPhone').innerText = 'Phone: ' + (order.clientPhone || '---');
+            document.getElementById('invOrderStatus').innerText = order.status;
+            
+            let totalAmountUsd = 0;
+            let totalAmountAmd = 0;
+            let totalUnits = 0;
+            let totalBoxes = order.items.length;
+
+            const tbody = document.getElementById('invItemsTableBody');
+            tbody.innerHTML = '';
+            
+            order.items.forEach((item, idx) => {
+                const f = flowers.find(fl => fl.id === item.flowerId) || flowers.find(fl => fl.name === item.name);
+                const pcsPerPack = item.pcsPerPack || (f ? f.pcsPerPack : 15) || 15;
+                
+                let totalPieces = item.packs * pcsPerPack;
+                totalUnits += totalPieces;
+
+                let cat = f ? f.category : (item.category || 'Одноголовая');
+                let size = f ? f.size : (item.size || '60 см');
+                let key = `${cat}_${size}`.replace(/\s+/g, '_');
+
+                let pricePerPcs = item.price || 0;
+                let currency = item.currency || 'AMD';
+
+                if (client && client.customPrices && client.customPrices[key]) {
+                    let cp = client.customPrices[key];
+                    if (cp.currency === 'USD' && Number(cp.usdPrice) > 0) {
+                        pricePerPcs = Number(cp.usdPrice);
+                        currency = 'USD';
+                    } else if (Number(cp.amdPrice) > 0) {
+                        pricePerPcs = Number(cp.amdPrice);
+                        currency = 'AMD';
+                    } else if (Number(cp.usdPrice) > 0) {
+                        pricePerPcs = Number(cp.usdPrice);
+                        currency = 'USD';
+                    }
+                }
+
+                let sum = totalPieces * pricePerPcs;
+                if (currency === 'USD') {
+                    totalAmountUsd += sum;
+                } else {
+                    totalAmountAmd += sum;
+                }
+
+                let sizeNum = size ? size.replace(/[^0-9]/g, '') : '60';
+                let currencySymbol = currency === 'USD' ? '$' : '֏';
+                let formattedPrice = `${currency === 'USD' ? '$' : ''}${Number(pricePerPcs).toFixed(2).replace('.', ',')}`;
+                let formattedSum = `${currency === 'USD' ? '$' : ''}${Number(sum).toFixed(2).replace('.', ',')}`;
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td style="border:1px solid #333; padding:5px 8px;">${item.name}</td>
+                        <td style="border:1px solid #333; padding:5px 8px; text-align:center;">${sizeNum}</td>
+                        <td style="border:1px solid #333; padding:5px 8px; text-align:center;">${totalPieces}</td>
+                        <td style="border:1px solid #333; padding:5px 8px; text-align:right;">${formattedPrice}</td>
+                        <td style="border:1px solid #333; padding:5px 8px; text-align:right;">${formattedSum}</td>
+                    </tr>
+                `;
+            });
+
+            // ИТОГОВАЯ СТРОКА КАК НА ФОТО ВНИЗУ ТАБЛИЦЫ
+            let mainCurrencySymbol = totalAmountUsd > 0 ? '$' : '֏';
+            let mainTotalValue = totalAmountUsd > 0 ? totalAmountUsd : totalAmountAmd;
+
+            tbody.innerHTML += `
+                <tr style="font-weight: bold; background: #f8f9fa;">
+                    <td style="border:1px solid #333; padding:6px 8px;">Total</td>
+                    <td style="border:1px solid #333; padding:6px 8px; text-align:center;"></td>
+                    <td style="border:1px solid #333; padding:6px 8px; text-align:center;">${totalUnits}</td>
+                    <td style="border:1px solid #333; padding:6px 8px; text-align:right;"></td>
+                    <td style="border:1px solid #333; padding:6px 8px; text-align:right;">${mainCurrencySymbol}${Number(mainTotalValue).toFixed(2).replace('.', ',')}</td>
+                </tr>
+            `;
+
+            document.getElementById('invTopAmountUsd').innerText = `${mainCurrencySymbol}${Number(mainTotalValue).toFixed(2).replace('.', ',')}`;
+            document.getElementById('invTopTotalUnits').innerText = totalUnits;
+            document.getElementById('inputBoxes').value = totalBoxes;
+
             document.getElementById('printInvoiceModal').classList.add('active');
         };
         window.closePrintModal = function() { document.getElementById('printInvoiceModal').classList.remove('active'); };
@@ -1279,13 +1563,15 @@
                 const packs = Number(item.packs || 0);
                 totalPacks += packs;
                 
-                const f = flowers.find(fl => fl.id === item.flowerId) || flowers.find(fl => `${fl.name} (${fl.size})` === item.name);
-                const pcs = item.pcsPerPack || (f ? f.pcsPerPack : 10) || 10;
+                const f = flowers.find(fl => fl.id === item.flowerId) || flowers.find(fl => fl.name === item.name);
+                const pcs = item.pcsPerPack || (f ? f.pcsPerPack : 15) || 15;
                 const itemPieces = packs * pcs;
                 totalPieces += itemPieces;
 
-                let cat = (f ? f.category : '') || item.category || 'Single-head';
-                let sizeVal = f ? f.size : (item.name.match(/\((.*?)\)/)?.[1] || 'Standard');
+                let cat = (f ? f.category : '') || item.category || 'Одноголовая';
+                
+                // Исправлено: берем размер строго из самого товара заказа, а не захардкоженные 60 см
+                let sizeVal = item.size || (f ? f.size : '60 см');
                 if (!sizeVal.includes('cm') && !sizeVal.includes('см')) sizeVal += ' cm';
 
                 if (!groupedByCategory[cat]) groupedByCategory[cat] = {};
@@ -1295,11 +1581,9 @@
                 groupedByCategory[cat][sizeVal].packs += packs;
                 groupedByCategory[cat][sizeVal].pieces += itemPieces;
 
-                let displayName = item.name;
-                if (f) {
-                    let sizeStr = f.size.includes('cm') || f.size.includes('см') ? f.size : f.size + ' cm';
-                    displayName = `${f.name} (${sizeStr})`;
-                }
+                let sizeStr = sizeVal.includes('cm') || sizeVal.includes('см') ? sizeVal : sizeVal + ' cm';
+                let cleanName = item.name.replace(/\s*\(\d+\s*(см|cm)\)/gi, '');
+                let displayName = `${cleanName} (${sizeStr})`;
 
                 tbody.innerHTML += `
                     <tr>
@@ -1379,10 +1663,10 @@
                 total += item.packs;
                 tbody.innerHTML += `
                     <tr>
-                        <td style="border:1px solid #cbd5e1; padding:4px; text-align:center;">Место №${idx+1}</td>
-                        <td style="border:1px solid #cbd5e1; padding:4px;">${item.name}</td>
-                        <td style="border:1px solid #cbd5e1; padding:4px; text-align:center;">${item.packs} пач.</td>
-                        <td style="border:1px solid #cbd5e1; padding:4px; text-align:center;">Упаковано</td>
+                        <td style="border:1px solid #cbd5e1; padding:4px; text-align:center;">Box №${idx+1}</td>
+                        <td style="border:1px solid #cbd5e1; padding:4px;">${item.name} (${item.size})</td>
+                        <td style="border:1px solid #cbd5e1; padding:4px; text-align:center;">${item.packs} packs</td>
+                        <td style="border:1px solid #cbd5e1; padding:4px; text-align:center;">Packed</td>
                     </tr>
                 `;
             });
@@ -1398,11 +1682,11 @@
                 tbody.innerHTML += `
                     <tr>
                         <td><strong>${o.id}</strong></td><td>${o.date}</td><td>${o.clientName}</td>
-                        <td><strong>${Number(o.totalPrice || 0).toLocaleString()} ֏</strong></td>
+                        <td><strong>${Number(o.totalPrice || 0).toLocaleString()}</strong></td>
                         <td><select onchange="db.ref('orders/${o.id}').update({status:this.value})" class="form-control" style="padding:2px;"><option value="Новый" ${o.status==='Новый'?'selected':''}>Новый</option><option value="В работе" ${o.status==='В работе'?'selected':''}>В работе</option><option value="Выполнен" ${o.status==='Выполнен'?'selected':''}>Выполнен</option></select></td>
                         <td>
-                            <button class="btn btn-outline btn-sm" onclick="printOrderInvoice('${o.id}')">📄 Инвойс</button>
-                            <button class="btn btn-success btn-sm" onclick="printWarehouseInvoice('${o.id}')">📋 Склад</button>
+                            <button class="btn btn-outline btn-sm" onclick="printOrderInvoice('${o.id}')">📄 Invoice</button>
+                            <button class="btn btn-success btn-sm" onclick="printWarehouseInvoice('${o.id}')">📋 Sklad</button>
                             <button class="btn btn-outline btn-sm" onclick="printPackingList('${o.id}')">📦 Pack</button>
                         </td>
                         <td>
@@ -1479,24 +1763,81 @@
             });
         }
 
-        window.openAddClientForm = function() { document.getElementById('addClientSection').style.display = 'block'; };
-        window.closeAddClientForm = function() { document.getElementById('addClientSection').style.display = 'none'; };
+        window.openAddClientForm = function(id = '') {
+            document.getElementById('addClientSection').style.display = 'block';
+            if (id) {
+                const client = clients.find(c => c.id === id);
+                if (client) {
+                    document.getElementById('clientFormTitle').innerText = 'Редактировать Клиента';
+                    document.getElementById('clientId').value = client.id;
+                    document.getElementById('clientName').value = client.name || '';
+                    document.getElementById('clientPhone').value = client.phone || '';
+                    document.getElementById('clientCity').value = client.city || '';
+                }
+            } else {
+                document.getElementById('clientFormTitle').innerText = 'Добавить Клиента';
+                document.getElementById('clientId').value = '';
+                document.getElementById('clientName').value = '';
+                document.getElementById('clientPhone').value = '';
+                document.getElementById('clientCity').value = '';
+            }
+        };
+
+        window.closeAddClientForm = function() { 
+            document.getElementById('addClientSection').style.display = 'none'; 
+        };
 
         window.handleSaveClient = function(e) {
             e.preventDefault();
-            const id = 'CLI-' + Date.now().toString().slice(-6);
-            db.ref('clients/' + id).set({
-                id, name: document.getElementById('clientName').value,
-                phone: document.getElementById('clientPhone').value, city: document.getElementById('clientCity').value
+            const editId = document.getElementById('clientId').value;
+            const id = editId || 'CLI-' + Date.now().toString().slice(-6);
+            
+            const existingClient = clients.find(c => c.id === id);
+
+            const clientData = {
+                id, 
+                name: document.getElementById('clientName').value,
+                phone: document.getElementById('clientPhone').value, 
+                city: document.getElementById('clientCity').value,
+                customPrices: existingClient ? (existingClient.customPrices || {}) : {}
+            };
+
+            db.ref('clients/' + id).set(clientData).then(() => {
+                closeAddClientForm();
+                renderClientsTable();
+                alert('Клиент успешно сохранен!');
+            }).catch(err => {
+                alert('Ошибка сохранения: ' + err.message);
             });
-            closeAddClientForm();
-            alert('Клиент сохранен!');
         };
 
         function renderClientsTable() {
             const tbody = document.getElementById('clientsTableBody');
+            if (!tbody) return;
             tbody.innerHTML = '';
-            clients.forEach(c => tbody.innerHTML += `<tr><td><strong>${c.name}</strong></td><td>${c.phone}</td><td>${c.city||''}</td><td><button class="btn btn-dark btn-sm" onclick="db.ref('clients/${c.id}').remove()">🗑️</button></td></tr>`);
+            
+            const search = (document.getElementById('clientSearchInput')?.value || '').toLowerCase();
+            
+            clients.filter(c => 
+                (c.name && c.name.toLowerCase().includes(search)) || 
+                (c.phone && c.phone.toLowerCase().includes(search)) || 
+                (c.city && c.city.toLowerCase().includes(search))
+            ).forEach(c => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${c.name}</strong></td>
+                        <td>${c.phone}</td>
+                        <td>${c.city || ''}</td>
+                        <td style="text-align:center;">
+                            <button class="btn btn-outline btn-sm" onclick="openClientPricesModal('${c.id}')">⚙️ Настроить Прайс</button>
+                        </td>
+                        <td>
+                            <button class="btn btn-outline btn-sm" onclick="openAddClientForm('${c.id}')">✏️</button>
+                            <button class="btn btn-dark btn-sm" onclick="if(confirm('Удалить клиента?')) db.ref('clients/${c.id}').remove()">🗑️</button>
+                        </td>
+                    </tr>
+                `;
+            });
         }
 
         function calculateFinance() {
@@ -1509,7 +1850,7 @@
 
         function renderCharts() {
             new Chart(document.getElementById('categoryChart').getContext('2d'), { type: 'pie', data: { labels: ['Одноголовые', 'Кустовые', 'Эксклюзивные'], datasets: [{ data: [65, 20, 15], backgroundColor: ['#d45d79', '#2e7d32', '#f59e0b'] }] } });
-            new Chart(document.getElementById('revenueChart').getContext('2d'), { type: 'bar', data: { labels: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'], datasets: [{ label: 'Выручка (֏)', data: [150, 210, 180, 250, 320, 480, 410], backgroundColor: '#d45d79' }] } });
+            new Chart(document.getElementById('revenueChart').getContext('2d'), { type: 'bar', data: { labels: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'], datasets: [{ label: 'Выручка', data: [150, 210, 180, 250, 320, 480, 410], backgroundColor: '#d45d79' }] } });
         }
 
         function renderAdminTable() {
@@ -1523,7 +1864,6 @@
                         <td>${f.category || 'Одноголовая'}</td>
                         <td><strong>${f.name}</strong></td>
                         <td>${f.size}</td>
-                        <td>${f.price} ֏</td>
                         <td style="text-align:center;"><input type="number" class="stock-direct-input" value="${f.pcsPerPack || 15}" onchange="flowers[${idx}].pcsPerPack=Number(this.value); db.ref('inventory').set(flowers);"></td>
                         <td style="text-align:center;"><input type="number" class="stock-direct-input" value="${f.packs || 0}" onchange="flowers[${idx}].packs=Number(this.value); db.ref('inventory').set(flowers);"></td>
                         <td style="text-align:center;"><input type="number" class="stock-direct-input" value="${f.stock || 0}" onchange="flowers[${idx}].stock=Number(this.value); db.ref('inventory').set(flowers);"></td>
@@ -1549,7 +1889,6 @@
             const newItem = {
                 id, category: document.getElementById('flowerCategory').value,
                 name: document.getElementById('flowerName').value, size: document.getElementById('flowerSize').value,
-                price: Number(document.getElementById('flowerPrice').value),
                 pcsPerPack: Number(document.getElementById('flowerPcsPerPack').value || 15),
                 packs: Number(document.getElementById('flowerPacks').value || 0),
                 stock: Number(document.getElementById('flowerStock').value || 0),
@@ -1570,7 +1909,6 @@
             document.getElementById('flowerCategory').value = f.category || 'Одноголовая';
             document.getElementById('flowerName').value = f.name;
             document.getElementById('flowerSize').value = f.size;
-            document.getElementById('flowerPrice').value = f.price;
             document.getElementById('flowerPcsPerPack').value = f.pcsPerPack || 15;
             document.getElementById('flowerPacks').value = f.packs || 0;
             document.getElementById('flowerStock').value = f.stock || 0;
