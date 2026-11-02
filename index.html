@@ -17,6 +17,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <!-- Chart.js для аналитики -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <style>
         :root {
             --primary: #d45d79;
@@ -38,10 +39,10 @@
         header { background: var(--card-bg); padding: 1rem 1.5rem; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); }
         .header-container { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
         .logo { font-size: 1.4rem; font-weight: 700; color: var(--primary); text-decoration: none; display: flex; align-items: center; gap: 6px; }
-        
+
         .cloud-status { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; background: #e8f5e9; color: #2e7d32; padding: 4px 10px; border-radius: 20px; font-weight: 600; }
         .nav-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-        
+
         .hero { text-align: center; padding: 1.5rem 1rem 0.5rem; max-width: 800px; margin: 0 auto; }
         .hero h1 { font-size: 1.8rem; color: #222; margin-bottom: 0.3rem; }
         .hero p { color: var(--text-muted); font-size: 0.95rem; }
@@ -49,20 +50,20 @@
         .toolbar { max-width: 1200px; margin: 1rem auto; padding: 0 1rem; display: flex; flex-direction: column; gap: 10px; }
         .search-box { width: 100%; position: relative; }
         .search-box input { width: 100%; padding: 0.6rem 1rem; border: 1px solid #ccc; border-radius: 8px; font-size: 0.95rem; outline: none; }
-        
+
         .filter-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
         .filter-label { font-size: 0.82rem; font-weight: 700; color: #555; white-space: nowrap; min-width: 110px; }
-        
+
         .size-filter { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; flex: 1; align-items: center; }
         .size-chip { background: #eef2f5; border: 1px solid #dcdfe3; padding: 5px 12px; border-radius: 16px; font-size: 0.85rem; cursor: pointer; white-space: nowrap; font-weight: 500; transition: all 0.2s ease; }
         .size-chip.active { background: var(--primary); color: white; border-color: var(--primary); }
 
         .catalog { max-width: 1200px; margin: 1rem auto; padding: 0 1rem; display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--card-min-width), 1fr)); gap: 1.5rem; transition: all 0.3s ease; }
         .card { background: var(--card-bg); border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid var(--border); display: flex; flex-direction: column; position: relative; }
-        
+
         .image-wrapper { position: relative; width: 100%; height: var(--image-height); background-color: #f0f0f0; overflow: hidden; transition: height 0.3s ease; }
         .image-wrapper img { width: 100%; height: 100%; object-fit: cover; }
-        
+
         .size-tag { position: absolute; top: 10px; left: 10px; background: rgba(255,255,255,0.95); color: #333; font-weight: 700; padding: 3px 8px; border-radius: 6px; font-size: 0.8rem; box-shadow: 0 2px 5px rgba(0,0,0,0.15); }
         .category-tag { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.7); color: #fff; font-weight: 600; padding: 3px 8px; border-radius: 6px; font-size: 0.75rem; }
 
@@ -105,7 +106,7 @@
         .stock-action-box { display: flex; align-items: center; gap: 4px; flex-wrap: nowrap; }
         .stock-num-input { width: 60px; padding: 4px 6px; border: 1px solid #ccc; border-radius: 4px; font-weight: bold; text-align: center; }
 
-        .fin-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+        .fin-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem; }
         .fin-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 1.2rem; text-align: center; }
         .fin-card h4 { font-size: 0.85rem; color: #64748b; margin-bottom: 0.4rem; text-transform: uppercase; }
         .fin-card .num { font-size: 1.5rem; font-weight: 800; color: #1e293b; }
@@ -125,10 +126,11 @@
             body * { display: none !important; }
             #printWarehouseInvoiceModal.active, #printWarehouseInvoiceModal.active *,
             #printInvoiceModal.active, #printInvoiceModal.active *,
+            #printSt1InvoiceModal.active, #printSt1InvoiceModal.active *,
             #printPackingModal.active, #printPackingModal.active * {
                 visibility: visible !important;
             }
-            #printWarehouseInvoiceModal.active, #printInvoiceModal.active, #printPackingModal.active {
+            #printWarehouseInvoiceModal.active, #printInvoiceModal.active, #printSt1InvoiceModal.active, #printPackingModal.active {
                 position: absolute !important;
                 left: 0 !important;
                 top: 0 !important;
@@ -140,18 +142,19 @@
                 padding: 10mm !important;
                 display: block !important;
             }
-            #printWarehouseInvoiceModal.active *, #printInvoiceModal.active *, #printPackingModal.active * {
+            #printWarehouseInvoiceModal.active *, #printInvoiceModal.active *, #printSt1InvoiceModal.active *, #printPackingModal.active * {
                 display: revert !important;
             }
-            #printWarehouseInvoiceModal.active table, #printInvoiceModal.active table, #printPackingModal.active table {
+            #printWarehouseInvoiceModal.active table, #printInvoiceModal.active table, #printSt1InvoiceModal.active table, #printPackingModal.active table {
                 display: table !important;
                 width: 100% !important;
             }
-            #printWarehouseInvoiceModal.active tr, #printInvoiceModal.active tr, #printPackingModal.active tr {
+            #printWarehouseInvoiceModal.active tr, #printInvoiceModal.active tr, #printSt1InvoiceModal.active tr, #printPackingModal.active tr {
                 display: table-row !important;
             }
             #printWarehouseInvoiceModal.active th, #printWarehouseInvoiceModal.active td,
             #printInvoiceModal.active th, #printInvoiceModal.active td,
+            #printSt1InvoiceModal.active th, #printSt1InvoiceModal.active td,
             #printPackingModal.active th, #printPackingModal.active td {
                 display: table-cell !important;
             }
@@ -257,11 +260,14 @@
             <span class="filter-label">📏 Размер:</span>
             <div class="size-filter" id="sizeFilters">
                 <span class="size-chip active" onclick="filterSize('ALL', this)">Все размеры</span>
+                <span class="size-chip" onclick="filterSize('30', this)">30 см</span>
                 <span class="size-chip" onclick="filterSize('40', this)">40 см</span>
                 <span class="size-chip" onclick="filterSize('50', this)">50 см</span>
                 <span class="size-chip" onclick="filterSize('60', this)">60 см</span>
                 <span class="size-chip" onclick="filterSize('70', this)">70 см</span>
                 <span class="size-chip" onclick="filterSize('80', this)">80 см</span>
+                <span class="size-chip" onclick="filterSize('90', this)">90 см</span>
+                <span class="size-chip" onclick="filterSize('100', this)">100 см</span>
             </div>
         </div>
 
@@ -375,22 +381,21 @@
         </div>
     </div>
 
-    <!-- КОММЕРЧЕСКИЙ ИНВОЙС КАК НА ФОТО -->
+    <!-- СТАНДАРТНЫЙ КОММЕРЧЕСКИЙ ИНВОЙС НА АНГЛИЙСКОМ (С РУЧНЫМ НОМЕРОМ И ДАТОЙ) -->
     <div class="modal" id="printInvoiceModal">
         <div class="modal-content" style="max-width: 780px; padding: 2rem; background: #fff;">
-            <div class="modal-header no-print">
-                <h2>📄 Commercial Invoice</h2>
+            <div style="display: flex; justify-content: flex-end; margin-bottom: 5px;" class="no-print">
                 <button class="close-btn" onclick="closePrintModal()">&times;</button>
             </div>
             
             <div id="invoiceContent" style="color:#000; font-size: 0.9rem;">
                 <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1.5rem; border-bottom: 1px solid #ccc; padding-bottom: 10px;">
                     <div>
-                        <h2 style="font-size: 1.5rem; font-weight: bold; letter-spacing: 0.5px; margin-bottom: 5px;">INVOICE</h2>
+                        <!-- Заголовок убран по вашему запросу -->
                     </div>
                     <div style="text-align:right; font-size: 0.9rem;">
-                        <p><strong>Invoice Number:</strong> <span id="invOrderId">2710-1</span></p>
-                        <p><strong>Date:</strong> <span id="invOrderDate">27/10/2026</span></p>
+                        <p style="margin-bottom: 6px;"><strong>Invoice Number:</strong> <input type="text" id="customInvNumber" value="ORD-048945" style="width: 140px; padding: 2px; font-weight: bold; border: 1px solid #ccc; border-radius: 4px; text-align: right;"></p>
+                        <p><strong>Date:</strong> <input type="text" id="customInvDate" value="27/10/2026" style="width: 120px; padding: 2px; font-weight: bold; border: 1px solid #ccc; border-radius: 4px; text-align: right;"></p>
                     </div>
                 </div>
 
@@ -400,7 +405,7 @@
                         <p>Tax Code: 02927742</p>
                         <p>Phone Number: +374 33 058 058</p>
                         <p>e-mail: info@rosegarden.am</p>
-                        <p>Adress: Armenia Yerevan Koryun 19</p>
+                        <p>Address: Armenia Yerevan Koryun 19</p>
                     </div>
                     <div style="width: 48%;">
                         <p style="font-weight: bold; font-size: 0.85rem;">Bill to:</p>
@@ -408,7 +413,6 @@
                         <p>Registr No. 2599653</p>
                         <p>Main License No. 1179218</p>
                         <p>DCCI No. 457202</p>
-                        <p id="invClientPhone" style="display:none;"></p>
                     </div>
                 </div>
 
@@ -440,7 +444,6 @@
                     </tr>
                 </table>
 
-                <!-- ОСНОВНАЯ ТАБЛИЦА С ИТОГО КАК НА ФОТО -->
                 <table style="width:100%; border-collapse:collapse; margin-bottom:1rem; border: 1px solid #333; font-size: 0.85rem;">
                     <thead>
                         <tr style="background:#2b579a; color: white;">
@@ -454,20 +457,105 @@
                     <tbody id="invItemsTableBody"></tbody>
                 </table>
 
-                <!-- БЛОК ПОДПИСЕЙ КАК НА ФОТО -->
                 <div style="display:flex; justify-content:space-between; margin-top:3rem; font-size:0.9rem; page-break-inside: avoid;">
                     <div><p>Director</p></div>
                     <div style="text-align:right;"><p>Armen Aghababyan</p></div>
                 </div>
+            </div>
 
-                <div style="font-size:0.85rem; color:#555; margin-top:2rem;" class="no-print">
-                    <p><strong>Order Status:</strong> <span id="invOrderStatus">---</span></p>
+            <div style="display:flex; gap:10px; margin-top:2rem;" class="no-print">
+                <button class="btn btn-success" style="flex:1;" onclick="window.print()">🖨️ Печать / Сохранить в PDF</button>
+                <button class="btn btn-dark" onclick="closePrintModal()">Закрыть</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- РУССКИЙ ИНВОЙС ДЛЯ СТ-1 (С ОТСТУПОМ 6 СМ СВЕРХУ) -->
+    <div class="modal" id="printSt1InvoiceModal">
+        <div class="modal-content" style="max-width: 780px; padding: 2rem; background: #fff;">
+            <div class="modal-header no-print">
+                <h2>📄 Коммерческий Инвойс на русском (Для СТ-1)</h2>
+                <button class="close-btn" onclick="closeSt1PrintModal()">&times;</button>
+            </div>
+            
+            <div id="st1InvoiceContent" style="color:#000; font-size: 0.9rem; margin-top: 6cm;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1.5rem; border-bottom: 2px solid #333; padding-bottom: 10px;">
+                    <div>
+                        <h2 style="font-size: 1.5rem; font-weight: bold; margin-bottom: 5px;">КОММЕРЧЕСКИЙ ИНВОЙС</h2>
+                        <p style="font-size: 0.85rem; color: #555;">Для таможенного оформления и сертификата СТ-1</p>
+                    </div>
+                    <div style="text-align:right; font-size: 0.9rem;">
+                        <p><strong>№ инвойса:</strong> <span id="st1InvOrderId">2710-1</span></p>
+                        <p><strong>Дата:</strong> <span id="st1InvOrderDate">02.11.2026</span></p>
+                    </div>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; margin-bottom:1.5rem; font-size: 0.85rem; line-height: 1.5;">
+                    <div style="width: 48%;">
+                        <p style="font-weight: bold; font-size: 0.95rem; margin-bottom: 4px;">ООО «Роуз Гарден» (Rose Garden LLC)</p>
+                        <p>Налоговый код (ИНН): 02927742</p>
+                        <p>Телефон: +374 33 058 058</p>
+                        <p>Email: info@rosegarden.am</p>
+                        <p>Адрес: Армения, г. Ереван, ул. Корюна 19</p>
+                    </div>
+                    <div style="width: 48%;">
+                        <p style="font-weight: bold; font-size: 0.85rem;">Покупатель (Получатель):</p>
+                        <p id="st1InvClientName" style="font-weight: bold; font-size: 0.95rem;">Tulpar General Trading LLC</p>
+                        <p>Регистрационный №: 2599653</p>
+                        <p>Лицензия №: 1179218</p>
+                    </div>
+                </div>
+
+                <table style="width:100%; border-collapse:collapse; margin-bottom:1.5rem; border: 1px solid #333; font-size: 0.85rem;">
+                    <tr>
+                        <td style="border: 1px solid #333; padding: 6px 10px; width: 50%;"><strong>Общая стоимость</strong></td>
+                        <td style="border: 1px solid #333; padding: 6px 10px; text-align: right; width: 25%; font-weight: bold;"><span id="st1InvTopAmount">$0,00</span></td>
+                        <td style="border: 1px solid #333; padding: 6px 10px; width: 25%;">Сумма</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #333; padding: 6px 10px;"><strong>Общее кол-во штук</strong></td>
+                        <td style="border: 1px solid #333; padding: 6px 10px; text-align: right; font-weight: bold;"><span id="st1InvTopUnits">0</span></td>
+                        <td style="border: 1px solid #333; padding: 6px 10px;">Штук</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #333; padding: 6px 10px;"><strong>Брутто (кг)</strong></td>
+                        <td style="border: 1px solid #333; padding: 6px 10px; text-align: right;"><input type="text" id="st1InputBruto" value="174,8" style="width: 80px; text-align: right; border: 1px solid #ccc; padding: 2px;"></td>
+                        <td style="border: 1px solid #333; padding: 6px 10px;"></td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #333; padding: 6px 10px;"><strong>Нетто (кг)</strong></td>
+                        <td style="border: 1px solid #333; padding: 6px 10px; text-align: right;"><input type="text" id="st1InputNeto" value="143,45" style="width: 80px; text-align: right; border: 1px solid #ccc; padding: 2px;"></td>
+                        <td style="border: 1px solid #333; padding: 6px 10px;"></td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #333; padding: 6px 10px;"><strong>Всего мест (коробок)</strong></td>
+                        <td style="border: 1px solid #333; padding: 6px 10px; text-align: right;"><input type="text" id="st1InputBoxes" value="11" style="width: 80px; text-align: right; border: 1px solid #ccc; padding: 2px; font-weight: bold;"></td>
+                        <td style="border: 1px solid #333; padding: 6px 10px;">Коробок</td>
+                    </tr>
+                </table>
+
+                <table style="width:100%; border-collapse:collapse; margin-bottom:1rem; border: 1px solid #333; font-size: 0.85rem;">
+                    <thead>
+                        <tr style="background:#2b579a; color: white;">
+                            <th style="border:1px solid #333; padding:6px 8px; text-align:left;">Наименование / Сорт</th>
+                            <th style="border:1px solid #333; padding:6px 8px; text-align:center; width: 60px;">Размер (см)</th>
+                            <th style="border:1px solid #333; padding:6px 8px; text-align:center; width: 80px;">Количество</th>
+                            <th style="border:1px solid #333; padding:6px 8px; text-align:right; width: 90px;">Цена</th>
+                            <th style="border:1px solid #333; padding:6px 8px; text-align:right; width: 100px;">Сумма</th>
+                        </tr>
+                    </thead>
+                    <tbody id="st1InvItemsTableBody"></tbody>
+                </table>
+
+                <div style="display:flex; justify-content:space-between; margin-top:3rem; font-size:0.9rem; page-break-inside: avoid;">
+                    <div><p>Директор: Армен Агабабян</p></div>
+                    <div style="text-align:right;"><p>М.П. (Печать)</p></div>
                 </div>
             </div>
 
             <div style="display:flex; gap:10px; margin-top:2rem;" class="no-print">
-                <button class="btn btn-success" style="flex:1;" onclick="window.print()">🖨️ Print / Save as PDF</button>
-                <button class="btn btn-dark" onclick="closePrintModal()">Close</button>
+                <button class="btn btn-success" style="flex:1;" onclick="window.print()">🖨️ Печать ST-1 Инвойса (с отступом 6 см)</button>
+                <button class="btn btn-dark" onclick="closeSt1PrintModal()">Закрыть</button>
             </div>
         </div>
     </div>
@@ -784,8 +872,8 @@
                         <thead>
                             <tr>
                                 <th>Фото</th><th>Вид</th><th>Название сорта</th><th>Размер</th>
-                                <th style="text-align:center;">Штук в пачке</th><th style="text-align:center;">Остаток (Пачки)</th>
-                                <th style="text-align:center;">Остаток (Штук)</th><th>Быстрый Приход / Списание</th><th>Действия</th>
+                                <th style="text-align:center;">Штук в пачке</th><th style="text-align:center;">Остаток (Пачки/Կապ)</th>
+                                <th style="text-align:center;">Остаток (Штук/Քանակ)</th><th>Быстрый Приход / Списание</th><th>Действия</th>
                             </tr>
                         </thead>
                         <tbody id="adminTableBody"></tbody>
@@ -830,6 +918,7 @@
         </div>
     </div>
 
+    <!-- СКРИПТЫ -->
     <script>
         const DEFAULT_FLOWER_IMAGE = 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80';
 
@@ -1048,36 +1137,52 @@
                     if (rows.length === 0) return alert('Пустой файл!');
 
                     const sizeColumns = [
-                        { stockColIdx: 1, packColIdx: 2, size: '40 см' },
-                        { stockColIdx: 3, packColIdx: 4, size: '50 см' },
-                        { stockColIdx: 5, packColIdx: 6, size: '60 см' },
-                        { stockColIdx: 7, packColIdx: 8, size: '70 см' },
-                        { stockColIdx: 9, packColIdx: 10, size: '80 см' }
+                        { stockColIdx: 1, packColIdx: 2, size: '30 см' },
+                        { stockColIdx: 3, packColIdx: 4, size: '40 см' },
+                        { stockColIdx: 5, packColIdx: 6, size: '50 см' },
+                        { stockColIdx: 7, packColIdx: 8, size: '60 см' },
+                        { stockColIdx: 9, packColIdx: 10, size: '70 см' },
+                        { stockColIdx: 11, packColIdx: 12, size: '80 см' },
+                        { stockColIdx: 13, packColIdx: 14, size: '90 см' },
+                        { stockColIdx: 15, packColIdx: 16, size: '100 см' }
                     ];
 
                     for (let i = 6; i < rows.length; i++) {
                         const row = rows[i];
                         const flowerName = row[0] ? String(row[0]).trim() : '';
-                        if (!flowerName || flowerName.includes('Итого')) continue;
+                        if (!flowerName || flowerName.includes('Итого') || flowerName.includes('Itogo')) continue;
 
                         sizeColumns.forEach(item => {
-                            let qty = parseInt(row[item.stockColIdx], 10) || 0;
-                            let packs = parseInt(row[item.packColIdx], 10) || 0;
-                            let existing = flowers.find(f => f.name.toLowerCase() === flowerName.toLowerCase() && f.size === item.size);
-                            if (existing) {
-                                existing.stock = qty;
-                                existing.packs = packs;
-                            } else if (qty > 0 || packs > 0) {
+                            if (item.packColIdx >= row.length) return;
+
+                            let pcsVal = parseInt(row[item.stockColIdx], 10) || 0;
+                            let packsVal = parseInt(row[item.packColIdx], 10) || 0;
+                            
+                            let existingByExact = flowers.find(f => f.name.toLowerCase() === flowerName.toLowerCase() && f.size === item.size);
+                            let existingAnySize = flowers.find(f => f.name.toLowerCase() === flowerName.toLowerCase());
+
+                            if (existingByExact) {
+                                existingByExact.stock = pcsVal;
+                                existingByExact.packs = packsVal;
+                            } else if (pcsVal > 0 || packsVal > 0) {
+                                let category = existingAnySize ? existingAnySize.category : 'Одноголовая';
+                                let image = existingAnySize ? existingAnySize.image : DEFAULT_FLOWER_IMAGE;
+
                                 flowers.push({
                                     id: 'FLW-' + Date.now() + '-' + Math.floor(Math.random()*1000),
-                                    name: flowerName, category: 'Одноголовая', size: item.size,
-                                    pcsPerPack: 15, stock: qty, packs: packs, image: DEFAULT_FLOWER_IMAGE
+                                    name: flowerName, 
+                                    category: category, 
+                                    size: item.size,
+                                    pcsPerPack: 15, 
+                                    stock: pcsVal, 
+                                    packs: packsVal, 
+                                    image: image
                                 });
                             }
                         });
                     }
                     db.ref('inventory').set(flowers);
-                    alert('Успешно импортировано!');
+                    alert('Остатки успешно импортированы!');
                 } catch(err) { alert('Ошибка: ' + err.message); }
             };
             reader.readAsArrayBuffer(file);
@@ -1146,7 +1251,7 @@
                         </div>
                         <div class="card-body">
                             <h3 class="card-title">${f.name}</h3>
-                            <p style="margin-bottom:0.5rem; font-size:0.9rem;">Остаток: <strong>${f.packs || 0} пач</strong></p>
+                            <p style="margin-bottom:0.5rem; font-size:0.90rem;">Остаток: <strong>${f.packs || 0} пач (${f.stock || 0} шт)</strong></p>
                             <div class="card-footer-action">
                                 <div class="cart-input-box">
                                     <button class="btn btn-outline btn-sm" onclick="adjustCardQty('${f.id}', -1)">-</button>
@@ -1361,7 +1466,6 @@
             renderCheckoutItemsTable();
         };
 
-        // --- УПРАВЛЕНИЕ ПЕРСОНАЛЬНЫМИ ЦЕНАМИ КЛИЕНТА ---
         window.openClientPricesModal = function(clientId) {
             const client = clients.find(c => c.id === clientId);
             if (!client) return;
@@ -1369,11 +1473,14 @@
             document.getElementById('pricingClientName').innerText = client.name;
 
             let combinations = [
+                { category: 'Одноголовая', size: '30 см' },
                 { category: 'Одноголовая', size: '40 см' },
                 { category: 'Одноголовая', size: '50 см' },
                 { category: 'Одноголовая', size: '60 см' },
                 { category: 'Одноголовая', size: '70 см' },
                 { category: 'Одноголовая', size: '80 см' },
+                { category: 'Одноголовая', size: '90 см' },
+                { category: 'Одноголовая', size: '100 см' },
                 { category: 'Кустовая', size: '50 см' },
                 { category: 'Кустовая', size: '60 см' },
                 { category: 'Кустовая', size: '70 см' },
@@ -1454,17 +1561,16 @@
             });
         };
 
+        // Стандартный английский инвойс (с ручным номером и датой)
         window.printOrderInvoice = function(id) {
             const order = orders.find(o => o.id === id);
             if (!order) return;
 
             const client = clients.find(c => c.id === order.clientId);
 
-            document.getElementById('invOrderId').innerText = order.id;
-            document.getElementById('invOrderDate').innerText = order.date;
+            document.getElementById('customInvNumber').value = order.id;
+            document.getElementById('customInvDate').value = order.date;
             document.getElementById('invClientName').innerText = order.clientName;
-            document.getElementById('invClientPhone').innerText = 'Phone: ' + (order.clientPhone || '---');
-            document.getElementById('invOrderStatus').innerText = order.status;
             
             let totalAmountUsd = 0;
             let totalAmountAmd = 0;
@@ -1510,7 +1616,6 @@
                 }
 
                 let sizeNum = size ? size.replace(/[^0-9]/g, '') : '60';
-                let currencySymbol = currency === 'USD' ? '$' : '֏';
                 let formattedPrice = `${currency === 'USD' ? '$' : ''}${Number(pricePerPcs).toFixed(2).replace('.', ',')}`;
                 let formattedSum = `${currency === 'USD' ? '$' : ''}${Number(sum).toFixed(2).replace('.', ',')}`;
 
@@ -1525,19 +1630,8 @@
                 `;
             });
 
-            // ИТОГОВАЯ СТРОКА КАК НА ФОТО ВНИЗУ ТАБЛИЦЫ
             let mainCurrencySymbol = totalAmountUsd > 0 ? '$' : '֏';
             let mainTotalValue = totalAmountUsd > 0 ? totalAmountUsd : totalAmountAmd;
-
-            tbody.innerHTML += `
-                <tr style="font-weight: bold; background: #f8f9fa;">
-                    <td style="border:1px solid #333; padding:6px 8px;">Total</td>
-                    <td style="border:1px solid #333; padding:6px 8px; text-align:center;"></td>
-                    <td style="border:1px solid #333; padding:6px 8px; text-align:center;">${totalUnits}</td>
-                    <td style="border:1px solid #333; padding:6px 8px; text-align:right;"></td>
-                    <td style="border:1px solid #333; padding:6px 8px; text-align:right;">${mainCurrencySymbol}${Number(mainTotalValue).toFixed(2).replace('.', ',')}</td>
-                </tr>
-            `;
 
             document.getElementById('invTopAmountUsd').innerText = `${mainCurrencySymbol}${Number(mainTotalValue).toFixed(2).replace('.', ',')}`;
             document.getElementById('invTopTotalUnits').innerText = totalUnits;
@@ -1546,6 +1640,86 @@
             document.getElementById('printInvoiceModal').classList.add('active');
         };
         window.closePrintModal = function() { document.getElementById('printInvoiceModal').classList.remove('active'); };
+
+        // Русский инвойс для СТ-1
+        window.printSt1Invoice = function(id) {
+            const order = orders.find(o => o.id === id);
+            if (!order) return;
+
+            const client = clients.find(c => c.id === order.clientId);
+
+            document.getElementById('st1InvOrderId').innerText = order.id;
+            document.getElementById('st1InvOrderDate').innerText = order.date;
+            document.getElementById('st1InvClientName').innerText = order.clientName;
+            
+            let totalAmountUsd = 0;
+            let totalAmountAmd = 0;
+            let totalUnits = 0;
+            let totalBoxes = order.items.length;
+
+            const tbody = document.getElementById('st1InvItemsTableBody');
+            tbody.innerHTML = '';
+            
+            order.items.forEach((item, idx) => {
+                const f = flowers.find(fl => fl.id === item.flowerId) || flowers.find(fl => fl.name === item.name);
+                const pcsPerPack = item.pcsPerPack || (f ? f.pcsPerPack : 15) || 15;
+                
+                let totalPieces = item.packs * pcsPerPack;
+                totalUnits += totalPieces;
+
+                let cat = f ? f.category : (item.category || 'Одноголовая');
+                let size = f ? f.size : (item.size || '60 см');
+                let key = `${cat}_${size}`.replace(/\s+/g, '_');
+
+                let pricePerPcs = item.price || 0;
+                let currency = item.currency || 'AMD';
+
+                if (client && client.customPrices && client.customPrices[key]) {
+                    let cp = client.customPrices[key];
+                    if (cp.currency === 'USD' && Number(cp.usdPrice) > 0) {
+                        pricePerPcs = Number(cp.usdPrice);
+                        currency = 'USD';
+                    } else if (Number(cp.amdPrice) > 0) {
+                        pricePerPcs = Number(cp.amdPrice);
+                        currency = 'AMD';
+                    } else if (Number(cp.usdPrice) > 0) {
+                        pricePerPcs = Number(cp.usdPrice);
+                        currency = 'USD';
+                    }
+                }
+
+                let sum = totalPieces * pricePerPcs;
+                if (currency === 'USD') {
+                    totalAmountUsd += sum;
+                } else {
+                    totalAmountAmd += sum;
+                }
+
+                let sizeNum = size ? size.replace(/[^0-9]/g, '') : '60';
+                let formattedPrice = `${currency === 'USD' ? '$' : ''}${Number(pricePerPcs).toFixed(2).replace('.', ',')}`;
+                let formattedSum = `${currency === 'USD' ? '$' : ''}${Number(sum).toFixed(2).replace('.', ',')}`;
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td style="border:1px solid #333; padding:5px 8px;">${item.name}</td>
+                        <td style="border:1px solid #333; padding:5px 8px; text-align:center;">${sizeNum}</td>
+                        <td style="border:1px solid #333; padding:5px 8px; text-align:center;">${totalPieces}</td>
+                        <td style="border:1px solid #333; padding:5px 8px; text-align:right;">${formattedPrice}</td>
+                        <td style="border:1px solid #333; padding:5px 8px; text-align:right;">${formattedSum}</td>
+                    </tr>
+                `;
+            });
+
+            let mainCurrencySymbol = totalAmountUsd > 0 ? '$' : '֏';
+            let mainTotalValue = totalAmountUsd > 0 ? totalAmountUsd : totalAmountAmd;
+
+            document.getElementById('st1InvTopAmount').innerText = `${mainCurrencySymbol}${Number(mainTotalValue).toFixed(2).replace('.', ',')}`;
+            document.getElementById('st1InvTopUnits').innerText = totalUnits;
+            document.getElementById('st1InputBoxes').value = totalBoxes;
+
+            document.getElementById('printSt1InvoiceModal').classList.add('active');
+        };
+        window.closeSt1PrintModal = function() { document.getElementById('printSt1InvoiceModal').classList.remove('active'); };
 
         window.printWarehouseInvoice = function(id) {
             const order = orders.find(o => o.id === id);
@@ -1569,8 +1743,6 @@
                 totalPieces += itemPieces;
 
                 let cat = (f ? f.category : '') || item.category || 'Одноголовая';
-                
-                // Исправлено: берем размер строго из самого товара заказа, а не захардкоженные 60 см
                 let sizeVal = item.size || (f ? f.size : '60 см');
                 if (!sizeVal.includes('cm') && !sizeVal.includes('см')) sizeVal += ' cm';
 
@@ -1685,9 +1857,10 @@
                         <td><strong>${Number(o.totalPrice || 0).toLocaleString()}</strong></td>
                         <td><select onchange="db.ref('orders/${o.id}').update({status:this.value})" class="form-control" style="padding:2px;"><option value="Новый" ${o.status==='Новый'?'selected':''}>Новый</option><option value="В работе" ${o.status==='В работе'?'selected':''}>В работе</option><option value="Выполнен" ${o.status==='Выполнен'?'selected':''}>Выполнен</option></select></td>
                         <td>
-                            <button class="btn btn-outline btn-sm" onclick="printOrderInvoice('${o.id}')">📄 Invoice</button>
-                            <button class="btn btn-success btn-sm" onclick="printWarehouseInvoice('${o.id}')">📋 Sklad</button>
-                            <button class="btn btn-outline btn-sm" onclick="printPackingList('${o.id}')">📦 Pack</button>
+                            <button class="btn btn-outline btn-sm" onclick="printOrderInvoice('${o.id}')">📄 Invoice (EN)</button>
+                            <button class="btn btn-success btn-sm" onclick="printSt1Invoice('${o.id}')">📄 Invoice (ST-1 RU)</button>
+                            <button class="btn btn-outline btn-sm" onclick="printWarehouseInvoice('${o.id}')">📋 Склад</button>
+                            <button class="btn btn-outline btn-sm" onclick="printPackingList('${o.id}')">📦 Упаковка</button>
                         </td>
                         <td>
                             <button class="btn btn-outline btn-sm" onclick="editOrder('${o.id}')">✏️</button>
