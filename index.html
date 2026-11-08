@@ -791,22 +791,21 @@
                         <div class="table-responsive">
                             <table>
                                 <thead>
-                                    <tr><th>Цветок / Сорт со склада</th><th>Себестоимость / Цена (֏)</th><th>Количество (пачек)</th><th>Сумма (֏)</th><th>Удалить</th></tr>
+                                    <tr><th>Цветок / Сорт со склада</th><th>Размер</th><th style="text-align:center;">Количество (пачек)</th><th style="text-align:center;">Всего штук</th><th>Удалить</th></tr>
                                 </thead>
                                 <tbody id="procurementItemsTable"></tbody>
                             </table>
                         </div>
 
                         <div style="margin-top: 0.8rem; display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end;">
-                            <div style="flex:2; min-width:180px;"><select id="procSelectFlower" class="form-control"></select></div>
-                            <div style="width:110px;"><input type="number" id="procPriceInput" class="form-control" placeholder="Цена / Себест. ֏"></div>
-                            <div style="width:100px;"><input type="number" id="procQtyInput" class="form-control" value="10" placeholder="Пачек"></div>
+                            <div style="flex:2; min-width:200px;"><select id="procSelectFlower" class="form-control"></select></div>
+                            <div style="width:120px;"><input type="number" id="procQtyInput" class="form-control" value="10" placeholder="Пачек"></div>
                             <button type="button" class="btn btn-sm btn-outline" onclick="addProcurementRow()">+ Добавить сорт</button>
                         </div>
                     </div>
 
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1rem;">
-                        <div style="font-size:1.1rem; font-weight:bold;">Итого приход: <span id="procTotalDisplay" style="color:var(--accent);">0</span> ֏</div>
+                        <div style="font-size:1.05rem; font-weight:bold;">Всего оприходовано: <span id="procTotalPacksDisplay" style="color:var(--accent);">0</span> пач. (<span id="procTotalPiecesDisplay" style="color:var(--accent);">0</span> шт.)</div>
                         <div style="display:flex; gap:8px;">
                             <button type="submit" class="btn btn-success btn-sm">💾 Оприходовать на склад</button>
                             <button type="button" class="btn btn-dark btn-sm" onclick="closeNewProcurementForm()">Отмена</button>
@@ -818,7 +817,7 @@
             <div class="table-responsive">
                 <table>
                     <thead>
-                        <tr><th>№ Документа</th><th>Дата прихода</th><th>Теплица / Парник</th><th>Сумма (֏)</th><th>Действия</th></tr>
+                        <tr><th>№ Документа</th><th>Дата прихода</th><th>Теплица / Парник</th><th style="text-align:center;">Пачек</th><th style="text-align:center;">Штук</th><th>Состав поступления</th><th>Действия</th></tr>
                     </thead>
                     <tbody id="procurementsTableBody"></tbody>
                 </table>
@@ -2028,65 +2027,184 @@
         function populateProcurementFlowerSelect() {
             const sel = document.getElementById('procSelectFlower');
             if (!sel) return;
-            sel.innerHTML = '<option value="">-- Сорт --</option>';
+            sel.innerHTML = '<option value="">-- Выберите сорт со склада --</option>';
             flowers.forEach(f => sel.innerHTML += `<option value="${f.id}">${f.name} (${f.size})</option>`);
         }
 
         window.openNewProcurementForm = function() {
             document.getElementById('newProcurementSection').style.display = 'block';
-            document.getElementById('procFormTitle').innerText = 'Новый Приход из теплицы';
+            document.getElementById('procFormTitle').innerText = '🌿 Новый Приход роз из теплицы';
             document.getElementById('editingProcId').value = '';
+            document.getElementById('procSupplier').value = 'Теплица №1, Раздан';
             document.getElementById('procDocNum').value = 'ПРХ-' + Date.now().toString().slice(-4);
+            document.getElementById('procDocNum').readOnly = false;
             document.getElementById('procDate').value = new Date().toISOString().split('T')[0];
             currentProcurementItems = [];
             renderProcurementItemsTable();
         };
-        window.closeNewProcurementForm = function() { document.getElementById('newProcurementSection').style.display = 'none'; };
+        window.closeNewProcurementForm = function() { 
+            document.getElementById('newProcurementSection').style.display = 'none'; 
+            document.getElementById('editingProcId').value = '';
+        };
 
         window.addProcurementRow = function() {
             const fId = document.getElementById('procSelectFlower').value;
-            const price = Number(document.getElementById('procPriceInput').value);
-            const packs = Number(document.getElementById('procQtyInput').value);
-            if (!fId || price <= 0 || packs <= 0) return;
+            const packs = parseInt(document.getElementById('procQtyInput').value, 10) || 0;
+            if (!fId || packs <= 0) return alert('Выберите сорт и укажите количество пачек!');
             const f = flowers.find(fl => fl.id === fId);
-            currentProcurementItems.push({ flowerId: f.id, name: f.name, size: f.size, price, packs, sum: price * packs });
+            if (!f) return;
+            const pcsPerPack = f.pcsPerPack || 15;
+            
+            // Если сорт уже есть в списке — просто прибавим пачки
+            const existing = currentProcurementItems.find(i => i.flowerId === f.id);
+            if (existing) {
+                existing.packs += packs;
+                existing.pieces = existing.packs * pcsPerPack;
+            } else {
+                currentProcurementItems.push({
+                    flowerId: f.id,
+                    name: f.name,
+                    size: f.size,
+                    pcsPerPack: pcsPerPack,
+                    packs: packs,
+                    pieces: packs * pcsPerPack
+                });
+            }
             renderProcurementItemsTable();
         };
 
         function renderProcurementItemsTable() {
             const tbody = document.getElementById('procurementItemsTable');
             tbody.innerHTML = '';
-            let total = 0;
+            let totalPacks = 0;
+            let totalPieces = 0;
             currentProcurementItems.forEach((item, idx) => {
-                total += item.sum;
-                tbody.innerHTML += `<tr><td>${item.name} (${item.size})</td><td>${item.price} ֏</td><td><strong>${item.packs} пач</strong></td><td>${item.sum.toLocaleString()} ֏</td><td><button type="button" class="btn btn-dark btn-sm" onclick="currentProcurementItems.splice(${idx},1); renderProcurementItemsTable();">🗑️</button></td></tr>`;
+                const pcsPerPack = item.pcsPerPack || 15;
+                const totalItemPieces = item.packs * pcsPerPack;
+                totalPacks += item.packs;
+                totalPieces += totalItemPieces;
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${item.name}</strong></td>
+                        <td>${item.size}</td>
+                        <td style="text-align:center;">
+                            <input type="number" class="form-control" style="width:85px; margin:0 auto; text-align:center; padding:3px;" value="${item.packs}" min="1" onchange="currentProcurementItems[${idx}].packs=Math.max(1, parseInt(this.value)||1); currentProcurementItems[${idx}].pieces=currentProcurementItems[${idx}].packs*${pcsPerPack}; renderProcurementItemsTable();">
+                        </td>
+                        <td style="text-align:center;"><strong>${totalItemPieces} шт.</strong></td>
+                        <td><button type="button" class="btn btn-dark btn-sm" onclick="currentProcurementItems.splice(${idx},1); renderProcurementItemsTable();">🗑️</button></td>
+                    </tr>
+                `;
             });
-            document.getElementById('procTotalDisplay').innerText = total.toLocaleString();
+            const packsEl = document.getElementById('procTotalPacksDisplay');
+            const piecesEl = document.getElementById('procTotalPiecesDisplay');
+            if (packsEl) packsEl.innerText = totalPacks;
+            if (piecesEl) piecesEl.innerText = totalPieces;
         }
 
         window.handleSaveProcurement = function(e) {
             e.preventDefault();
-            if (currentProcurementItems.length === 0) return;
-            const id = document.getElementById('editingProcId').value || document.getElementById('procDocNum').value;
+            if (currentProcurementItems.length === 0) return alert('Добавьте хотя бы один сорт роз в акт прихода!');
+            const editingId = document.getElementById('editingProcId').value;
+            const docNum = document.getElementById('procDocNum').value || ('ПРХ-' + Date.now().toString().slice(-4));
+            const id = editingId || docNum;
+
+            // Если это редактирование существующего документа — сначала отменяем его предыдущее влияние на склад
+            if (editingId) {
+                const oldDoc = procurements.find(p => p.id === editingId);
+                if (oldDoc && oldDoc.items) {
+                    oldDoc.items.forEach(oldItem => {
+                        let fl = flowers.find(f => f.id === oldItem.flowerId || f.name === oldItem.name);
+                        if (fl) {
+                            fl.packs = Math.max(0, (fl.packs || 0) - Number(oldItem.packs || 0));
+                            fl.stock = Math.max(0, (fl.stock || 0) - (Number(oldItem.packs || 0) * (fl.pcsPerPack || 15)));
+                        }
+                    });
+                }
+            }
+
+            // Добавляем новые пришедшие пачки и штуки к складским остаткам
             currentProcurementItems.forEach(item => {
-                let f = flowers.find(fl => fl.id === item.flowerId);
-                if (f) f.packs = (f.packs || 0) + item.packs;
+                let fl = flowers.find(f => f.id === item.flowerId || f.name === item.name);
+                if (fl) {
+                    const pcsPerPack = fl.pcsPerPack || 15;
+                    fl.packs = (fl.packs || 0) + Number(item.packs || 0);
+                    fl.stock = (fl.stock || 0) + (Number(item.packs || 0) * pcsPerPack);
+                }
             });
-            db.ref('procurements/' + id).set({
-                id, supplier: document.getElementById('procSupplier').value,
+
+            const totalPacks = currentProcurementItems.reduce((acc, i) => acc + Number(i.packs || 0), 0);
+            const totalPieces = currentProcurementItems.reduce((acc, i) => acc + (Number(i.packs || 0) * (i.pcsPerPack || 15)), 0);
+
+            const docData = {
+                id: id,
+                supplier: document.getElementById('procSupplier').value,
                 date: document.getElementById('procDate').value,
-                totalPrice: currentProcurementItems.reduce((a,b)=>a+b.sum,0), items: currentProcurementItems
+                totalPacks: totalPacks,
+                totalPieces: totalPieces,
+                items: currentProcurementItems
+            };
+
+            db.ref('procurements/' + id).set(docData).then(() => {
+                db.ref('inventory').set(flowers);
+                closeNewProcurementForm();
+                alert(editingId ? 'Акт прихода успешно обновлен и склад пересчитан!' : 'Товар из теплицы успешно оприходован на склад!');
+            }).catch(err => alert('Ошибка сохранения: ' + err.message));
+        };
+
+        window.editProcurement = function(id) {
+            const p = procurements.find(item => item.id === id);
+            if (!p) return;
+            document.getElementById('newProcurementSection').style.display = 'block';
+            document.getElementById('procFormTitle').innerText = '✏️ Редактирование акта прихода: ' + p.id;
+            document.getElementById('editingProcId').value = p.id;
+            document.getElementById('procSupplier').value = p.supplier || 'Теплица №1, Раздан';
+            document.getElementById('procDocNum').value = p.id;
+            document.getElementById('procDocNum').readOnly = true;
+            document.getElementById('procDate').value = p.date || new Date().toISOString().split('T')[0];
+            currentProcurementItems = JSON.parse(JSON.stringify(p.items || []));
+            renderProcurementItemsTable();
+        };
+
+        window.deleteProcurement = function(id) {
+            if (!confirm(`Удалить акт прихода ${id}? Поступившие по нему остатки будут списаны со склада.`)) return;
+            const p = procurements.find(item => item.id === id);
+            if (p && p.items) {
+                p.items.forEach(item => {
+                    let fl = flowers.find(f => f.id === item.flowerId || f.name === item.name);
+                    if (fl) {
+                        fl.packs = Math.max(0, (fl.packs || 0) - Number(item.packs || 0));
+                        fl.stock = Math.max(0, (fl.stock || 0) - (Number(item.packs || 0) * (fl.pcsPerPack || 15)));
+                    }
+                });
+                db.ref('inventory').set(flowers);
+            }
+            db.ref('procurements/' + id).remove().then(() => {
+                alert('Акт прихода удален, остатки склада скорректированы.');
             });
-            db.ref('inventory').set(flowers);
-            closeNewProcurementForm();
-            alert('Товар из теплицы успешно оприходован на склад!');
         };
 
         function renderProcurementsTable() {
             const tbody = document.getElementById('procurementsTableBody');
             tbody.innerHTML = '';
             procurements.forEach(p => {
-                tbody.innerHTML += `<tr><td><strong>${p.id}</strong></td><td>${p.date}</td><td>${p.supplier}</td><td>${Number(p.totalPrice||0).toLocaleString()} ֏</td><td><button class="btn btn-dark btn-sm" onclick="db.ref('procurements/${p.id}').remove()">🗑️</button></td></tr>`;
+                const totalPacks = p.totalPacks || (p.items || []).reduce((acc, i) => acc + Number(i.packs || 0), 0);
+                const totalPieces = p.totalPieces || (p.items || []).reduce((acc, i) => acc + (Number(i.packs || 0) * (i.pcsPerPack || 15)), 0);
+                const itemsSummary = (p.items || []).map(i => `${i.name}: ${i.packs} пач.`).join(', ');
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${p.id}</strong></td>
+                        <td>${p.date}</td>
+                        <td>${p.supplier}</td>
+                        <td style="text-align:center;"><strong>${totalPacks}</strong></td>
+                        <td style="text-align:center;">${totalPieces}</td>
+                        <td style="font-size:0.82rem; color:#444; max-width:260px;">${itemsSummary || '---'}</td>
+                        <td>
+                            <button class="btn btn-outline btn-sm" onclick="editProcurement('${p.id}')">✏️</button>
+                            <button class="btn btn-dark btn-sm" onclick="deleteProcurement('${p.id}')">🗑️</button>
+                        </td>
+                    </tr>
+                `;
             });
         }
 
