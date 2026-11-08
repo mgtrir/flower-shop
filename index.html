@@ -488,26 +488,22 @@
     <!-- РУССКИЙ ИНВОЙС ДЛЯ СТ-1 (С ОТСТУПОМ 6 СМ СВЕРХУ) -->
     <div class="modal" id="printSt1InvoiceModal">
         <div class="modal-content" style="max-width: 780px; padding: 2rem; background: #fff;">
-            <div class="modal-header no-print">
-                <h2>📄 Коммерческий Инвойс на русском (Для СТ-1)</h2>
-                <button class="close-btn" onclick="closeSt1PrintModal()">&times;</button>
-            </div>
+
             
             <div id="st1InvoiceContent" style="color:#000; font-size: 0.9rem;">
-                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1.5rem; border-bottom: 2px solid #333; padding-bottom: 10px;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1.5rem; border-bottom: 1px solid #ccc; padding-bottom: 10px;">
                     <div>
-                        <h2 style="font-size: 1.5rem; font-weight: bold; margin-bottom: 5px;">КОММЕРЧЕСКИЙ ИНВОЙС</h2>
-                        <p style="font-size: 0.85rem; color: #555;">Для таможенного оформления и сертификата СТ-1</p>
+                        <!-- Заголовок убран по запросу -->
                     </div>
                     <div style="text-align:right; font-size: 0.9rem;">
-                        <p><strong>№ инвойса:</strong> <span id="st1InvOrderId">---</span></p>
+                        <p style="margin-bottom: 6px;"><strong>№ инвойса:</strong> <span id="st1InvOrderId">---</span></p>
                         <p><strong>Дата:</strong> <span id="st1InvOrderDate">---</span></p>
                     </div>
                 </div>
 
                 <div style="display:flex; justify-content:space-between; margin-bottom:1.5rem; font-size: 0.85rem; line-height: 1.5;">
                     <div style="width: 48%;">
-                        <p style="font-weight: bold; font-size: 0.95rem; margin-bottom: 4px;">ООО «Роуз Гарден»</p>
+                        <p style="font-weight: bold; font-size: 0.95rem; margin-bottom: 4px;">ООО «Росе Гарден»</p>
                         <p>Налоговый код (ИНН): 02927742</p>
                         <p>Телефон: +374 33 058 058</p>
                         <p>Email: info@rosegarden.am</p>
