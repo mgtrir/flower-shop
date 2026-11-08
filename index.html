@@ -100,6 +100,16 @@
 
         .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 1rem; }
         .modal.active { display: flex !important; }
+
+        /* Документы, печатные формы и окна редактирования всегда открываются поверх списков заказов и клиентов */
+        #printInvoiceModal,
+        #printSt1InvoiceModal,
+        #printWarehouseInvoiceModal,
+        #printPackingModal,
+        #saveOrderModal,
+        #clientPricesModal {
+            z-index: 1200 !important;
+        }
         .modal-content { background: white; border-radius: 12px; width: 100%; max-width: 1100px; max-height: 90vh; overflow-y: auto; padding: 1.5rem; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
         .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 1rem; margin-bottom: 1rem; }
         .close-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #888; }
@@ -2382,6 +2392,37 @@
                 });
             });
         }
+            // Закрытие модальных окон при клике на темный фон вне окна и по клавише Escape
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.modal').forEach(m => {
+                m.addEventListener('click', (e) => {
+                    if (e.target === m) {
+                        m.classList.remove('active');
+                    }
+                });
+            });
+
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    // Сначала закрываем верхнее окно (документ, редактирование, прайс)
+                    const topModals = [
+                        'printInvoiceModal', 'printSt1InvoiceModal', 'printWarehouseInvoiceModal', 'printPackingModal',
+                        'saveOrderModal', 'clientPricesModal'
+                    ];
+                    const openTop = topModals.find(id => document.getElementById(id)?.classList.contains('active'));
+                    if (openTop) {
+                        document.getElementById(openTop).classList.remove('active');
+                        return;
+                    }
+                    // Если верхних окон нет — закрываем базовое окно списка
+                    const baseModals = ['ordersModal', 'clientsModal', 'procurementsModal', 'financeModal', 'analyticsModal', 'rolesModal', 'adminModal'];
+                    const openBase = baseModals.find(id => document.getElementById(id)?.classList.contains('active'));
+                    if (openBase) {
+                        document.getElementById(openBase).classList.remove('active');
+                    }
+                }
+            });
+        });
     </script>
 </body>
 </html>
