@@ -182,7 +182,22 @@
             table { font-size: 0.75rem !important; page-break-inside: auto; }
             tr { page-break-inside: avoid; page-break-after: auto; }
             thead { display: table-header-group; }
-            .no-print { display: none !important; }
+            .no-print,
+            .no-print *,
+            #printWarehouseInvoiceModal.active .no-print,
+            #printWarehouseInvoiceModal.active .no-print *,
+            #printInvoiceModal.active .no-print,
+            #printInvoiceModal.active .no-print *,
+            #printSt1InvoiceModal.active .no-print,
+            #printSt1InvoiceModal.active .no-print *,
+            #printPackingModal.active .no-print,
+            #printPackingModal.active .no-print * {
+                display: none !important;
+                visibility: hidden !important;
+                height: 0 !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
             @page { 
                 size: A4 portrait; 
                 margin: 0; 
