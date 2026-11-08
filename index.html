@@ -151,7 +151,7 @@
                 background: white !important;
                 z-index: 99999 !important;
                 margin: 0 !important;
-                padding: 10mm !important;
+                padding: 10mm 12mm !important;
                 display: block !important;
             }
             #printWarehouseInvoiceModal.active *, #printInvoiceModal.active *, #printSt1InvoiceModal.active *, #printPackingModal.active * {
@@ -185,7 +185,7 @@
             .no-print { display: none !important; }
             @page { 
                 size: A4 portrait; 
-                margin: 5mm 10mm 10mm 10mm; 
+                margin: 0; 
             }
         }
     </style>
@@ -491,12 +491,13 @@
 
             
             <div id="st1InvoiceContent" style="color:#000; font-size: 0.9rem;">
-                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1.5rem; border-bottom: 1px solid #ccc; padding-bottom: 10px;">
+                <div style="margin-bottom:0.8rem; border-bottom: 1px solid #ccc; padding-bottom: 8px;">
+                    <h2 style="font-size: 1.6rem; font-weight: bold; margin: 0; color: #000; letter-spacing: 0.5px;">ИНВОЙС</h2>
+                </div>
+
+                <div style="display:flex; justify-content:flex-end; margin-bottom:1rem; font-size: 0.9rem; text-align:right;">
                     <div>
-                        <!-- Заголовок убран по запросу -->
-                    </div>
-                    <div style="text-align:right; font-size: 0.9rem;">
-                        <p style="margin-bottom: 6px;"><strong>№ инвойса:</strong> <span id="st1InvOrderId">---</span></p>
+                        <p style="margin-bottom: 4px;"><strong>№ инвойса:</strong> <span id="st1InvOrderId">---</span></p>
                         <p><strong>Дата:</strong> <span id="st1InvOrderDate">---</span></p>
                     </div>
                 </div>
