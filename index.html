@@ -367,8 +367,10 @@
                     <thead>
                         <tr>
                             <th>Вид и Длина (Категория / Размер)</th>
-                            <th>Цена в драмах (AMD)</th>
-                            <th>Цена в долларах (USD) и Валюта</th>
+                            <th>Цена AMD (֏)</th>
+                            <th>Цена USD ($)</th>
+                            <th>Цена EUR (€)</th>
+                            <th>Текущая Валюта</th>
                         </tr>
                     </thead>
                     <tbody id="clientPricesTableBody"></tbody>
@@ -1357,7 +1359,10 @@
 
                 if (client && client.customPrices && client.customPrices[key]) {
                     let cp = client.customPrices[key];
-                    if (cp.currency === 'USD' && Number(cp.usdPrice) > 0) {
+                    if (cp.currency === 'EUR' && Number(cp.eurPrice) > 0) {
+                        item.price = Number(cp.eurPrice);
+                        item.currency = 'EUR';
+                    } else if (cp.currency === 'USD' && Number(cp.usdPrice) > 0) {
                         item.price = Number(cp.usdPrice);
                         item.currency = 'USD';
                     } else if (Number(cp.amdPrice) > 0) {
@@ -1366,6 +1371,9 @@
                     } else if (Number(cp.usdPrice) > 0) {
                         item.price = Number(cp.usdPrice);
                         item.currency = 'USD';
+                    } else if (Number(cp.eurPrice) > 0) {
+                        item.price = Number(cp.eurPrice);
+                        item.currency = 'EUR';
                     }
                 } else {
                     item.price = 0;
@@ -1379,13 +1387,18 @@
             tbody.innerHTML = '';
             let sumTotalAmd = 0;
             let sumTotalUsd = 0;
+            let sumTotalEur = 0;
             let hasUsd = false;
             let hasAmd = false;
+            let hasEur = false;
 
             activeOrderItems.forEach((item, idx) => {
                 let totalPieces = item.packs * (item.pcsPerPack || 15);
                 let s = totalPieces * item.price;
-                if (item.currency === 'USD') {
+                if (item.currency === 'EUR') {
+                    sumTotalEur += s;
+                    hasEur = true;
+                } else if (item.currency === 'USD') {
                     sumTotalUsd += s;
                     hasUsd = true;
                 } else {
@@ -1400,11 +1413,12 @@
                             <select class="form-control" style="padding:2px; width:80px;" onchange="activeOrderItems[${idx}].currency=this.value; applyClientPricesToActiveOrder(); renderCheckoutItemsTable();">
                                 <option value="AMD" ${item.currency==='AMD'?'selected':''}>AMD (֏)</option>
                                 <option value="USD" ${item.currency==='USD'?'selected':''}>USD ($)</option>
+                                <option value="EUR" ${item.currency==='EUR'?'selected':''}>EUR (€)</option>
                             </select>
                         </td>
                         <td><input type="number" class="form-control" style="width:90px; padding:2px;" value="${item.price}" onchange="activeOrderItems[${idx}].price=Number(this.value); renderCheckoutItemsTable();"></td>
                         <td><input type="number" class="form-control" style="width:70px; padding:2px;" value="${item.packs}" onchange="activeOrderItems[${idx}].packs=Math.max(1,parseInt(this.value)||1); renderCheckoutItemsTable();"></td>
-                        <td><strong>${s.toLocaleString()} ${item.currency === 'USD' ? '$' : '֏'}</strong></td>
+                        <td><strong>${s.toLocaleString()} ${item.currency === 'USD' ? '$' : (item.currency === 'EUR' ? '€' : '֏')}</strong></td>
                         <td><button type="button" class="btn btn-dark btn-sm" onclick="activeOrderItems.splice(${idx},1); renderCheckoutItemsTable();">🗑️</button></td>
                     </tr>
                 `;
@@ -1412,7 +1426,8 @@
 
             let totalStr = '';
             if (hasAmd) totalStr += `${sumTotalAmd.toLocaleString()} ֏ `;
-            if (hasUsd) totalStr += `${hasAmd ? '+ ' : ''}${sumTotalUsd.toLocaleString()} $`;
+            if (hasUsd) totalStr += `${hasAmd ? '+ ' : ''}${sumTotalUsd.toLocaleString()} $ `;
+            if (hasEur) totalStr += `${(hasAmd || hasUsd) ? '+ ' : ''}${sumTotalEur.toLocaleString()} €`;
             document.getElementById('checkoutTotalSum').innerText = totalStr || '0';
         }
 
@@ -1510,26 +1525,28 @@
                 let key = `${comb.category}_${comb.size}`.replace(/\s+/g, '_');
                 let savedAmd = '';
                 let savedUsd = '';
+                let savedEur = '';
                 let savedCurr = 'AMD';
 
                 if (client.customPrices && client.customPrices[key]) {
                     savedAmd = client.customPrices[key].amdPrice || '';
                     savedUsd = client.customPrices[key].usdPrice || '';
+                    savedEur = client.customPrices[key].eurPrice || '';
                     savedCurr = client.customPrices[key].currency || 'AMD';
                 }
 
                 tbody.innerHTML += `
                     <tr data-key="${key}" data-cat="${comb.category}" data-size="${comb.size}">
                         <td><strong>${comb.category}</strong> (${comb.size})</td>
-                        <td><input type="number" class="form-control price-amd" value="${savedAmd}" placeholder="Цена за ед. AMD"></td>
+                        <td><input type="number" class="form-control price-amd" value="${savedAmd}" placeholder="Цена AMD"></td>
+                        <td><input type="number" class="form-control price-usd" value="${savedUsd}" placeholder="Цена USD"></td>
+                        <td><input type="number" class="form-control price-eur" value="${savedEur}" placeholder="Цена EUR"></td>
                         <td>
-                            <div style="display:flex; gap:6px; align-items:center;">
-                                <input type="number" class="form-control price-usd" value="${savedUsd}" placeholder="Цена за ед. USD">
-                                <select class="form-control price-curr" style="width:90px;">
-                                    <option value="AMD" ${savedCurr==='AMD'?'selected':''}>AMD</option>
-                                    <option value="USD" ${savedCurr==='USD'?'selected':''}>USD</option>
-                                </select>
-                            </div>
+                            <select class="form-control price-curr" style="width:90px;">
+                                <option value="AMD" ${savedCurr==='AMD'?'selected':''}>AMD</option>
+                                <option value="USD" ${savedCurr==='USD'?'selected':''}>USD</option>
+                                <option value="EUR" ${savedCurr==='EUR'?'selected':''}>EUR</option>
+                            </select>
                         </td>
                     </tr>
                 `;
@@ -1551,12 +1568,14 @@
                 let key = row.getAttribute('data-key');
                 let amdPrice = row.querySelector('.price-amd').value;
                 let usdPrice = row.querySelector('.price-usd').value;
+                let eurPrice = row.querySelector('.price-eur').value;
                 let currency = row.querySelector('.price-curr').value;
 
-                if (amdPrice || usdPrice) {
+                if (amdPrice || usdPrice || eurPrice) {
                     customPrices[key] = {
                         amdPrice: amdPrice ? Number(amdPrice) : 0,
                         usdPrice: usdPrice ? Number(usdPrice) : 0,
+                        eurPrice: eurPrice ? Number(eurPrice) : 0,
                         currency: currency
                     };
                 }
@@ -1588,6 +1607,7 @@
             
             let totalAmountUsd = 0;
             let totalAmountAmd = 0;
+            let totalAmountEur = 0;
             let totalUnits = 0;
             let totalBoxes = order.items.length;
 
@@ -1610,7 +1630,10 @@
 
                 if (client && client.customPrices && client.customPrices[key]) {
                     let cp = client.customPrices[key];
-                    if (cp.currency === 'USD' && Number(cp.usdPrice) > 0) {
+                    if (cp.currency === 'EUR' && Number(cp.eurPrice) > 0) {
+                        pricePerPcs = Number(cp.eurPrice);
+                        currency = 'EUR';
+                    } else if (cp.currency === 'USD' && Number(cp.usdPrice) > 0) {
                         pricePerPcs = Number(cp.usdPrice);
                         currency = 'USD';
                     } else if (Number(cp.amdPrice) > 0) {
@@ -1619,19 +1642,24 @@
                     } else if (Number(cp.usdPrice) > 0) {
                         pricePerPcs = Number(cp.usdPrice);
                         currency = 'USD';
+                    } else if (Number(cp.eurPrice) > 0) {
+                        pricePerPcs = Number(cp.eurPrice);
+                        currency = 'EUR';
                     }
                 }
 
                 let sum = totalPieces * pricePerPcs;
-                if (currency === 'USD') {
+                if (currency === 'EUR') {
+                    totalAmountEur += sum;
+                } else if (currency === 'USD') {
                     totalAmountUsd += sum;
                 } else {
                     totalAmountAmd += sum;
                 }
 
                 let sizeNum = size ? size.replace(/[^0-9]/g, '') : '60';
-                let formattedPrice = `${currency === 'USD' ? '$' : ''}${Number(pricePerPcs).toFixed(2).replace('.', ',')}`;
-                let formattedSum = `${currency === 'USD' ? '$' : ''}${Number(sum).toFixed(2).replace('.', ',')}`;
+                let formattedPrice = `${currency === 'USD' ? '$' : (currency === 'EUR' ? '€' : '')}${Number(pricePerPcs).toFixed(2).replace('.', ',')}`;
+                let formattedSum = `${currency === 'USD' ? '$' : (currency === 'EUR' ? '€' : '')}${Number(sum).toFixed(2).replace('.', ',')}`;
 
                 tbody.innerHTML += `
                     <tr>
@@ -1644,8 +1672,8 @@
                 `;
             });
 
-            let mainCurrencySymbol = totalAmountUsd > 0 ? '$' : '֏';
-            let mainTotalValue = totalAmountUsd > 0 ? totalAmountUsd : totalAmountAmd;
+            let mainCurrencySymbol = totalAmountEur > 0 ? '€' : (totalAmountUsd > 0 ? '$' : '֏');
+            let mainTotalValue = totalAmountEur > 0 ? totalAmountEur : (totalAmountUsd > 0 ? totalAmountUsd : totalAmountAmd);
 
             document.getElementById('invTopAmountUsd').innerText = `${mainCurrencySymbol}${Number(mainTotalValue).toFixed(2).replace('.', ',')}`;
             document.getElementById('invTopTotalUnits').innerText = totalUnits;
@@ -1673,6 +1701,7 @@
             
             let totalAmountUsd = 0;
             let totalAmountAmd = 0;
+            let totalAmountEur = 0;
             let totalUnits = 0;
             let totalBoxes = order.items.length;
 
@@ -1695,7 +1724,10 @@
 
                 if (client && client.customPrices && client.customPrices[key]) {
                     let cp = client.customPrices[key];
-                    if (cp.currency === 'USD' && Number(cp.usdPrice) > 0) {
+                    if (cp.currency === 'EUR' && Number(cp.eurPrice) > 0) {
+                        pricePerPcs = Number(cp.eurPrice);
+                        currency = 'EUR';
+                    } else if (cp.currency === 'USD' && Number(cp.usdPrice) > 0) {
                         pricePerPcs = Number(cp.usdPrice);
                         currency = 'USD';
                     } else if (Number(cp.amdPrice) > 0) {
@@ -1704,19 +1736,24 @@
                     } else if (Number(cp.usdPrice) > 0) {
                         pricePerPcs = Number(cp.usdPrice);
                         currency = 'USD';
+                    } else if (Number(cp.eurPrice) > 0) {
+                        pricePerPcs = Number(cp.eurPrice);
+                        currency = 'EUR';
                     }
                 }
 
                 let sum = totalPieces * pricePerPcs;
-                if (currency === 'USD') {
+                if (currency === 'EUR') {
+                    totalAmountEur += sum;
+                } else if (currency === 'USD') {
                     totalAmountUsd += sum;
                 } else {
                     totalAmountAmd += sum;
                 }
 
                 let sizeNum = size ? size.replace(/[^0-9]/g, '') : '60';
-                let formattedPrice = `${currency === 'USD' ? '$' : ''}${Number(pricePerPcs).toFixed(2).replace('.', ',')}`;
-                let formattedSum = `${currency === 'USD' ? '$' : ''}${Number(sum).toFixed(2).replace('.', ',')}`;
+                let formattedPrice = `${currency === 'USD' ? '$' : (currency === 'EUR' ? '€' : '')}${Number(pricePerPcs).toFixed(2).replace('.', ',')}`;
+                let formattedSum = `${currency === 'USD' ? '$' : (currency === 'EUR' ? '€' : '')}${Number(sum).toFixed(2).replace('.', ',')}`;
 
                 tbody.innerHTML += `
                     <tr>
@@ -1729,8 +1766,8 @@
                 `;
             });
 
-            let mainCurrencySymbol = totalAmountUsd > 0 ? '$' : '֏';
-            let mainTotalValue = totalAmountUsd > 0 ? totalAmountUsd : totalAmountAmd;
+            let mainCurrencySymbol = totalAmountEur > 0 ? '€' : (totalAmountUsd > 0 ? '$' : '֏');
+            let mainTotalValue = totalAmountEur > 0 ? totalAmountEur : (totalAmountUsd > 0 ? totalAmountUsd : totalAmountAmd);
 
             document.getElementById('st1InvTopAmount').innerText = `${mainCurrencySymbol}${Number(mainTotalValue).toFixed(2).replace('.', ',')}`;
             document.getElementById('st1InvTopUnits').innerText = totalUnits;
