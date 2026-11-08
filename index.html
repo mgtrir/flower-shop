@@ -413,16 +413,14 @@
     <!-- СТАНДАРТНЫЙ КОММЕРЧЕСКИЙ ИНВОЙС НА АНГЛИЙСКОМ (С РУЧНЫМ НОМЕРОМ И ДАТОЙ) -->
     <div class="modal" id="printInvoiceModal">
         <div class="modal-content" style="max-width: 780px; padding: 2rem; background: #fff;">
-            <div style="display: flex; justify-content: flex-end; margin-bottom: 5px;" class="no-print">
-                <button class="close-btn" onclick="closePrintModal()">&times;</button>
-            </div>
             
             <div id="invoiceContent" style="color:#000; font-size: 0.9rem;">
-                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1.5rem; border-bottom: 1px solid #ccc; padding-bottom: 10px;">
+                <div style="margin-bottom:0.8rem; border-bottom: 1px solid #ccc; padding-bottom: 8px;">
+                    <h2 style="font-size: 1.6rem; font-weight: bold; margin: 0; color: #000; letter-spacing: 0.5px;">INVOICE</h2>
+                </div>
+
+                <div style="display:flex; justify-content:flex-end; margin-bottom:1rem; font-size: 0.9rem; text-align:right;">
                     <div>
-                        <!-- Заголовок убран по вашему запросу -->
-                    </div>
-                    <div style="text-align:right; font-size: 0.9rem;">
                         <p style="margin-bottom: 6px;"><strong>Invoice Number:</strong> <input type="text" id="customInvNumber" value="ORD-048945" style="width: 140px; padding: 2px; font-weight: bold; border: 1px solid #ccc; border-radius: 4px; text-align: right;"></p>
                         <p><strong>Date:</strong> <input type="text" id="customInvDate" value="27/10/2026" style="width: 120px; padding: 2px; font-weight: bold; border: 1px solid #ccc; border-radius: 4px; text-align: right;"></p>
                     </div>
