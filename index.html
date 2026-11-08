@@ -873,6 +873,7 @@
                         📥 Загрузить остатки из Excel (.xlsx)
                         <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" style="display:none;" onchange="importDailyStock(event)">
                     </label>
+                    <button class="btn btn-outline btn-sm" onclick="resetAllPhotosToLocal()" title="Принудительно переключить все картинки в базе на for_crm/">🔄 Привязать фото к for_crm</button>
                 </div>
                 <button class="btn btn-dark btn-sm" onclick="exportStockExcel()">📊 Выгрузить в Excel (.xlsx)</button>
             </div>
@@ -1177,7 +1178,7 @@
                                 existingByExact.packs = packsVal;
                             } else if (pcsVal > 0 || packsVal > 0) {
                                 let category = existingAnySize ? existingAnySize.category : 'Одноголовая';
-                                let image = existingAnySize ? existingAnySize.image : DEFAULT_FLOWER_IMAGE;
+                                let image = `for_crm/${flowerName}.jpg`;
 
                                 flowers.push({
                                     id: 'FLW-' + Date.now() + '-' + Math.floor(Math.random()*1000),
@@ -1243,6 +1244,58 @@
             renderCatalog();
         };
 
+                function getFlowerPhotoUrl(flower) {
+            const cleanName = (flower.name || '').trim();
+            // Всегда отдаем приоритет локальной папке for_crm по названию сорта
+            if (cleanName) {
+                return `for_crm/${cleanName}.jpg`;
+            }
+            if (flower.image && (flower.image.startsWith('for_crm/') || flower.image.startsWith('for crm/'))) {
+                return flower.image;
+            }
+            return flower.image || DEFAULT_FLOWER_IMAGE;
+        }
+
+        function handleFlowerImgError(img) {
+            const name = (img.dataset.name || '').trim();
+            const orig = img.dataset.orig || '';
+            const step = parseInt(img.dataset.step || '0', 10);
+
+            if (step === 0) {
+                img.dataset.step = '1';
+                img.src = `for_crm/${name}.png`;
+            } else if (step === 1) {
+                img.dataset.step = '2';
+                img.src = `for_crm/${name}.JPG`;
+            } else if (step === 2) {
+                img.dataset.step = '3';
+                img.src = `for crm/${name}.jpg`;
+            } else if (step === 3) {
+                img.dataset.step = '4';
+                img.src = `for crm/${name}.png`;
+            } else if (step === 4 && orig && orig.startsWith('http')) {
+                img.dataset.step = '5';
+                img.src = orig;
+            } else {
+                img.onerror = null;
+                img.src = DEFAULT_FLOWER_IMAGE;
+            }
+        }
+
+        window.resetAllPhotosToLocal = function() {
+            if (!flowers || flowers.length === 0) return alert('Список цветов на складе пуст!');
+            if (!confirm('Переписать ссылки на фото в базе для всех сортов роз на папку for_crm/?')) return;
+            flowers.forEach(f => {
+                const clean = (f.name || '').trim();
+                f.image = `for_crm/${clean}.jpg`;
+            });
+            db.ref('inventory').set(flowers).then(() => {
+                alert('Все фото в базе данных успешно переключены на for_crm/!');
+                renderCatalog();
+                renderAdminTable();
+            }).catch(err => alert('Ошибка обновления: ' + err.message));
+        };
+
         function renderCatalog() {
             const grid = document.getElementById('catalogGrid');
             const search = document.getElementById('searchInput').value.toLowerCase();
@@ -1253,10 +1306,12 @@
                        (selectedSizeFilter === 'ALL' || f.size.includes(selectedSizeFilter)) &&
                        (selectedNameFilter === 'ALL' || f.name === selectedNameFilter);
             }).forEach(f => {
+                const photoUrl = getFlowerPhotoUrl(f);
+                const cleanName = (f.name || '').trim();
                 grid.innerHTML += `
                     <div class="card">
                         <div class="image-wrapper">
-                            <img src="${f.image || DEFAULT_FLOWER_IMAGE}">
+                            <img src="${photoUrl}" alt="${f.name}" data-name="${f.name}" data-orig="${f.image || ''}" onerror="handleFlowerImgError(this)">
                             <div class="size-tag">${f.size}</div>
                             <div class="category-tag">${f.category || 'Одноголовая'}</div>
                         </div>
@@ -2101,7 +2156,7 @@
             flowers.forEach((f, idx) => {
                 tbody.innerHTML += `
                     <tr>
-                        <td><img src="${f.image || DEFAULT_FLOWER_IMAGE}" style="width:36px; height:36px; object-fit:cover; border-radius:4px;"></td>
+                        <td><img src="${getFlowerPhotoUrl(f)}" alt="${f.name}" data-name="${f.name}" data-orig="${f.image || ''}" onerror="handleFlowerImgError(this)" style="width:36px; height:36px; object-fit:cover; border-radius:4px;"></td>
                         <td>${f.category || 'Одноголовая'}</td>
                         <td><strong>${f.name}</strong></td>
                         <td>${f.size}</td>
