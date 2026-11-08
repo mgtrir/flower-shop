@@ -507,7 +507,7 @@
 
                 <div style="display:flex; justify-content:space-between; margin-bottom:1.5rem; font-size: 0.85rem; line-height: 1.5;">
                     <div style="width: 48%;">
-                        <p style="font-weight: bold; font-size: 0.95rem; margin-bottom: 4px;">ООО «Роуз Гарден» (Rose Garden LLC)</p>
+                        <p style="font-weight: bold; font-size: 0.95rem; margin-bottom: 4px;">Rose Garden LLC</p>
                         <p>Налоговый код (ИНН): 02927742</p>
                         <p>Телефон: +374 33 058 058</p>
                         <p>Email: info@rosegarden.am</p>
@@ -554,7 +554,8 @@
                 <table style="width:100%; border-collapse:collapse; margin-bottom:1rem; border: 1px solid #333; font-size: 0.85rem;">
                     <thead>
                         <tr style="background:#2b579a; color: white;">
-                            <th style="border:1px solid #333; padding:6px 8px; text-align:left;">Наименование / Сорт</th>
+                            <th style="border:1px solid #333; padding:6px 8px; text-align:left; width: 110px;">Наименование</th>
+                            <th style="border:1px solid #333; padding:6px 8px; text-align:left;">Сорт / Вид</th>
                             <th style="border:1px solid #333; padding:6px 8px; text-align:center; width: 60px;">Размер (см)</th>
                             <th style="border:1px solid #333; padding:6px 8px; text-align:center; width: 80px;">Количество</th>
                             <th style="border:1px solid #333; padding:6px 8px; text-align:right; width: 90px;">Цена</th>
@@ -1745,9 +1746,11 @@
                 let formattedPrice = `${currency === 'USD' ? '$' : (currency === 'EUR' ? '€' : '')}${Number(pricePerPcs).toFixed(2).replace('.', ',')}`;
                 let formattedSum = `${currency === 'USD' ? '$' : (currency === 'EUR' ? '€' : '')}${Number(sum).toFixed(2).replace('.', ',')}`;
 
+                let cleanVariety = (item.name || '').replace(/^Роза\s+/i, '');
                 tbody.innerHTML += `
                     <tr>
-                        <td style="border:1px solid #333; padding:5px 8px;">${item.name}</td>
+                        <td style="border:1px solid #333; padding:5px 8px; font-weight: bold;">Роза</td>
+                        <td style="border:1px solid #333; padding:5px 8px;">${cleanVariety}</td>
                         <td style="border:1px solid #333; padding:5px 8px; text-align:center;">${sizeNum}</td>
                         <td style="border:1px solid #333; padding:5px 8px; text-align:center;">${totalPieces}</td>
                         <td style="border:1px solid #333; padding:5px 8px; text-align:right;">${formattedPrice}</td>
@@ -1839,9 +1842,11 @@
                 let formattedPrice = `${currency === 'USD' ? '$' : (currency === 'EUR' ? '€' : '')}${Number(pricePerPcs).toFixed(2).replace('.', ',')}`;
                 let formattedSum = `${currency === 'USD' ? '$' : (currency === 'EUR' ? '€' : '')}${Number(sum).toFixed(2).replace('.', ',')}`;
 
+                let cleanVariety = (item.name || '').replace(/^Роза\s+/i, '');
                 tbody.innerHTML += `
                     <tr>
-                        <td style="border:1px solid #333; padding:5px 8px;">${item.name}</td>
+                        <td style="border:1px solid #333; padding:5px 8px; font-weight: bold;">Роза</td>
+                        <td style="border:1px solid #333; padding:5px 8px;">${cleanVariety}</td>
                         <td style="border:1px solid #333; padding:5px 8px; text-align:center;">${sizeNum}</td>
                         <td style="border:1px solid #333; padding:5px 8px; text-align:center;">${totalPieces}</td>
                         <td style="border:1px solid #333; padding:5px 8px; text-align:right;">${formattedPrice}</td>
