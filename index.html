@@ -5,9 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Роуз Гарден — CRM и Склад</title>
     
-    <!-- Мобильная консоль Eruda -->
-    <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-    <script>eruda.init();</script>
+    <!-- Предварительное подключение к серверам для максимального ускорения -->
+    <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://rosegarden-db-default-rtdb.europe-west1.firebasedatabase.app" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+
+    <!-- Мобильная консоль Eruda (отложенная фоновая загрузка без блокировки рендеринга страницы) -->
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            const erudaScript = document.createElement('script');
+            erudaScript.src = 'https://cdn.jsdelivr.net/npm/eruda';
+            erudaScript.onload = () => { if (window.eruda) eruda.init(); };
+            document.body.appendChild(erudaScript);
+        });
+    </script>
 
     <!-- Firebase SDK (v9 Compat) -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -965,12 +977,28 @@
             if (savedCart) cart = JSON.parse(savedCart);
         } catch (e) { cart = {}; }
 
+        // Мгновенная отрисовка каталога из локального кэша без ожидания сетевого ответа
+        try {
+            const cachedFlowers = localStorage.getItem('rosegarden_cached_flowers');
+            if (cachedFlowers) {
+                flowers = JSON.parse(cachedFlowers);
+                setTimeout(() => {
+                    renderNameFilterChips();
+                    renderCatalog();
+                    updateCartBar();
+                }, 0);
+            }
+            const cachedClients = localStorage.getItem('rosegarden_cached_clients');
+            if (cachedClients) clients = JSON.parse(cachedClients);
+        } catch (e) {}
+
         let selectedTypeFilter = 'ALL';
         let selectedSizeFilter = 'ALL';
         let selectedNameFilter = 'ALL';
 
         db.ref('clients').on('value', (s) => {
             clients = s.val() ? Object.values(s.val()) : [];
+            try { localStorage.setItem('rosegarden_cached_clients', JSON.stringify(clients)); } catch(e) {}
             if (document.getElementById('clientsModal').classList.contains('active')) {
                 renderClientsTable();
             }
@@ -1203,6 +1231,7 @@
         db.ref('inventory').on('value', (snapshot) => {
             const data = snapshot.val();
             flowers = data ? (Array.isArray(data) ? data.filter(Boolean) : Object.values(data)) : [];
+            try { localStorage.setItem('rosegarden_cached_flowers', JSON.stringify(flowers)); } catch(e) {}
             renderNameFilterChips();
             renderCatalog();
             renderAdminTable();
@@ -1311,7 +1340,7 @@
                 grid.innerHTML += `
                     <div class="card">
                         <div class="image-wrapper">
-                            <img src="${photoUrl}" alt="${f.name}" data-name="${f.name}" data-orig="${f.image || ''}" onerror="handleFlowerImgError(this)">
+                            <img src="${photoUrl}" alt="${f.name}" loading="lazy" decoding="async" data-name="${f.name}" data-orig="${f.image || ''}" onerror="handleFlowerImgError(this)">
                             <div class="size-tag">${f.size}</div>
                             <div class="category-tag">${f.category || 'Одноголовая'}</div>
                         </div>
@@ -2156,7 +2185,7 @@
             flowers.forEach((f, idx) => {
                 tbody.innerHTML += `
                     <tr>
-                        <td><img src="${getFlowerPhotoUrl(f)}" alt="${f.name}" data-name="${f.name}" data-orig="${f.image || ''}" onerror="handleFlowerImgError(this)" style="width:36px; height:36px; object-fit:cover; border-radius:4px;"></td>
+                        <td><img src="${getFlowerPhotoUrl(f)}" alt="${f.name}" loading="lazy" decoding="async" data-name="${f.name}" data-orig="${f.image || ''}" onerror="handleFlowerImgError(this)" style="width:36px; height:36px; object-fit:cover; border-radius:4px;"></td>
                         <td>${f.category || 'Одноголовая'}</td>
                         <td><strong>${f.name}</strong></td>
                         <td>${f.size}</td>
