@@ -5,9 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Роуз Гарден — CRM и Склад</title>
     
-    <!-- Мобильная консоль Eruda -->
-    <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-    <script>eruda.init();</script>
+    <!-- Предварительное подключение к серверам для максимального ускорения -->
+    <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://rosegarden-db-default-rtdb.europe-west1.firebasedatabase.app" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+
+    <!-- Мобильная консоль Eruda (отложенная фоновая загрузка без блокировки рендеринга страницы) -->
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            const erudaScript = document.createElement('script');
+            erudaScript.src = 'https://cdn.jsdelivr.net/npm/eruda';
+            erudaScript.onload = () => { if (window.eruda) eruda.init(); };
+            document.body.appendChild(erudaScript);
+        });
+    </script>
 
     <!-- Firebase SDK (v9 Compat) -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -88,6 +100,16 @@
 
         .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 1rem; }
         .modal.active { display: flex !important; }
+
+        /* Документы, печатные формы и окна редактирования всегда открываются поверх списков заказов и клиентов */
+        #printInvoiceModal,
+        #printSt1InvoiceModal,
+        #printWarehouseInvoiceModal,
+        #printPackingModal,
+        #saveOrderModal,
+        #clientPricesModal {
+            z-index: 1200 !important;
+        }
         .modal-content { background: white; border-radius: 12px; width: 100%; max-width: 1100px; max-height: 90vh; overflow-y: auto; padding: 1.5rem; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
         .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 1rem; margin-bottom: 1rem; }
         .close-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #888; }
@@ -139,7 +161,7 @@
                 background: white !important;
                 z-index: 99999 !important;
                 margin: 0 !important;
-                padding: 10mm !important;
+                padding: 10mm 12mm !important;
                 display: block !important;
             }
             #printWarehouseInvoiceModal.active *, #printInvoiceModal.active *, #printSt1InvoiceModal.active *, #printPackingModal.active * {
@@ -170,10 +192,25 @@
             table { font-size: 0.75rem !important; page-break-inside: auto; }
             tr { page-break-inside: avoid; page-break-after: auto; }
             thead { display: table-header-group; }
-            .no-print { display: none !important; }
+            .no-print,
+            .no-print *,
+            #printWarehouseInvoiceModal.active .no-print,
+            #printWarehouseInvoiceModal.active .no-print *,
+            #printInvoiceModal.active .no-print,
+            #printInvoiceModal.active .no-print *,
+            #printSt1InvoiceModal.active .no-print,
+            #printSt1InvoiceModal.active .no-print *,
+            #printPackingModal.active .no-print,
+            #printPackingModal.active .no-print * {
+                display: none !important;
+                visibility: hidden !important;
+                height: 0 !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
             @page { 
                 size: A4 portrait; 
-                margin: 5mm 10mm 10mm 10mm; 
+                margin: 0; 
             }
         }
     </style>
@@ -221,7 +258,7 @@
             <div class="nav-actions">
                 <button class="btn btn-outline btn-sm" onclick="openClientsModal()">👥 Клиенты</button>
                 <button class="btn btn-outline btn-sm" onclick="openOrdersModal()">📋 Заказы</button>
-                <button class="btn btn-outline btn-sm" onclick="openProcurementsModal()">📑 Закуп</button>
+                <button class="btn btn-outline btn-sm" onclick="openProcurementsModal()">🌿 Приход из теплицы</button>
                 <button class="btn btn-outline btn-sm admin-only" onclick="openFinanceModal()">💰 Касса и P&L</button>
                 <button class="btn btn-outline btn-sm admin-only" onclick="openAnalyticsModal()">📊 Аналитика</button>
                 <button class="btn btn-outline btn-sm admin-only" onclick="openRolesModal()">👑 Доступы</button>
@@ -386,16 +423,14 @@
     <!-- СТАНДАРТНЫЙ КОММЕРЧЕСКИЙ ИНВОЙС НА АНГЛИЙСКОМ (С РУЧНЫМ НОМЕРОМ И ДАТОЙ) -->
     <div class="modal" id="printInvoiceModal">
         <div class="modal-content" style="max-width: 780px; padding: 2rem; background: #fff;">
-            <div style="display: flex; justify-content: flex-end; margin-bottom: 5px;" class="no-print">
-                <button class="close-btn" onclick="closePrintModal()">&times;</button>
-            </div>
             
             <div id="invoiceContent" style="color:#000; font-size: 0.9rem;">
-                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1.5rem; border-bottom: 1px solid #ccc; padding-bottom: 10px;">
+                <div style="margin-bottom:0.8rem; border-bottom: 1px solid #ccc; padding-bottom: 8px;">
+                    <h2 style="font-size: 1.6rem; font-weight: bold; margin: 0; color: #000; letter-spacing: 0.5px;">INVOICE</h2>
+                </div>
+
+                <div style="display:flex; justify-content:flex-end; margin-bottom:1rem; font-size: 0.9rem; text-align:right;">
                     <div>
-                        <!-- Заголовок убран по вашему запросу -->
-                    </div>
-                    <div style="text-align:right; font-size: 0.9rem;">
                         <p style="margin-bottom: 6px;"><strong>Invoice Number:</strong> <input type="text" id="customInvNumber" value="ORD-048945" style="width: 140px; padding: 2px; font-weight: bold; border: 1px solid #ccc; border-radius: 4px; text-align: right;"></p>
                         <p><strong>Date:</strong> <input type="text" id="customInvDate" value="27/10/2026" style="width: 120px; padding: 2px; font-weight: bold; border: 1px solid #ccc; border-radius: 4px; text-align: right;"></p>
                     </div>
@@ -476,26 +511,23 @@
     <!-- РУССКИЙ ИНВОЙС ДЛЯ СТ-1 (С ОТСТУПОМ 6 СМ СВЕРХУ) -->
     <div class="modal" id="printSt1InvoiceModal">
         <div class="modal-content" style="max-width: 780px; padding: 2rem; background: #fff;">
-            <div class="modal-header no-print">
-                <h2>📄 Коммерческий Инвойс на русском (Для СТ-1)</h2>
-                <button class="close-btn" onclick="closeSt1PrintModal()">&times;</button>
-            </div>
+
             
-            <div id="st1InvoiceContent" style="color:#000; font-size: 0.9rem; margin-top: 6cm;">
-                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1.5rem; border-bottom: 2px solid #333; padding-bottom: 10px;">
+            <div id="st1InvoiceContent" style="color:#000; font-size: 0.9rem;">
+                <div style="margin-bottom:0.8rem; border-bottom: 1px solid #ccc; padding-bottom: 8px;">
+                    <h2 style="font-size: 1.6rem; font-weight: bold; margin: 0; color: #000; letter-spacing: 0.5px;">ИНВОЙС</h2>
+                </div>
+
+                <div style="display:flex; justify-content:flex-end; margin-bottom:1rem; font-size: 0.9rem; text-align:right;">
                     <div>
-                        <h2 style="font-size: 1.5rem; font-weight: bold; margin-bottom: 5px;">КОММЕРЧЕСКИЙ ИНВОЙС</h2>
-                        <p style="font-size: 0.85rem; color: #555;">Для таможенного оформления и сертификата СТ-1</p>
-                    </div>
-                    <div style="text-align:right; font-size: 0.9rem;">
-                        <p><strong>№ инвойса:</strong> <span id="st1InvOrderId">---</span></p>
+                        <p style="margin-bottom: 4px;"><strong>№ инвойса:</strong> <span id="st1InvOrderId">---</span></p>
                         <p><strong>Дата:</strong> <span id="st1InvOrderDate">---</span></p>
                     </div>
                 </div>
 
                 <div style="display:flex; justify-content:space-between; margin-bottom:1.5rem; font-size: 0.85rem; line-height: 1.5;">
                     <div style="width: 48%;">
-                        <p style="font-weight: bold; font-size: 0.95rem; margin-bottom: 4px;">ООО «Роуз Гарден» (Rose Garden LLC)</p>
+                        <p style="font-weight: bold; font-size: 0.95rem; margin-bottom: 4px;">ООО «Росе Гарден»</p>
                         <p>Налоговый код (ИНН): 02927742</p>
                         <p>Телефон: +374 33 058 058</p>
                         <p>Email: info@rosegarden.am</p>
@@ -542,7 +574,8 @@
                 <table style="width:100%; border-collapse:collapse; margin-bottom:1rem; border: 1px solid #333; font-size: 0.85rem;">
                     <thead>
                         <tr style="background:#2b579a; color: white;">
-                            <th style="border:1px solid #333; padding:6px 8px; text-align:left;">Наименование / Сорт</th>
+                            <th style="border:1px solid #333; padding:6px 8px; text-align:left; width: 110px;">Наименование</th>
+                            <th style="border:1px solid #333; padding:6px 8px; text-align:left;">Сорт / Вид</th>
                             <th style="border:1px solid #333; padding:6px 8px; text-align:center; width: 60px;">Размер (см)</th>
                             <th style="border:1px solid #333; padding:6px 8px; text-align:center; width: 80px;">Количество</th>
                             <th style="border:1px solid #333; padding:6px 8px; text-align:right; width: 90px;">Цена</th>
@@ -559,7 +592,7 @@
             </div>
 
             <div style="display:flex; gap:10px; margin-top:2rem;" class="no-print">
-                <button class="btn btn-success" style="flex:1;" onclick="window.print()">🖨️ Печать ST-1 Инвойса (с отступом 6 см)</button>
+                <button class="btn btn-success" style="flex:1;" onclick="window.print()">🖨️ Печать ST-1 Инвойса</button>
                 <button class="btn btn-dark" onclick="closeSt1PrintModal()">Закрыть</button>
             </div>
         </div>
@@ -746,46 +779,45 @@
     <div class="modal" id="procurementsModal">
         <div class="modal-content" style="max-width: 950px;">
             <div class="modal-header">
-                <h2>📑 Документы Закупа и Прихода на Склад</h2>
+                <h2>🌿 Приход товара из теплицы на склад</h2>
                 <button class="close-btn" onclick="closeProcurementsModal()">&times;</button>
             </div>
             <div style="margin-bottom:1rem;">
-                <button class="btn btn-sm btn-success" onclick="openNewProcurementForm()">+ Создать Акт Закупа</button>
+                <button class="btn btn-sm btn-success" onclick="openNewProcurementForm()">+ Новый Акт Сбора / Прихода</button>
             </div>
 
             <div id="newProcurementSection" style="display:none; background:#f8fafc; padding:1.2rem; border-radius:8px; margin-bottom:1.2rem; border:1px solid #cbd5e1;">
-                <h3 style="margin-bottom:0.8rem; color:var(--accent);" id="procFormTitle">Новый Документ Прихода</h3>
+                <h3 style="margin-bottom:0.8rem; color:var(--accent);" id="procFormTitle">Акт прихода роз из теплицы</h3>
                 <form onsubmit="handleSaveProcurement(event)">
                     <input type="hidden" id="editingProcId" value="">
                     <div class="form-row">
-                        <div class="form-group"><label>Поставщик / Парник</label><input type="text" id="procSupplier" class="form-control" required placeholder="Парник №1 Раздан"></div>
-                        <div class="form-group"><label>№ Документа</label><input type="text" id="procDocNum" class="form-control" required placeholder="ЗКП-101"></div>
+                        <div class="form-group"><label>Теплица / Блок / Парник</label><input type="text" id="procSupplier" class="form-control" required placeholder="Теплица №1, Раздан"></div>
+                        <div class="form-group"><label>№ Документа</label><input type="text" id="procDocNum" class="form-control" required placeholder="ПРХ-101"></div>
                         <div class="form-group"><label>Дата прихода</label><input type="date" id="procDate" class="form-control" required></div>
                     </div>
 
                     <div style="margin: 1rem 0;">
-                        <label style="font-weight:bold; font-size:0.85rem;">Товары в акте закупа:</label>
+                        <label style="font-weight:bold; font-size:0.85rem;">Цветы в акте сбора / прихода:</label>
                         <div class="table-responsive">
                             <table>
                                 <thead>
-                                    <tr><th>Цветок / Сорт со склада</th><th>Закупочная цена (֏)</th><th>Количество (пачек)</th><th>Сумма (֏)</th><th>Удалить</th></tr>
+                                    <tr><th>Цветок / Сорт со склада</th><th>Размер</th><th style="text-align:center;">Количество (пачек)</th><th style="text-align:center;">Всего штук</th><th>Удалить</th></tr>
                                 </thead>
                                 <tbody id="procurementItemsTable"></tbody>
                             </table>
                         </div>
 
                         <div style="margin-top: 0.8rem; display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end;">
-                            <div style="flex:2; min-width:180px;"><select id="procSelectFlower" class="form-control"></select></div>
-                            <div style="width:110px;"><input type="number" id="procPriceInput" class="form-control" placeholder="Закуп ֏"></div>
-                            <div style="width:100px;"><input type="number" id="procQtyInput" class="form-control" value="10" placeholder="Пачек"></div>
+                            <div style="flex:2; min-width:200px;"><select id="procSelectFlower" class="form-control"></select></div>
+                            <div style="width:120px;"><input type="number" id="procQtyInput" class="form-control" value="10" placeholder="Пачек"></div>
                             <button type="button" class="btn btn-sm btn-outline" onclick="addProcurementRow()">+ Добавить сорт</button>
                         </div>
                     </div>
 
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1rem;">
-                        <div style="font-size:1.1rem; font-weight:bold;">Итого закупка: <span id="procTotalDisplay" style="color:var(--accent);">0</span> ֏</div>
+                        <div style="font-size:1.05rem; font-weight:bold;">Всего оприходовано: <span id="procTotalPacksDisplay" style="color:var(--accent);">0</span> пач. (<span id="procTotalPiecesDisplay" style="color:var(--accent);">0</span> шт.)</div>
                         <div style="display:flex; gap:8px;">
-                            <button type="submit" class="btn btn-success btn-sm">💾 Провести и сохранить</button>
+                            <button type="submit" class="btn btn-success btn-sm">💾 Оприходовать на склад</button>
                             <button type="button" class="btn btn-dark btn-sm" onclick="closeNewProcurementForm()">Отмена</button>
                         </div>
                     </div>
@@ -795,7 +827,7 @@
             <div class="table-responsive">
                 <table>
                     <thead>
-                        <tr><th>№ Документа</th><th>Дата</th><th>Поставщик</th><th>Сумма (֏)</th><th>Действия</th></tr>
+                        <tr><th>№ Документа</th><th>Дата прихода</th><th>Теплица / Парник</th><th style="text-align:center;">Пачек</th><th style="text-align:center;">Штук</th><th>Состав поступления</th><th>Действия</th></tr>
                     </thead>
                     <tbody id="procurementsTableBody"></tbody>
                 </table>
@@ -873,6 +905,7 @@
                         📥 Загрузить остатки из Excel (.xlsx)
                         <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" style="display:none;" onchange="importDailyStock(event)">
                     </label>
+                    <button class="btn btn-outline btn-sm" onclick="resetAllPhotosToLocal()" title="Принудительно переключить все картинки в базе на for_crm/">🔄 Привязать фото к for_crm</button>
                 </div>
                 <button class="btn btn-dark btn-sm" onclick="exportStockExcel()">📊 Выгрузить в Excel (.xlsx)</button>
             </div>
@@ -964,12 +997,28 @@
             if (savedCart) cart = JSON.parse(savedCart);
         } catch (e) { cart = {}; }
 
+        // Мгновенная отрисовка каталога из локального кэша без ожидания сетевого ответа
+        try {
+            const cachedFlowers = localStorage.getItem('rosegarden_cached_flowers');
+            if (cachedFlowers) {
+                flowers = JSON.parse(cachedFlowers);
+                setTimeout(() => {
+                    renderNameFilterChips();
+                    renderCatalog();
+                    updateCartBar();
+                }, 0);
+            }
+            const cachedClients = localStorage.getItem('rosegarden_cached_clients');
+            if (cachedClients) clients = JSON.parse(cachedClients);
+        } catch (e) {}
+
         let selectedTypeFilter = 'ALL';
         let selectedSizeFilter = 'ALL';
         let selectedNameFilter = 'ALL';
 
         db.ref('clients').on('value', (s) => {
             clients = s.val() ? Object.values(s.val()) : [];
+            try { localStorage.setItem('rosegarden_cached_clients', JSON.stringify(clients)); } catch(e) {}
             if (document.getElementById('clientsModal').classList.contains('active')) {
                 renderClientsTable();
             }
@@ -1177,7 +1226,7 @@
                                 existingByExact.packs = packsVal;
                             } else if (pcsVal > 0 || packsVal > 0) {
                                 let category = existingAnySize ? existingAnySize.category : 'Одноголовая';
-                                let image = existingAnySize ? existingAnySize.image : DEFAULT_FLOWER_IMAGE;
+                                let image = `for_crm/${flowerName}.jpg`;
 
                                 flowers.push({
                                     id: 'FLW-' + Date.now() + '-' + Math.floor(Math.random()*1000),
@@ -1202,6 +1251,7 @@
         db.ref('inventory').on('value', (snapshot) => {
             const data = snapshot.val();
             flowers = data ? (Array.isArray(data) ? data.filter(Boolean) : Object.values(data)) : [];
+            try { localStorage.setItem('rosegarden_cached_flowers', JSON.stringify(flowers)); } catch(e) {}
             renderNameFilterChips();
             renderCatalog();
             renderAdminTable();
@@ -1243,6 +1293,58 @@
             renderCatalog();
         };
 
+                function getFlowerPhotoUrl(flower) {
+            const cleanName = (flower.name || '').trim();
+            // Всегда отдаем приоритет локальной папке for_crm по названию сорта
+            if (cleanName) {
+                return `for_crm/${cleanName}.jpg`;
+            }
+            if (flower.image && (flower.image.startsWith('for_crm/') || flower.image.startsWith('for crm/'))) {
+                return flower.image;
+            }
+            return flower.image || DEFAULT_FLOWER_IMAGE;
+        }
+
+        function handleFlowerImgError(img) {
+            const name = (img.dataset.name || '').trim();
+            const orig = img.dataset.orig || '';
+            const step = parseInt(img.dataset.step || '0', 10);
+
+            if (step === 0) {
+                img.dataset.step = '1';
+                img.src = `for_crm/${name}.png`;
+            } else if (step === 1) {
+                img.dataset.step = '2';
+                img.src = `for_crm/${name}.JPG`;
+            } else if (step === 2) {
+                img.dataset.step = '3';
+                img.src = `for crm/${name}.jpg`;
+            } else if (step === 3) {
+                img.dataset.step = '4';
+                img.src = `for crm/${name}.png`;
+            } else if (step === 4 && orig && orig.startsWith('http')) {
+                img.dataset.step = '5';
+                img.src = orig;
+            } else {
+                img.onerror = null;
+                img.src = DEFAULT_FLOWER_IMAGE;
+            }
+        }
+
+        window.resetAllPhotosToLocal = function() {
+            if (!flowers || flowers.length === 0) return alert('Список цветов на складе пуст!');
+            if (!confirm('Переписать ссылки на фото в базе для всех сортов роз на папку for_crm/?')) return;
+            flowers.forEach(f => {
+                const clean = (f.name || '').trim();
+                f.image = `for_crm/${clean}.jpg`;
+            });
+            db.ref('inventory').set(flowers).then(() => {
+                alert('Все фото в базе данных успешно переключены на for_crm/!');
+                renderCatalog();
+                renderAdminTable();
+            }).catch(err => alert('Ошибка обновления: ' + err.message));
+        };
+
         function renderCatalog() {
             const grid = document.getElementById('catalogGrid');
             const search = document.getElementById('searchInput').value.toLowerCase();
@@ -1253,10 +1355,12 @@
                        (selectedSizeFilter === 'ALL' || f.size.includes(selectedSizeFilter)) &&
                        (selectedNameFilter === 'ALL' || f.name === selectedNameFilter);
             }).forEach(f => {
+                const photoUrl = getFlowerPhotoUrl(f);
+                const cleanName = (f.name || '').trim();
                 grid.innerHTML += `
                     <div class="card">
                         <div class="image-wrapper">
-                            <img src="${f.image || DEFAULT_FLOWER_IMAGE}">
+                            <img src="${photoUrl}" alt="${f.name}" loading="lazy" decoding="async" data-name="${f.name}" data-orig="${f.image || ''}" onerror="handleFlowerImgError(this)">
                             <div class="size-tag">${f.size}</div>
                             <div class="category-tag">${f.category || 'Одноголовая'}</div>
                         </div>
@@ -1661,9 +1765,10 @@
                 let formattedPrice = `${currency === 'USD' ? '$' : (currency === 'EUR' ? '€' : '')}${Number(pricePerPcs).toFixed(2).replace('.', ',')}`;
                 let formattedSum = `${currency === 'USD' ? '$' : (currency === 'EUR' ? '€' : '')}${Number(sum).toFixed(2).replace('.', ',')}`;
 
+                let cleanVariety = (item.name || '').replace(/^Роза\s+/i, '');
                 tbody.innerHTML += `
                     <tr>
-                        <td style="border:1px solid #333; padding:5px 8px;">${item.name}</td>
+                        <td style="border:1px solid #333; padding:5px 8px;">${cleanVariety}</td>
                         <td style="border:1px solid #333; padding:5px 8px; text-align:center;">${sizeNum}</td>
                         <td style="border:1px solid #333; padding:5px 8px; text-align:center;">${totalPieces}</td>
                         <td style="border:1px solid #333; padding:5px 8px; text-align:right;">${formattedPrice}</td>
@@ -1755,9 +1860,11 @@
                 let formattedPrice = `${currency === 'USD' ? '$' : (currency === 'EUR' ? '€' : '')}${Number(pricePerPcs).toFixed(2).replace('.', ',')}`;
                 let formattedSum = `${currency === 'USD' ? '$' : (currency === 'EUR' ? '€' : '')}${Number(sum).toFixed(2).replace('.', ',')}`;
 
+                let cleanVariety = (item.name || '').replace(/^Роза\s+/i, '');
                 tbody.innerHTML += `
                     <tr>
-                        <td style="border:1px solid #333; padding:5px 8px;">${item.name}</td>
+                        <td style="border:1px solid #333; padding:5px 8px; font-weight: bold;">Роза</td>
+                        <td style="border:1px solid #333; padding:5px 8px;">${cleanVariety}</td>
                         <td style="border:1px solid #333; padding:5px 8px; text-align:center;">${sizeNum}</td>
                         <td style="border:1px solid #333; padding:5px 8px; text-align:center;">${totalPieces}</td>
                         <td style="border:1px solid #333; padding:5px 8px; text-align:right;">${formattedPrice}</td>
@@ -1930,65 +2037,184 @@
         function populateProcurementFlowerSelect() {
             const sel = document.getElementById('procSelectFlower');
             if (!sel) return;
-            sel.innerHTML = '<option value="">-- Сорт --</option>';
+            sel.innerHTML = '<option value="">-- Выберите сорт со склада --</option>';
             flowers.forEach(f => sel.innerHTML += `<option value="${f.id}">${f.name} (${f.size})</option>`);
         }
 
         window.openNewProcurementForm = function() {
             document.getElementById('newProcurementSection').style.display = 'block';
-            document.getElementById('procFormTitle').innerText = 'Новый Закуп';
+            document.getElementById('procFormTitle').innerText = '🌿 Новый Приход роз из теплицы';
             document.getElementById('editingProcId').value = '';
-            document.getElementById('procDocNum').value = 'ЗКП-' + Date.now().toString().slice(-4);
+            document.getElementById('procSupplier').value = 'Теплица №1, Раздан';
+            document.getElementById('procDocNum').value = 'ПРХ-' + Date.now().toString().slice(-4);
+            document.getElementById('procDocNum').readOnly = false;
             document.getElementById('procDate').value = new Date().toISOString().split('T')[0];
             currentProcurementItems = [];
             renderProcurementItemsTable();
         };
-        window.closeNewProcurementForm = function() { document.getElementById('newProcurementSection').style.display = 'none'; };
+        window.closeNewProcurementForm = function() { 
+            document.getElementById('newProcurementSection').style.display = 'none'; 
+            document.getElementById('editingProcId').value = '';
+        };
 
         window.addProcurementRow = function() {
             const fId = document.getElementById('procSelectFlower').value;
-            const price = Number(document.getElementById('procPriceInput').value);
-            const packs = Number(document.getElementById('procQtyInput').value);
-            if (!fId || price <= 0 || packs <= 0) return;
+            const packs = parseInt(document.getElementById('procQtyInput').value, 10) || 0;
+            if (!fId || packs <= 0) return alert('Выберите сорт и укажите количество пачек!');
             const f = flowers.find(fl => fl.id === fId);
-            currentProcurementItems.push({ flowerId: f.id, name: f.name, size: f.size, price, packs, sum: price * packs });
+            if (!f) return;
+            const pcsPerPack = f.pcsPerPack || 15;
+            
+            // Если сорт уже есть в списке — просто прибавим пачки
+            const existing = currentProcurementItems.find(i => i.flowerId === f.id);
+            if (existing) {
+                existing.packs += packs;
+                existing.pieces = existing.packs * pcsPerPack;
+            } else {
+                currentProcurementItems.push({
+                    flowerId: f.id,
+                    name: f.name,
+                    size: f.size,
+                    pcsPerPack: pcsPerPack,
+                    packs: packs,
+                    pieces: packs * pcsPerPack
+                });
+            }
             renderProcurementItemsTable();
         };
 
         function renderProcurementItemsTable() {
             const tbody = document.getElementById('procurementItemsTable');
             tbody.innerHTML = '';
-            let total = 0;
+            let totalPacks = 0;
+            let totalPieces = 0;
             currentProcurementItems.forEach((item, idx) => {
-                total += item.sum;
-                tbody.innerHTML += `<tr><td>${item.name} (${item.size})</td><td>${item.price} ֏</td><td><strong>${item.packs} пач</strong></td><td>${item.sum.toLocaleString()} ֏</td><td><button type="button" class="btn btn-dark btn-sm" onclick="currentProcurementItems.splice(${idx},1); renderProcurementItemsTable();">🗑️</button></td></tr>`;
+                const pcsPerPack = item.pcsPerPack || 15;
+                const totalItemPieces = item.packs * pcsPerPack;
+                totalPacks += item.packs;
+                totalPieces += totalItemPieces;
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${item.name}</strong></td>
+                        <td>${item.size}</td>
+                        <td style="text-align:center;">
+                            <input type="number" class="form-control" style="width:85px; margin:0 auto; text-align:center; padding:3px;" value="${item.packs}" min="1" onchange="currentProcurementItems[${idx}].packs=Math.max(1, parseInt(this.value)||1); currentProcurementItems[${idx}].pieces=currentProcurementItems[${idx}].packs*${pcsPerPack}; renderProcurementItemsTable();">
+                        </td>
+                        <td style="text-align:center;"><strong>${totalItemPieces} шт.</strong></td>
+                        <td><button type="button" class="btn btn-dark btn-sm" onclick="currentProcurementItems.splice(${idx},1); renderProcurementItemsTable();">🗑️</button></td>
+                    </tr>
+                `;
             });
-            document.getElementById('procTotalDisplay').innerText = total.toLocaleString();
+            const packsEl = document.getElementById('procTotalPacksDisplay');
+            const piecesEl = document.getElementById('procTotalPiecesDisplay');
+            if (packsEl) packsEl.innerText = totalPacks;
+            if (piecesEl) piecesEl.innerText = totalPieces;
         }
 
         window.handleSaveProcurement = function(e) {
             e.preventDefault();
-            if (currentProcurementItems.length === 0) return;
-            const id = document.getElementById('editingProcId').value || document.getElementById('procDocNum').value;
+            if (currentProcurementItems.length === 0) return alert('Добавьте хотя бы один сорт роз в акт прихода!');
+            const editingId = document.getElementById('editingProcId').value;
+            const docNum = document.getElementById('procDocNum').value || ('ПРХ-' + Date.now().toString().slice(-4));
+            const id = editingId || docNum;
+
+            // Если это редактирование существующего документа — сначала отменяем его предыдущее влияние на склад
+            if (editingId) {
+                const oldDoc = procurements.find(p => p.id === editingId);
+                if (oldDoc && oldDoc.items) {
+                    oldDoc.items.forEach(oldItem => {
+                        let fl = flowers.find(f => f.id === oldItem.flowerId || f.name === oldItem.name);
+                        if (fl) {
+                            fl.packs = Math.max(0, (fl.packs || 0) - Number(oldItem.packs || 0));
+                            fl.stock = Math.max(0, (fl.stock || 0) - (Number(oldItem.packs || 0) * (fl.pcsPerPack || 15)));
+                        }
+                    });
+                }
+            }
+
+            // Добавляем новые пришедшие пачки и штуки к складским остаткам
             currentProcurementItems.forEach(item => {
-                let f = flowers.find(fl => fl.id === item.flowerId);
-                if (f) f.packs = (f.packs || 0) + item.packs;
+                let fl = flowers.find(f => f.id === item.flowerId || f.name === item.name);
+                if (fl) {
+                    const pcsPerPack = fl.pcsPerPack || 15;
+                    fl.packs = (fl.packs || 0) + Number(item.packs || 0);
+                    fl.stock = (fl.stock || 0) + (Number(item.packs || 0) * pcsPerPack);
+                }
             });
-            db.ref('procurements/' + id).set({
-                id, supplier: document.getElementById('procSupplier').value,
+
+            const totalPacks = currentProcurementItems.reduce((acc, i) => acc + Number(i.packs || 0), 0);
+            const totalPieces = currentProcurementItems.reduce((acc, i) => acc + (Number(i.packs || 0) * (i.pcsPerPack || 15)), 0);
+
+            const docData = {
+                id: id,
+                supplier: document.getElementById('procSupplier').value,
                 date: document.getElementById('procDate').value,
-                totalPrice: currentProcurementItems.reduce((a,b)=>a+b.sum,0), items: currentProcurementItems
+                totalPacks: totalPacks,
+                totalPieces: totalPieces,
+                items: currentProcurementItems
+            };
+
+            db.ref('procurements/' + id).set(docData).then(() => {
+                db.ref('inventory').set(flowers);
+                closeNewProcurementForm();
+                alert(editingId ? 'Акт прихода успешно обновлен и склад пересчитан!' : 'Товар из теплицы успешно оприходован на склад!');
+            }).catch(err => alert('Ошибка сохранения: ' + err.message));
+        };
+
+        window.editProcurement = function(id) {
+            const p = procurements.find(item => item.id === id);
+            if (!p) return;
+            document.getElementById('newProcurementSection').style.display = 'block';
+            document.getElementById('procFormTitle').innerText = '✏️ Редактирование акта прихода: ' + p.id;
+            document.getElementById('editingProcId').value = p.id;
+            document.getElementById('procSupplier').value = p.supplier || 'Теплица №1, Раздан';
+            document.getElementById('procDocNum').value = p.id;
+            document.getElementById('procDocNum').readOnly = true;
+            document.getElementById('procDate').value = p.date || new Date().toISOString().split('T')[0];
+            currentProcurementItems = JSON.parse(JSON.stringify(p.items || []));
+            renderProcurementItemsTable();
+        };
+
+        window.deleteProcurement = function(id) {
+            if (!confirm(`Удалить акт прихода ${id}? Поступившие по нему остатки будут списаны со склада.`)) return;
+            const p = procurements.find(item => item.id === id);
+            if (p && p.items) {
+                p.items.forEach(item => {
+                    let fl = flowers.find(f => f.id === item.flowerId || f.name === item.name);
+                    if (fl) {
+                        fl.packs = Math.max(0, (fl.packs || 0) - Number(item.packs || 0));
+                        fl.stock = Math.max(0, (fl.stock || 0) - (Number(item.packs || 0) * (fl.pcsPerPack || 15)));
+                    }
+                });
+                db.ref('inventory').set(flowers);
+            }
+            db.ref('procurements/' + id).remove().then(() => {
+                alert('Акт прихода удален, остатки склада скорректированы.');
             });
-            db.ref('inventory').set(flowers);
-            closeNewProcurementForm();
-            alert('Закуп проведен!');
         };
 
         function renderProcurementsTable() {
             const tbody = document.getElementById('procurementsTableBody');
             tbody.innerHTML = '';
             procurements.forEach(p => {
-                tbody.innerHTML += `<tr><td><strong>${p.id}</strong></td><td>${p.date}</td><td>${p.supplier}</td><td>${Number(p.totalPrice||0).toLocaleString()} ֏</td><td><button class="btn btn-dark btn-sm" onclick="db.ref('procurements/${p.id}').remove()">🗑️</button></td></tr>`;
+                const totalPacks = p.totalPacks || (p.items || []).reduce((acc, i) => acc + Number(i.packs || 0), 0);
+                const totalPieces = p.totalPieces || (p.items || []).reduce((acc, i) => acc + (Number(i.packs || 0) * (i.pcsPerPack || 15)), 0);
+                const itemsSummary = (p.items || []).map(i => `${i.name}: ${i.packs} пач.`).join(', ');
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${p.id}</strong></td>
+                        <td>${p.date}</td>
+                        <td>${p.supplier}</td>
+                        <td style="text-align:center;"><strong>${totalPacks}</strong></td>
+                        <td style="text-align:center;">${totalPieces}</td>
+                        <td style="font-size:0.82rem; color:#444; max-width:260px;">${itemsSummary || '---'}</td>
+                        <td>
+                            <button class="btn btn-outline btn-sm" onclick="editProcurement('${p.id}')">✏️</button>
+                            <button class="btn btn-dark btn-sm" onclick="deleteProcurement('${p.id}')">🗑️</button>
+                        </td>
+                    </tr>
+                `;
             });
         }
 
@@ -2101,7 +2327,7 @@
             flowers.forEach((f, idx) => {
                 tbody.innerHTML += `
                     <tr>
-                        <td><img src="${f.image || DEFAULT_FLOWER_IMAGE}" style="width:36px; height:36px; object-fit:cover; border-radius:4px;"></td>
+                        <td><img src="${getFlowerPhotoUrl(f)}" alt="${f.name}" loading="lazy" decoding="async" data-name="${f.name}" data-orig="${f.image || ''}" onerror="handleFlowerImgError(this)" style="width:36px; height:36px; object-fit:cover; border-radius:4px;"></td>
                         <td>${f.category || 'Одноголовая'}</td>
                         <td><strong>${f.name}</strong></td>
                         <td>${f.size}</td>
@@ -2166,6 +2392,37 @@
                 });
             });
         }
+            // Закрытие модальных окон при клике на темный фон вне окна и по клавише Escape
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.modal').forEach(m => {
+                m.addEventListener('click', (e) => {
+                    if (e.target === m) {
+                        m.classList.remove('active');
+                    }
+                });
+            });
+
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    // Сначала закрываем верхнее окно (документ, редактирование, прайс)
+                    const topModals = [
+                        'printInvoiceModal', 'printSt1InvoiceModal', 'printWarehouseInvoiceModal', 'printPackingModal',
+                        'saveOrderModal', 'clientPricesModal'
+                    ];
+                    const openTop = topModals.find(id => document.getElementById(id)?.classList.contains('active'));
+                    if (openTop) {
+                        document.getElementById(openTop).classList.remove('active');
+                        return;
+                    }
+                    // Если верхних окон нет — закрываем базовое окно списка
+                    const baseModals = ['ordersModal', 'clientsModal', 'procurementsModal', 'financeModal', 'analyticsModal', 'rolesModal', 'adminModal'];
+                    const openBase = baseModals.find(id => document.getElementById(id)?.classList.contains('active'));
+                    if (openBase) {
+                        document.getElementById(openBase).classList.remove('active');
+                    }
+                }
+            });
+        });
     </script>
 </body>
 </html>
