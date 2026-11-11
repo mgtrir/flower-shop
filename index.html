@@ -108,7 +108,9 @@
         #printPackingModal,
         #saveOrderModal,
         #clientPricesModal,
-        #clientSalesModal {
+        #clientSalesModal,
+        #boxSettingsModal,
+        #printProcurementModal {
             z-index: 1200 !important;
         }
         .modal-content { background: white; border-radius: 12px; width: 100%; max-width: 1100px; max-height: 90vh; overflow-y: auto; padding: 1.5rem; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
@@ -150,10 +152,11 @@
             #printWarehouseInvoiceModal.active, #printWarehouseInvoiceModal.active *,
             #printInvoiceModal.active, #printInvoiceModal.active *,
             #printSt1InvoiceModal.active, #printSt1InvoiceModal.active *,
-            #printPackingModal.active, #printPackingModal.active * {
+            #printPackingModal.active, #printPackingModal.active *,
+            #printProcurementModal.active, #printProcurementModal.active * {
                 visibility: visible !important;
             }
-            #printWarehouseInvoiceModal.active, #printInvoiceModal.active, #printSt1InvoiceModal.active, #printPackingModal.active {
+            #printWarehouseInvoiceModal.active, #printInvoiceModal.active, #printSt1InvoiceModal.active, #printPackingModal.active, #printProcurementModal.active {
                 position: absolute !important;
                 left: 0 !important;
                 top: 0 !important;
@@ -168,17 +171,18 @@
             #printWarehouseInvoiceModal.active *, #printInvoiceModal.active *, #printSt1InvoiceModal.active *, #printPackingModal.active * {
                 display: revert !important;
             }
-            #printWarehouseInvoiceModal.active table, #printInvoiceModal.active table, #printSt1InvoiceModal.active table, #printPackingModal.active table {
+            #printWarehouseInvoiceModal.active table, #printInvoiceModal.active table, #printSt1InvoiceModal.active table, #printPackingModal.active table, #printProcurementModal.active table {
                 display: table !important;
                 width: 100% !important;
             }
-            #printWarehouseInvoiceModal.active tr, #printInvoiceModal.active tr, #printSt1InvoiceModal.active tr, #printPackingModal.active tr {
+            #printWarehouseInvoiceModal.active tr, #printInvoiceModal.active tr, #printSt1InvoiceModal.active tr, #printPackingModal.active tr, #printProcurementModal.active tr {
                 display: table-row !important;
             }
             #printWarehouseInvoiceModal.active th, #printWarehouseInvoiceModal.active td,
             #printInvoiceModal.active th, #printInvoiceModal.active td,
             #printSt1InvoiceModal.active th, #printSt1InvoiceModal.active td,
-            #printPackingModal.active th, #printPackingModal.active td {
+            #printPackingModal.active th, #printPackingModal.active td,
+            #printProcurementModal.active th, #printProcurementModal.active td {
                 display: table-cell !important;
             }
             .modal-content {
@@ -202,7 +206,9 @@
             #printSt1InvoiceModal.active .no-print,
             #printSt1InvoiceModal.active .no-print *,
             #printPackingModal.active .no-print,
-            #printPackingModal.active .no-print * {
+            #printPackingModal.active .no-print *,
+            #printProcurementModal.active .no-print,
+            #printProcurementModal.active .no-print * {
                 display: none !important;
                 visibility: hidden !important;
                 height: 0 !important;
@@ -263,6 +269,8 @@
                 <button class="btn btn-outline btn-sm admin-only" onclick="openFinanceModal()">💰 Касса и P&L</button>
                 <button class="btn btn-outline btn-sm admin-only" onclick="openAnalyticsModal()">📊 Аналитика</button>
                 <button class="btn btn-outline btn-sm admin-only" onclick="openRolesModal()">👑 Доступы</button>
+                <button class="btn btn-outline btn-sm admin-only" onclick="openBackupModal()">💾 Бэкап базы</button>
+                <button class="btn btn-outline btn-sm" onclick="openBoxSettingsModal()" title="Справочник размеров и веса экспортных коробок">📦 Коробки</button>
                 <button class="btn btn-sm" onclick="openAdminModal()">📦 Склад</button>
                 <button class="btn btn-dark btn-sm" onclick="handleLogout()">Выйти</button>
             </div>
@@ -530,9 +538,10 @@
                     </tr>
                     <tr>
                         <td style="border: 1px solid #333; padding: 6px 10px;"><strong>Total Boxes</strong></td>
-                        <td style="border: 1px solid #333; padding: 6px 10px; text-align: right;"><input type="text" id="inputBoxes" value="11" style="width: 80px; text-align: right; border: 1px solid #ccc; padding: 2px; font-weight: bold;"></td>
+                        <td style="border: 1px solid #333; padding: 6px 10px; text-align: right;"><input type="text" id="inputBoxes" value="11" style="width: 80px; text-align: right; border: 1px solid #ccc; padding: 2px; font-weight: bold;" oninput="recalcInvoiceBrutoWeight('en')"></td>
                         <td style="border: 1px solid #333; padding: 6px 10px;">Total Number of Boxes</td>
                     </tr>
+
                 </table>
 
                 <table style="width:100%; border-collapse:collapse; margin-bottom:1rem; border: 1px solid #333; font-size: 0.85rem;">
@@ -619,9 +628,10 @@
                     </tr>
                     <tr>
                         <td style="border: 1px solid #333; padding: 6px 10px;"><strong>Всего мест (коробок)</strong></td>
-                        <td style="border: 1px solid #333; padding: 6px 10px; text-align: right;"><input type="text" id="st1InputBoxes" value="11" style="width: 80px; text-align: right; border: 1px solid #ccc; padding: 2px; font-weight: bold;"></td>
+                        <td style="border: 1px solid #333; padding: 6px 10px; text-align: right;"><input type="text" id="st1InputBoxes" value="11" style="width: 80px; text-align: right; border: 1px solid #ccc; padding: 2px; font-weight: bold;" oninput="recalcInvoiceBrutoWeight('ru')"></td>
                         <td style="border: 1px solid #333; padding: 6px 10px;">Коробок</td>
                     </tr>
+
                 </table>
 
                 <table style="width:100%; border-collapse:collapse; margin-bottom:1rem; border: 1px solid #333; font-size: 0.85rem;">
@@ -745,8 +755,11 @@
                     <tbody id="packItemsTableBody"></tbody>
                 </table>
 
-                <div style="display:flex; justify-content:space-between; margin-bottom:2rem; font-weight:bold; font-size:1rem;">
-                    <div>Total Packs: <span id="packTotalPacks" style="color:var(--accent);">0</span> packs</div>
+                <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:1.5rem; background:#f8fafc; padding:10px 14px; border-radius:6px; border:1px solid #cbd5e1; font-size:0.9rem;">
+                    <div>Всего пачек: <strong id="packTotalPacks" style="color:var(--accent);">0</strong> packs</div>
+                    <div>Всего коробок: <strong id="packTotalBoxes">0</strong> boxes</div>
+                    <div>Размер коробки: <strong id="packBoxDimensions">130 × 40 × 28 cm</strong></div>
+                    <div>Вес тары (1 кор.): <strong id="packBoxWeight">2.8 kg</strong></div>
                 </div>
 
                 <div style="display:flex; justify-content:space-between; margin-top:3rem; font-size:0.9rem; border-top:1px dashed #ccc; padding-top:1rem;">
@@ -758,6 +771,202 @@
             <div style="display:flex; gap:10px; margin-top:2rem;" class="no-print">
                 <button class="btn btn-success" style="flex:1;" onclick="window.print()">🖨️ Print Packing List</button>
                 <button class="btn btn-dark" onclick="closePackingModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- АКТ ПРИХОДА ИЗ ТЕПЛИЦЫ НА СКЛАД (ПЕЧАТНЫЙ СКЛАДСКОЙ ДОКУМЕНТ) -->
+    <div class="modal" id="printProcurementModal">
+        <div class="modal-content" style="max-width: 750px; padding: 1.5rem;">
+            <div style="display:flex; justify-content:flex-end; margin-bottom:0.5rem;" class="no-print">
+                <button class="close-btn" onclick="closePrintProcurementModal()">&times;</button>
+            </div>
+
+            <div id="printProcurementContent" style="color:#000;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1.5rem; border-bottom: 2px solid #2e7d32; padding-bottom: 10px;">
+                    <div>
+                        <h2 style="color:var(--accent); font-size:1.4rem; margin-bottom:2px;">ROSE GARDEN GREENHOUSE</h2>
+                        <p style="font-size:0.8rem; color:#555;">Армения, Котайкский марз, г. Раздан<br>Тепличный комплекс «Росе Гарден»</p>
+                    </div>
+                    <div style="text-align:right;">
+                        <h3 style="font-size:1.2rem; color:#333; margin-bottom:2px;">АКТ ПРИХОДА НА СКЛАД</h3>
+                        <p style="font-size:0.9rem;"><strong>№ документа:</strong> <span id="prPrintDocNum">---</span></p>
+                        <p style="font-size:0.9rem;"><strong>Дата прихода:</strong> <span id="prPrintDate">---</span></p>
+                    </div>
+                </div>
+
+                <div style="background:#f8fafc; padding:10px 14px; border-radius:6px; margin-bottom:1.2rem; font-size:0.9rem; border:1px solid #cbd5e1;">
+                    <p><strong>Источник поступления (Парник / Теплица):</strong> <span id="prPrintSupplier" style="font-weight:bold; color:var(--accent);">---</span></p>
+                </div>
+
+                <table style="width:100%; border-collapse:collapse; margin-bottom:1rem;">
+                    <thead>
+                        <tr style="background:#f1f5f9;">
+                            <th style="border:1px solid #cbd5e1; padding:6px; text-align:center; width:40px;">№</th>
+                            <th style="border:1px solid #cbd5e1; padding:6px;">Сорт розы и длина (см)</th>
+                            <th style="border:1px solid #cbd5e1; padding:6px; text-align:center; width:110px;">Кол-во пачек</th>
+                            <th style="border:1px solid #cbd5e1; padding:6px; text-align:center; width:100px;">Штук в пачке</th>
+                            <th style="border:1px solid #cbd5e1; padding:6px; text-align:right; width:120px;">Всего штук</th>
+                        </tr>
+                    </thead>
+                    <tbody id="prPrintItemsTableBody"></tbody>
+                </table>
+
+                <div style="display:flex; justify-content:space-between; margin-bottom:1rem; font-weight:bold; font-size:0.95rem; background:#f8fafc; padding:8px 12px; border-radius:6px; border:1px solid #cbd5e1;">
+                    <div>Всего оприходовано пачек: <span id="prPrintTotalPacks" style="color:var(--accent);">0</span> пач.</div>
+                    <div>Всего оприходовано цветов: <span id="prPrintTotalPieces" style="color:var(--accent);">0</span> шт.</div>
+                </div>
+
+                <div id="prPrintCategorySummary" style="background:#f8fafc; padding:8px 10px; border-radius:6px; margin-bottom:1.5rem; font-size:0.8rem; border:1px solid #cbd5e1;"></div>
+
+                <div style="display:flex; justify-content:space-between; margin-top:2.5rem; font-size:0.9rem; border-top:1px dashed #ccc; padding-top:1rem;">
+                    <div><p>Агроном / Сдал (Теплица): ___________________</p></div>
+                    <div><p>Заведующий складом / Принял: ___________________</p></div>
+                </div>
+            </div>
+
+            <div style="display:flex; gap:10px; margin-top:2rem;" class="no-print">
+                <button class="btn btn-success" style="flex:1;" onclick="window.print()">🖨️ Распечатать складской акт</button>
+                <button class="btn btn-dark" onclick="closePrintProcurementModal()">Закрыть</button>
+            </div>
+        </div>
+    </div>
+
+        <!-- МОДАЛЬНОЕ ОКНО ПАРАМЕТРОВ И ВЕСА КОРОБОК (ТАРА) -->
+    <div class="modal" id="boxSettingsModal">
+        <div class="modal-content" style="max-width: 760px;">
+            <div class="modal-header">
+                <h2>📦 Параметры экспортных коробок (Тара)</h2>
+                <button class="close-btn" onclick="closeBoxSettingsModal()">&times;</button>
+            </div>
+
+            <p style="font-size:0.88rem; color:#666; margin-bottom:1.2rem;">
+                Здесь хранятся стандарты размеров и веса пустых коробок для экспорта роз. Эти параметры используются при упаковке и автоматическом расчете веса брутто.
+            </p>
+
+            <form onsubmit="handleSaveBoxSettings(event)">
+                <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:10px; padding:1.2rem; margin-bottom:1.2rem;">
+                    <h3 style="font-size:1.05rem; color:var(--primary); margin-bottom:1rem;">Основная стандартная коробка (Default)</h3>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Длина коробки (см)</label>
+                            <input type="number" id="boxLength" class="form-control" value="130" required oninput="calcBoxVolumeAndSummary()">
+                        </div>
+                        <div class="form-group">
+                            <label>Ширина коробки (см)</label>
+                            <input type="number" id="boxWidth" class="form-control" value="40" required oninput="calcBoxVolumeAndSummary()">
+                        </div>
+                        <div class="form-group">
+                            <label>Высота коробки (см)</label>
+                            <input type="number" id="boxHeight" class="form-control" value="28" required oninput="calcBoxVolumeAndSummary()">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Вес пустой коробки (тары), кг</label>
+                            <input type="number" id="boxWeightKg" class="form-control" value="2.8" step="0.05" required oninput="calcBoxVolumeAndSummary()">
+                        </div>
+                        <div class="form-group">
+                            <label>Вместимость (пачек в 1 коробку)</label>
+                            <input type="number" id="boxCapacityPacks" class="form-control" value="20" placeholder="напр. 15-20 пач.">
+                        </div>
+                        <div class="form-group">
+                            <label>Объем 1 коробки (м³)</label>
+                            <input type="text" id="boxVolumeM3" class="form-control" value="0.146 м³" readonly style="background:#eef2f5; font-weight:bold;">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Памятка по типам коробок -->
+                <div style="background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:1rem; margin-bottom:1.2rem;">
+                    <h4 style="font-size:0.92rem; color:#333; margin-bottom:0.6rem;">📋 Стандартные размеры экспортных коробок:</h4>
+                    <div class="table-responsive">
+                        <table style="font-size:0.83rem;">
+                            <thead>
+                                <tr style="background:#f1f5f9;">
+                                    <th>Тип тары</th>
+                                    <th>Габариты (Д × Ш × В), см</th>
+                                    <th>Объем (м³)</th>
+                                    <th>Вес тары</th>
+                                    <th>Подходит для роз</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Стандартная (AA)</strong></td>
+                                    <td>130 × 40 × 28 см</td>
+                                    <td>0.146 м³</td>
+                                    <td>2.80 кг</td>
+                                    <td>50 см, 60 см, 70 см</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Удлиненная (Long)</strong></td>
+                                    <td>130 × 40 × 32 см</td>
+                                    <td>0.166 м³</td>
+                                    <td>3.10 кг</td>
+                                    <td>70 см, 80 см, 90 см</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Короткая (Half)</strong></td>
+                                    <td>100 × 40 × 25 см</td>
+                                    <td>0.100 м³</td>
+                                    <td>2.20 кг</td>
+                                    <td>30 см, 40 см, кустовые</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <button type="submit" class="btn btn-success">💾 Сохранить параметры коробки</button>
+                    <button type="button" class="btn btn-dark" onclick="closeBoxSettingsModal()">Закрыть</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- МОДАЛЬНОЕ ОКНО РЕЗЕРВНОГО КОПИРОВАНИЯ И ВОССТАНОВЛЕНИЯ БАЗЫ -->
+    <div class="modal" id="backupModal">
+        <div class="modal-content" style="max-width: 680px;">
+            <div class="modal-header">
+                <h2>💾 Резервное копирование и восстановление базы (Бэкап)</h2>
+                <button class="close-btn" onclick="closeBackupModal()">&times;</button>
+            </div>
+
+            <p style="font-size:0.9rem; color:#555; margin-bottom:1.5rem;">
+                Здесь можно в один клик сохранить полную копию всей CRM (склад роз, все клиенты, персональные прайсы, история заказов, акты прихода и пользователи) на компьютер или флешку, а также восстановить данные из сохранённого файла.
+            </p>
+
+            <div style="display:flex; flex-direction:column; gap:1.2rem;">
+                <!-- Блок создания копии -->
+                <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:10px; padding:1.2rem;">
+                    <h3 style="font-size:1.05rem; color:#1e293b; margin-bottom:0.4rem;">📥 Скачать полный бэкап (.json)</h3>
+                    <p style="font-size:0.83rem; color:#64748b; margin-bottom:0.9rem;">
+                        Файл будет содержать все таблицы в формате JSON с текущей датой и временем.
+                    </p>
+                    <button class="btn btn-success" style="width:100%;" onclick="downloadDatabaseBackup()">
+                        ⬇️ Скачать резервную копию базы данных
+                    </button>
+                </div>
+
+                <!-- Блок восстановления -->
+                <div style="background:#fff7ed; border:1px solid #fed7aa; border-radius:10px; padding:1.2rem;">
+                    <h3 style="font-size:1.05rem; color:#9a3412; margin-bottom:0.4rem;">📤 Восстановление базы из файла</h3>
+                    <p style="font-size:0.83rem; color:#7c2d12; margin-bottom:0.9rem;">
+                        Внимание: загрузка бэкапа заменит текущие таблицы в Firebase данными из выбранного файла бэкапа.
+                    </p>
+                    <label class="btn btn-danger" style="width:100%; cursor:pointer; margin:0;">
+                        📂 Выбрать файл бэкапа (.json) и восстановить
+                        <input type="file" id="backupFileInput" accept=".json" style="display:none;" onchange="restoreDatabaseBackup(event)">
+                    </label>
+                </div>
+            </div>
+
+            <div style="margin-top:1.5rem; text-align:right;">
+                <button class="btn btn-dark" onclick="closeBackupModal()">Закрыть</button>
             </div>
         </div>
     </div>
@@ -927,7 +1136,7 @@
             <div class="table-responsive">
                 <table>
                     <thead>
-                        <tr><th>№ Документа</th><th>Дата прихода</th><th>Теплица / Парник</th><th style="text-align:center;">Пачек</th><th style="text-align:center;">Штук</th><th>Состав поступления</th><th>Действия</th></tr>
+                        <tr><th>№ Документа</th><th>Дата прихода</th><th>Теплица / Парник</th><th style="text-align:center;">Пачек</th><th style="text-align:center;">Штук</th><th>Состав поступления</th><th style="text-align:center;">Документ</th><th>Действия</th></tr>
                     </thead>
                     <tbody id="procurementsTableBody"></tbody>
                 </table>
@@ -1000,6 +1209,7 @@
                 <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
                     <button class="btn btn-sm" onclick="showWarehouseSection('list')">Список Склада</button>
                     <button class="btn btn-outline btn-sm" onclick="showWarehouseSection('add')">+ Добавить новый сорт</button>
+                    <button class="btn btn-outline btn-sm" onclick="openBoxSettingsModal()">📦 Параметры коробки</button>
                     
                     <label class="btn btn-success btn-sm" style="margin:0; cursor:pointer;">
                         📥 Загрузить остатки из Excel (.xlsx)
@@ -1016,8 +1226,13 @@
                         <thead>
                             <tr>
                                 <th>Фото</th><th>Вид</th><th>Название сорта</th><th>Размер</th>
-                                <th style="text-align:center;">Штук в пачке</th><th style="text-align:center;">Остаток (Пачки/Կապ)</th>
-                                <th style="text-align:center;">Остаток (Штук/Քանակ)</th><th>Быстрый Приход / Списание</th><th>Действия</th>
+                                <th style="text-align:center;">Штук в пачке</th>
+                                <th style="text-align:center;">Вес шт. (г)</th>
+                                <th style="text-align:center;">Вес пачки (кг)</th>
+                                <th style="text-align:center;">Остаток (Пачки/Կապ)</th>
+                                <th style="text-align:center;">Остаток (Штук/Քանակ)</th>
+                                <th>Быстрый Приход / Списание</th>
+                                <th>Действия</th>
                             </tr>
                         </thead>
                         <tbody id="adminTableBody"></tbody>
@@ -1045,7 +1260,11 @@
                     </div>
                     <div class="form-row">
                         <div class="form-group"><label>Размер</label><input type="text" id="flowerSize" class="form-control" required placeholder="60 см"></div>
-                        <div class="form-group"><label>Штук в одной пачке</label><input type="number" id="flowerPcsPerPack" class="form-control" required value="15" placeholder="15"></div>
+                        <div class="form-group"><label>Штук в одной пачке</label><input type="number" id="flowerPcsPerPack" class="form-control" required value="15" placeholder="15" oninput="recalcFormWeights()"></div>
+                        <div class="form-group"><label>Вес штуки (грамм)</label><input type="number" id="flowerWeightPiece" class="form-control" placeholder="напр. 65 г" step="0.1" oninput="onFormStemWeightInput(this.value)"></div>
+                        <div class="form-group"><label>Вес пачки (кг)</label><input type="number" id="flowerWeightPack" class="form-control" placeholder="напр. 0.98 кг" step="0.01" oninput="onFormPackWeightInput(this.value)"></div>
+                    </div>
+                    <div class="form-row">
                         <div class="form-group"><label>Остаток (пачек)</label><input type="number" id="flowerPacks" class="form-control" required placeholder="10"></div>
                         <div class="form-group"><label>Остаток (шт)</label><input type="number" id="flowerStock" class="form-control" required placeholder="150"></div>
                     </div>
@@ -1480,7 +1699,8 @@
                         </div>
                         <div class="card-body">
                             <h3 class="card-title">${f.name}</h3>
-                            <p style="margin-bottom:0.5rem; font-size:0.90rem;">Остаток: <strong>${f.packs || 0} пач (${f.stock || 0} шт)</strong></p>
+                            <p style="margin-bottom:0.25rem; font-size:0.90rem;">Остаток: <strong>${f.packs || 0} пач (${f.stock || 0} шт)</strong></p>
+                            ${(f.weightPiece || f.weightPack) ? `<p style="margin-bottom:0.45rem; font-size:0.80rem; color:#64748b;">⚖️ Вес: <strong>${f.weightPiece ? f.weightPiece + ' г/шт' : ''}</strong> ${f.weightPack ? '(' + f.weightPack + ' кг/пач)' : ''}</p>` : ''}
                             <div class="card-footer-action">
                                 <div class="cart-input-box">
                                     <button class="btn btn-outline btn-sm" onclick="adjustCardQty('${f.id}', -1)">-</button>
@@ -1898,6 +2118,25 @@
             document.getElementById('invTopTotalUnits').innerText = totalUnits;
             document.getElementById('inputBoxes').value = totalBoxes;
 
+            // Автоматический точный расчет веса Нетто и Брутто по сортам заказа
+            let autoNetoKg = 0;
+            order.items.forEach(item => {
+                const fl = flowers.find(f => f.id === item.flowerId) || flowers.find(f => f.name === item.name);
+                const pcs = item.pcsPerPack || (fl ? fl.pcsPerPack : 15) || 15;
+                const packs = Number(item.packs || 0);
+                if (fl && fl.weightPack && Number(fl.weightPack) > 0) {
+                    autoNetoKg += packs * Number(fl.weightPack);
+                } else if (fl && fl.weightPiece && Number(fl.weightPiece) > 0) {
+                    autoNetoKg += (packs * pcs * Number(fl.weightPiece)) / 1000;
+                }
+            });
+            if (autoNetoKg > 0) {
+                const boxTare = Number(currentBoxSettings.weightKg || 2.8);
+                const autoBrutoKg = autoNetoKg + (totalBoxes * boxTare); // + тара коробок из настроек
+                document.getElementById('inputNeto').value = Number(autoNetoKg.toFixed(2)).toLocaleString('ru-RU');
+                document.getElementById('inputBruto').value = Number(autoBrutoKg.toFixed(2)).toLocaleString('ru-RU');
+            }
+
             document.getElementById('printInvoiceModal').classList.add('active');
         };
         window.closePrintModal = function() { document.getElementById('printInvoiceModal').classList.remove('active'); };
@@ -1993,6 +2232,25 @@
             document.getElementById('st1InvTopAmount').innerText = `${mainCurrencySymbol}${Number(mainTotalValue).toFixed(2).replace('.', ',')}`;
             document.getElementById('st1InvTopUnits').innerText = totalUnits;
             document.getElementById('st1InputBoxes').value = totalBoxes;
+
+            // Автоматический точный расчет веса Нетто и Брутто по сортам для СТ-1
+            let st1AutoNetoKg = 0;
+            order.items.forEach(item => {
+                const fl = flowers.find(f => f.id === item.flowerId) || flowers.find(f => f.name === item.name);
+                const pcs = item.pcsPerPack || (fl ? fl.pcsPerPack : 15) || 15;
+                const packs = Number(item.packs || 0);
+                if (fl && fl.weightPack && Number(fl.weightPack) > 0) {
+                    st1AutoNetoKg += packs * Number(fl.weightPack);
+                } else if (fl && fl.weightPiece && Number(fl.weightPiece) > 0) {
+                    st1AutoNetoKg += (packs * pcs * Number(fl.weightPiece)) / 1000;
+                }
+            });
+            if (st1AutoNetoKg > 0) {
+                const boxTare = Number(currentBoxSettings.weightKg || 2.8);
+                const st1AutoBrutoKg = st1AutoNetoKg + (totalBoxes * boxTare); // + тара коробок из настроек
+                document.getElementById('st1InputNeto').value = Number(st1AutoNetoKg.toFixed(2)).toLocaleString('ru-RU');
+                document.getElementById('st1InputBruto').value = Number(st1AutoBrutoKg.toFixed(2)).toLocaleString('ru-RU');
+            }
 
             document.getElementById('printSt1InvoiceModal').classList.add('active');
         };
@@ -2120,6 +2378,9 @@
                 `;
             });
             document.getElementById('packTotalPacks').innerText = total;
+            document.getElementById('packTotalBoxes').innerText = order.items.length;
+            document.getElementById('packBoxDimensions').innerText = '130 × 40 × 28 cm';
+            document.getElementById('packBoxWeight').innerText = '2.8 kg';
             document.getElementById('printPackingModal').classList.add('active');
         };
         window.closePackingModal = function() { document.getElementById('printPackingModal').classList.remove('active'); };
@@ -2416,6 +2677,101 @@
             });
         };
 
+        window.printProcurementDoc = function(id) {
+            const p = procurements.find(item => item.id === id);
+            if (!p) return;
+
+            document.getElementById('prPrintDocNum').innerText = p.id;
+            document.getElementById('prPrintDate').innerText = p.date || '---';
+            document.getElementById('prPrintSupplier').innerText = p.supplier || 'Теплица №1, Раздан';
+
+            const tbody = document.getElementById('prPrintItemsTableBody');
+            tbody.innerHTML = '';
+
+            let totalPacks = 0;
+            let totalPieces = 0;
+            let groupedByCategory = {};
+
+            (p.items || []).forEach((item, idx) => {
+                const packs = Number(item.packs || 0);
+                totalPacks += packs;
+
+                const fl = flowers.find(f => f.id === item.flowerId || f.name === item.name);
+                const pcs = Number(item.pcsPerPack || (fl ? fl.pcsPerPack : 15) || 15);
+                const itemPieces = packs * pcs;
+                totalPieces += itemPieces;
+
+                let cat = (fl ? fl.category : '') || item.category || 'Одноголовая';
+                let sizeVal = item.size || (fl ? fl.size : '60 см');
+                if (!sizeVal.includes('см') && !sizeVal.includes('cm')) sizeVal += ' см';
+
+                if (!groupedByCategory[cat]) groupedByCategory[cat] = {};
+                if (!groupedByCategory[cat][sizeVal]) {
+                    groupedByCategory[cat][sizeVal] = { packs: 0, pieces: 0 };
+                }
+                groupedByCategory[cat][sizeVal].packs += packs;
+                groupedByCategory[cat][sizeVal].pieces += itemPieces;
+
+                let cleanName = item.name.replace(/\s*\(\d+\s*(см|cm)\)/gi, '');
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td style="border:1px solid #cbd5e1; padding:6px; text-align:center;">${idx + 1}</td>
+                        <td style="border:1px solid #cbd5e1; padding:6px;"><strong>${cleanName}</strong> (${sizeVal})</td>
+                        <td style="border:1px solid #cbd5e1; padding:6px; text-align:center; font-weight:bold;">${packs} пач.</td>
+                        <td style="border:1px solid #cbd5e1; padding:6px; text-align:center;">${pcs} шт./пач.</td>
+                        <td style="border:1px solid #cbd5e1; padding:6px; text-align:right; font-weight:bold;">${itemPieces} шт.</td>
+                    </tr>
+                `;
+            });
+
+            let summaryHtml = '';
+            for (let [catName, sizesObj] of Object.entries(groupedByCategory)) {
+                let icon = '🌹';
+                if (catName.includes('Кустовая')) icon = '🌿';
+                if (catName.includes('Эксклюзивная')) icon = '🌟';
+
+                let catTotalPacks = 0;
+                let catTotalPieces = 0;
+                let sizesHtml = '';
+
+                for (let [sizeName, data] of Object.entries(sizesObj)) {
+                    catTotalPacks += data.packs;
+                    catTotalPieces += data.pieces;
+                    sizesHtml += `
+                        <div style="margin-left: 15px; font-size: 0.8rem;">
+                            — ${sizeName}: ${data.packs} пач. / ${data.pieces} шт.
+                        </div>
+                    `;
+                }
+
+                summaryHtml += `
+                    <div style="margin-bottom: 6px;">
+                        <strong>${icon} ${catName}:</strong>
+                        ${sizesHtml}
+                        <div style="margin-left: 15px; font-size: 0.8rem; font-weight: bold; color: var(--accent); margin-top: 2px;">
+                            Итого «${catName}»: ${catTotalPacks} пач. / ${catTotalPieces} шт.
+                        </div>
+                    </div>
+                `;
+            }
+
+            document.getElementById('prPrintCategorySummary').innerHTML = `
+                <div style="font-weight:bold; margin-bottom:6px;">Сводка прихода по видам и ростовкам:</div>
+                <div style="font-size: 0.82rem; line-height: 1.4;">
+                    ${summaryHtml}
+                </div>
+            `;
+
+            document.getElementById('prPrintTotalPacks').innerText = totalPacks;
+            document.getElementById('prPrintTotalPieces').innerText = totalPieces;
+            document.getElementById('printProcurementModal').classList.add('active');
+        };
+
+        window.closePrintProcurementModal = function() {
+            document.getElementById('printProcurementModal').classList.remove('active');
+        };
+
         function renderProcurementsTable() {
             const tbody = document.getElementById('procurementsTableBody');
             tbody.innerHTML = '';
@@ -2432,6 +2788,9 @@
                         <td style="text-align:center;"><strong>${totalPacks}</strong></td>
                         <td style="text-align:center;">${totalPieces}</td>
                         <td style="font-size:0.82rem; color:#444; max-width:260px;">${itemsSummary || '---'}</td>
+                        <td style="text-align:center; white-space:nowrap;">
+                            <button class="btn btn-outline btn-sm" onclick="printProcurementDoc('${p.id}')" title="Складской акт прихода">📋 Склад</button>
+                        </td>
                         <td>
                             <button class="btn btn-outline btn-sm" onclick="editProcurement('${p.id}')">✏️</button>
                             <button class="btn btn-dark btn-sm" onclick="deleteProcurement('${p.id}')">🗑️</button>
@@ -2559,13 +2918,23 @@
             if (!tbody) return;
             tbody.innerHTML = '';
             flowers.forEach((f, idx) => {
+                const pcs = Number(f.pcsPerPack || 15);
+                const stemWeight = f.weightPiece ? Number(f.weightPiece) : (f.weightPack ? Math.round((Number(f.weightPack) * 1000) / pcs) : '');
+                const packWeight = f.weightPack ? Number(f.weightPack) : (f.weightPiece ? Number(((Number(f.weightPiece) * pcs) / 1000).toFixed(3)) : '');
+
                 tbody.innerHTML += `
                     <tr>
                         <td><img src="${getFlowerPhotoUrl(f)}" alt="${f.name}" loading="lazy" decoding="async" data-name="${f.name}" data-orig="${f.image || ''}" onerror="handleFlowerImgError(this)" style="width:36px; height:36px; object-fit:cover; border-radius:4px;"></td>
                         <td>${f.category || 'Одноголовая'}</td>
                         <td><strong>${f.name}</strong></td>
                         <td>${f.size}</td>
-                        <td style="text-align:center;"><input type="number" class="stock-direct-input" value="${f.pcsPerPack || 15}" onchange="flowers[${idx}].pcsPerPack=Number(this.value); db.ref('inventory').set(flowers);"></td>
+                        <td style="text-align:center;"><input type="number" class="stock-direct-input" value="${pcs}" onchange="flowers[${idx}].pcsPerPack=Number(this.value); db.ref('inventory').set(flowers);"></td>
+                        <td style="text-align:center;">
+                            <input type="number" class="stock-direct-input" style="width:70px;" value="${stemWeight}" placeholder="г" step="1" onchange="onFlowerStemWeightChange(${idx}, this.value)">
+                        </td>
+                        <td style="text-align:center;">
+                            <input type="number" class="stock-direct-input" style="width:75px;" value="${packWeight}" placeholder="кг" step="0.01" onchange="onFlowerPackWeightChange(${idx}, this.value)">
+                        </td>
                         <td style="text-align:center;"><input type="number" class="stock-direct-input" value="${f.packs || 0}" onchange="flowers[${idx}].packs=Number(this.value); db.ref('inventory').set(flowers);"></td>
                         <td style="text-align:center;"><input type="number" class="stock-direct-input" value="${f.stock || 0}" onchange="flowers[${idx}].stock=Number(this.value); db.ref('inventory').set(flowers);"></td>
                         <td>
@@ -2584,13 +2953,58 @@
             });
         }
 
+        window.onFlowerStemWeightChange = function(idx, val) {
+            const stemG = Number(val);
+            const pcs = Number(flowers[idx].pcsPerPack || 15);
+            flowers[idx].weightPiece = stemG > 0 ? stemG : 0;
+            flowers[idx].weightPack = stemG > 0 ? Number(((stemG * pcs) / 1000).toFixed(3)) : 0;
+            db.ref('inventory').set(flowers);
+        };
+
+        window.onFlowerPackWeightChange = function(idx, val) {
+            const packKg = Number(val);
+            const pcs = Number(flowers[idx].pcsPerPack || 15);
+            flowers[idx].weightPack = packKg > 0 ? packKg : 0;
+            flowers[idx].weightPiece = packKg > 0 ? Math.round((packKg * 1000) / pcs) : 0;
+            db.ref('inventory').set(flowers);
+        };
+
+        window.onFormStemWeightInput = function(val) {
+            const stemG = Number(val);
+            const pcs = Number(document.getElementById('flowerPcsPerPack').value || 15);
+            const packInput = document.getElementById('flowerWeightPack');
+            if (packInput) {
+                packInput.value = (stemG > 0 && pcs > 0) ? ((stemG * pcs) / 1000).toFixed(2) : '';
+            }
+        };
+
+        window.onFormPackWeightInput = function(val) {
+            const packKg = Number(val);
+            const pcs = Number(document.getElementById('flowerPcsPerPack').value || 15);
+            const stemInput = document.getElementById('flowerWeightPiece');
+            if (stemInput) {
+                stemInput.value = (packKg > 0 && pcs > 0) ? Math.round((packKg * 1000) / pcs) : '';
+            }
+        };
+
+        window.recalcFormWeights = function() {
+            const stemVal = document.getElementById('flowerWeightPiece')?.value;
+            if (stemVal) onFormStemWeightInput(stemVal);
+        };
+
         window.handleFlowerFormSubmit = function(e) {
             e.preventDefault();
             const id = document.getElementById('editItemId').value || 'FLW-' + Date.now();
+            const pcs = Number(document.getElementById('flowerPcsPerPack').value || 15);
+            const wPiece = Number(document.getElementById('flowerWeightPiece').value || 0);
+            const wPack = Number(document.getElementById('flowerWeightPack').value || 0);
+
             const newItem = {
                 id, category: document.getElementById('flowerCategory').value,
                 name: document.getElementById('flowerName').value, size: document.getElementById('flowerSize').value,
-                pcsPerPack: Number(document.getElementById('flowerPcsPerPack').value || 15),
+                pcsPerPack: pcs,
+                weightPiece: wPiece > 0 ? wPiece : (wPack > 0 ? Math.round((wPack * 1000) / pcs) : 0),
+                weightPack: wPack > 0 ? wPack : (wPiece > 0 ? Number(((wPiece * pcs) / 1000).toFixed(3)) : 0),
                 packs: Number(document.getElementById('flowerPacks').value || 0),
                 stock: Number(document.getElementById('flowerStock').value || 0),
                 image: document.getElementById('flowerImage').value || DEFAULT_FLOWER_IMAGE
@@ -2611,6 +3025,8 @@
             document.getElementById('flowerName').value = f.name;
             document.getElementById('flowerSize').value = f.size;
             document.getElementById('flowerPcsPerPack').value = f.pcsPerPack || 15;
+            document.getElementById('flowerWeightPiece').value = f.weightPiece || '';
+            document.getElementById('flowerWeightPack').value = f.weightPack || '';
             document.getElementById('flowerPacks').value = f.packs || 0;
             document.getElementById('flowerStock').value = f.stock || 0;
             document.getElementById('flowerImage').value = f.image || DEFAULT_FLOWER_IMAGE;
@@ -2641,7 +3057,7 @@
                     // Сначала закрываем верхнее окно (документ, редактирование, прайс)
                     const topModals = [
                         'printInvoiceModal', 'printSt1InvoiceModal', 'printWarehouseInvoiceModal', 'printPackingModal',
-                        'saveOrderModal', 'clientPricesModal', 'clientSalesModal'
+                        'saveOrderModal', 'clientPricesModal', 'clientSalesModal', 'boxSettingsModal', 'printProcurementModal'
                     ];
                     const openTop = topModals.find(id => document.getElementById(id)?.classList.contains('active'));
                     if (openTop) {
@@ -2649,7 +3065,7 @@
                         return;
                     }
                     // Если верхних окон нет — закрываем базовое окно списка
-                    const baseModals = ['ordersModal', 'clientsModal', 'procurementsModal', 'financeModal', 'analyticsModal', 'rolesModal', 'adminModal'];
+                    const baseModals = ['ordersModal', 'clientsModal', 'procurementsModal', 'financeModal', 'analyticsModal', 'rolesModal', 'adminModal', 'backupModal'];
                     const openBase = baseModals.find(id => document.getElementById(id)?.classList.contains('active'));
                     if (openBase) {
                         document.getElementById(openBase).classList.remove('active');
@@ -2831,6 +3247,162 @@
             const ws = XLSX.utils.aoa_to_sheet(wsData);
             XLSX.utils.book_append_sheet(wb, ws, "Продажи");
             XLSX.writeFile(wb, `Sales_${client.name.replace(/\s+/g, '_')}_${Date.now()}.xlsx`);
+        };
+
+            // --- РЕЗЕРВНОЕ КОПИРОВАНИЕ И ВОССТАНОВЛЕНИЕ БАЗЫ ДАННЫХ ---
+        window.openBackupModal = function() {
+            document.getElementById('backupModal').classList.add('active');
+        };
+
+        window.closeBackupModal = function() {
+            document.getElementById('backupModal').classList.remove('active');
+        };
+
+        window.downloadDatabaseBackup = function() {
+            db.ref().once('value').then(snapshot => {
+                const data = snapshot.val() || {};
+                const now = new Date();
+                const dateStr = now.toISOString().slice(0, 10);
+                const timeStr = now.toTimeString().slice(0, 8).replace(/:/g, '-');
+                const filename = `RoseGarden_Database_Backup_${dateStr}_${timeStr}.json`;
+
+                const jsonStr = JSON.stringify(data, null, 2);
+                const blob = new Blob([jsonStr], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }).catch(err => alert('Ошибка при создании бэкапа: ' + err.message));
+        };
+
+        window.restoreDatabaseBackup = function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (!confirm('Вы уверены, что хотите восстановить базу из файла? Все текущие данные базы данных будут перезаписаны!')) {
+                event.target.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const parsedData = JSON.parse(e.target.result);
+                    if (!parsedData || typeof parsedData !== 'object') {
+                        throw new Error('Некорректная структура файла');
+                    }
+
+                    // Восстанавливаем в корень базы данных Firebase
+                    db.ref().set(parsedData).then(() => {
+                        alert('База данных успешно восстановлена из резервной копии!');
+                        closeBackupModal();
+                    }).catch(err => alert('Ошибка записи в базу: ' + err.message));
+                } catch(err) {
+                    alert('Не удалось прочитать файл бэкапа: ' + err.message);
+                }
+                event.target.value = '';
+            };
+            reader.readAsText(file);
+        };
+
+            // Автоматический пересчет веса Брутто = Нетто + (Количество коробок * Вес коробки)
+        window.recalcInvoiceBrutoWeight = function(lang) {
+            if (lang === 'en') {
+                const netoStr = document.getElementById('inputNeto')?.value || '0';
+                const boxesStr = document.getElementById('inputBoxes')?.value || '0';
+                const boxWeightStr = document.getElementById('inputBoxWeight')?.value || '2.8';
+
+                const neto = parseFloat(netoStr.replace(',', '.')) || 0;
+                const boxes = parseInt(boxesStr, 10) || 0;
+                const boxWeight = parseFloat(boxWeightStr.replace(',', '.')) || 0;
+
+                const bruto = neto + (boxes * boxWeight);
+                const brutoEl = document.getElementById('inputBruto');
+                if (brutoEl && bruto > 0) {
+                    brutoEl.value = Number(bruto.toFixed(2)).toLocaleString('ru-RU');
+                }
+            } else {
+                const netoStr = document.getElementById('st1InputNeto')?.value || '0';
+                const boxesStr = document.getElementById('st1InputBoxes')?.value || '0';
+                const boxWeightStr = document.getElementById('st1InputBoxWeight')?.value || '2.8';
+
+                const neto = parseFloat(netoStr.replace(',', '.')) || 0;
+                const boxes = parseInt(boxesStr, 10) || 0;
+                const boxWeight = parseFloat(boxWeightStr.replace(',', '.')) || 0;
+
+                const bruto = neto + (boxes * boxWeight);
+                const brutoEl = document.getElementById('st1InputBruto');
+                if (brutoEl && bruto > 0) {
+                    brutoEl.value = Number(bruto.toFixed(2)).toLocaleString('ru-RU');
+                }
+            }
+        };
+
+            // --- УПРАВЛЕНИЕ ПАРАМЕТРАМИ И ВЕСОМ КОРОБКИ ---
+        let currentBoxSettings = {
+            length: 130,
+            width: 40,
+            height: 28,
+            weightKg: 2.8,
+            capacityPacks: 20
+        };
+
+        // Загрузка настроек коробки из Firebase и локального кэша
+        try {
+            const cachedBox = localStorage.getItem('rosegarden_box_settings');
+            if (cachedBox) currentBoxSettings = Object.assign(currentBoxSettings, JSON.parse(cachedBox));
+        } catch(e) {}
+
+        db.ref('settings/box').on('value', (s) => {
+            const val = s.val();
+            if (val) {
+                currentBoxSettings = Object.assign(currentBoxSettings, val);
+                try { localStorage.setItem('rosegarden_box_settings', JSON.stringify(currentBoxSettings)); } catch(e) {}
+            }
+        });
+
+        window.openBoxSettingsModal = function() {
+            document.getElementById('boxLength').value = currentBoxSettings.length || 130;
+            document.getElementById('boxWidth').value = currentBoxSettings.width || 40;
+            document.getElementById('boxHeight').value = currentBoxSettings.height || 28;
+            document.getElementById('boxWeightKg').value = currentBoxSettings.weightKg || 2.8;
+            document.getElementById('boxCapacityPacks').value = currentBoxSettings.capacityPacks || 20;
+            calcBoxVolumeAndSummary();
+            document.getElementById('boxSettingsModal').classList.add('active');
+        };
+
+        window.closeBoxSettingsModal = function() {
+            document.getElementById('boxSettingsModal').classList.remove('active');
+        };
+
+        window.calcBoxVolumeAndSummary = function() {
+            const l = parseFloat(document.getElementById('boxLength')?.value) || 0;
+            const w = parseFloat(document.getElementById('boxWidth')?.value) || 0;
+            const h = parseFloat(document.getElementById('boxHeight')?.value) || 0;
+            const volumeM3 = ((l * w * h) / 1000000).toFixed(3);
+            const volInput = document.getElementById('boxVolumeM3');
+            if (volInput) volInput.value = `${volumeM3} м³`;
+        };
+
+        window.handleSaveBoxSettings = function(e) {
+            e.preventDefault();
+            currentBoxSettings = {
+                length: parseFloat(document.getElementById('boxLength').value) || 130,
+                width: parseFloat(document.getElementById('boxWidth').value) || 40,
+                height: parseFloat(document.getElementById('boxHeight').value) || 28,
+                weightKg: parseFloat(document.getElementById('boxWeightKg').value) || 2.8,
+                capacityPacks: parseInt(document.getElementById('boxCapacityPacks').value, 10) || 20
+            };
+
+            db.ref('settings/box').set(currentBoxSettings).then(() => {
+                localStorage.setItem('rosegarden_box_settings', JSON.stringify(currentBoxSettings));
+                alert('Параметры и вес коробки успешно сохранены!');
+                closeBoxSettingsModal();
+            }).catch(err => alert('Ошибка сохранения: ' + err.message));
         };
 
     </script>
