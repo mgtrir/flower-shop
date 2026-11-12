@@ -508,10 +508,10 @@
                     <div style="width: 48%;">
                         <p style="font-weight: bold; font-size: 0.85rem;">Bill to:</p>
                         <p id="invClientName" style="font-weight: bold; font-size: 0.95rem;">---</p>
-                        <p>Registr No. <span id="invClientReg">---</span></p>
-                        <p>Main License No. <span id="invClientLicense">---</span></p>
-                        <p>DCCI No. <span id="invClientDcci">---</span></p>
-                        <p>Address: <span id="invClientAddress">---</span></p>
+                        <p id="invClientRegRow">Registr No. <span id="invClientReg">---</span></p>
+                        <p id="invClientLicenseRow">Main License No. <span id="invClientLicense">---</span></p>
+                        <p id="invClientDcciRow">DCCI No. <span id="invClientDcci">---</span></p>
+                        <p id="invClientAddressRow">Address: <span id="invClientAddress">---</span></p>
                     </div>
                 </div>
 
@@ -598,10 +598,10 @@
                     <div style="width: 48%;">
                         <p style="font-weight: bold; font-size: 0.85rem;">Покупатель (Получатель):</p>
                         <p id="st1InvClientName" style="font-weight: bold; font-size: 0.95rem;">---</p>
-                        <p>Регистрационный №: <span id="st1InvClientReg">---</span></p>
-                        <p>Лицензия №: <span id="st1InvClientLicense">---</span></p>
-                        <p>Таможенный код: <span id="st1InvClientDcci">---</span></p>
-                        <p>Адрес: <span id="st1InvClientAddress">---</span></p>
+                        <p id="st1InvClientRegRow">Регистрационный №: <span id="st1InvClientReg">---</span></p>
+                        <p id="st1InvClientLicenseRow">Лицензия №: <span id="st1InvClientLicense">---</span></p>
+                        <p id="st1InvClientDcciRow">Таможенный код: <span id="st1InvClientDcci">---</span></p>
+                        <p id="st1InvClientAddressRow">Адрес: <span id="st1InvClientAddress">---</span></p>
                     </div>
                 </div>
 
@@ -2038,10 +2038,21 @@
             document.getElementById('customInvDate').value = order.date;
             document.getElementById('invClientName').innerText = order.clientName;
             
-            document.getElementById('invClientReg').innerText = client ? (client.regNo || '---') : '---';
-            document.getElementById('invClientLicense').innerText = client ? (client.license || '---') : '---';
-            document.getElementById('invClientDcci').innerText = client ? (client.dcci || '---') : '---';
-            document.getElementById('invClientAddress').innerText = client ? (client.address || '---') : '---';
+            const setClientField = (rowId, valId, val) => {
+                const cleanVal = (val || '').trim();
+                const rowEl = document.getElementById(rowId);
+                const valEl = document.getElementById(valId);
+                if (cleanVal && cleanVal !== '---' && cleanVal !== '-') {
+                    if (valEl) valEl.innerText = cleanVal;
+                    if (rowEl) rowEl.style.display = 'block';
+                } else {
+                    if (rowEl) rowEl.style.display = 'none';
+                }
+            };
+            setClientField('invClientRegRow', 'invClientReg', client ? client.regNo : '');
+            setClientField('invClientLicenseRow', 'invClientLicense', client ? client.license : '');
+            setClientField('invClientDcciRow', 'invClientDcci', client ? client.dcci : '');
+            setClientField('invClientAddressRow', 'invClientAddress', client ? client.address : '');
             
             let totalAmountUsd = 0;
             let totalAmountAmd = 0;
@@ -2152,10 +2163,21 @@
             document.getElementById('st1InvOrderDate').innerText = order.date;
             document.getElementById('st1InvClientName').innerText = order.clientName;
             
-            document.getElementById('st1InvClientReg').innerText = client ? (client.regNo || '---') : '---';
-            document.getElementById('st1InvClientLicense').innerText = client ? (client.license || '---') : '---';
-            document.getElementById('st1InvClientDcci').innerText = client ? (client.dcci || '---') : '---';
-            document.getElementById('st1InvClientAddress').innerText = client ? (client.address || '---') : '---';
+            const setSt1ClientField = (rowId, valId, val) => {
+                const cleanVal = (val || '').trim();
+                const rowEl = document.getElementById(rowId);
+                const valEl = document.getElementById(valId);
+                if (cleanVal && cleanVal !== '---' && cleanVal !== '-') {
+                    if (valEl) valEl.innerText = cleanVal;
+                    if (rowEl) rowEl.style.display = 'block';
+                } else {
+                    if (rowEl) rowEl.style.display = 'none';
+                }
+            };
+            setSt1ClientField('st1InvClientRegRow', 'st1InvClientReg', client ? client.regNo : '');
+            setSt1ClientField('st1InvClientLicenseRow', 'st1InvClientLicense', client ? client.license : '');
+            setSt1ClientField('st1InvClientDcciRow', 'st1InvClientDcci', client ? client.dcci : '');
+            setSt1ClientField('st1InvClientAddressRow', 'st1InvClientAddress', client ? client.address : '');
             
             let totalAmountUsd = 0;
             let totalAmountAmd = 0;
